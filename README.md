@@ -7,7 +7,7 @@
 
 ## Current Version
 
-[![Version](https://img.shields.io/badge/Version-1.8.0-orange.svg?logo=github)](https://github.com/EngineScript/simple-wp-optimizer/releases/download/v1.8.0/simple-wp-optimizer-1.8.0.zip)
+[![Version](https://img.shields.io/badge/Version-1.8.1-orange.svg?logo=github)](https://github.com/EngineScript/simple-wp-optimizer/releases/download/v1.8.1/simple-wp-optimizer-1.8.1.zip)
 
 ## Description
 

@@ -8,7 +8,7 @@ This is a WordPress performance optimization plugin that removes unnecessary fea
 ## Plugin Details
 
 - **Name:** Simple WP Optimizer
-- **Version:** 1.8.0
+- **Version:** 1.8.1
 - **WordPress Compatibility:** 6.5+
 - **PHP Compatibility:** 7.4+
 - **License:** GPL-3.0-or-later

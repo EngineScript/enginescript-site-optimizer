@@ -3,7 +3,7 @@ Contributors: enginescript
 Tags: optimization, performance, cleanup
 Requires at least: 6.5
 Tested up to: 6.9
-Stable tag: 1.8.0
+Stable tag: 1.8.1
 Requires PHP: 7.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -43,7 +43,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 
 == Changelog ==
 
-= Unreleased =
+= 1.8.1 - 2026-02-28 =
 * **BUG FIX (Critical)**: Fixed whitespace inside form field `name` attributes that prevented all settings from being saved — browsers sent literal newlines/tabs as part of the field name so WordPress never received the data
 * **BUG FIX (Critical)**: Fixed inverted IP-validation logic that caused every preconnect/DNS-prefetch domain name to be incorrectly rejected when saving settings
 * **BUG FIX (Critical)**: Fixed `es_optimizer_clear_options_cache()` which was not actually clearing the static options cache
