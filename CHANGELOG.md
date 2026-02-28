@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Code Quality**: Refactored textarea rendering to place PHP open/close tags on their own lines, resolving Codacy best-practice warnings
 - **Critical**: Fixed whitespace embedded inside form field `name` attributes (checkbox and textarea) that prevented settings from ever being saved — `$_POST['es_optimizer_options']` was never set because browsers sent the literal newlines/tabs as part of the field name
 - **Critical**: Fixed inverted IP-validation logic in `es_optimizer_validate_single_domain()` that caused every domain name (e.g. `fonts.googleapis.com`) to be incorrectly rejected when saving preconnect/DNS-prefetch settings
 - **Critical**: Fixed `es_optimizer_clear_options_cache()` which created an independent closure-scoped static variable and therefore never cleared the cache inside `es_optimizer_get_options()`

@@ -498,11 +498,10 @@ function es_optimizer_render_textarea_option( $options, $option_name, $title, $d
 				echo esc_html( $description );
 				?>
 			</small></p>
-			<textarea name="<?php printf( 'es_optimizer_options[%s]', esc_attr( $option_name ) ); ?>" rows="5" cols="50" class="large-text code"><?php
-			if ( isset( $options[ $option_name ] ) ) {
-				echo esc_textarea( $options[ $option_name ] );
-			}
-			?></textarea>
+			<?php
+			$textarea_value = isset( $options[ $option_name ] ) ? esc_textarea( $options[ $option_name ] ) : '';
+			?>
+			<textarea name="<?php printf( 'es_optimizer_options[%s]', esc_attr( $option_name ) ); ?>" rows="5" cols="50" class="large-text code"><?php echo $textarea_value; ?></textarea>
 		</td>
 	</tr>
 	<?php

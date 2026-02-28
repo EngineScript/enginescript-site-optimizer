@@ -55,6 +55,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **CODE QUALITY**: Unified all option retrieval calls to use the `es_optimizer_get_options()` caching wrapper
 * **CODE QUALITY**: Settings page heading, description, and submit button are now fully translatable
 * **CODE QUALITY**: Removed unreachable dead code in `es_optimizer_add_settings_page()`
+* **CODE QUALITY**: Refactored textarea rendering to place PHP open/close tags on their own lines, resolving Codacy best-practice warnings
 
 = 1.8.0 - 2025-10-23 =
 * **FEATURE**: Added new option to remove RSD (Really Simple Discovery) link from WordPress header
