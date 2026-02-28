@@ -49,6 +49,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **BUG FIX (Critical)**: Fixed `es_optimizer_clear_options_cache()` which was not actually clearing the static options cache
 * **BUG FIX**: Fixed textarea content containing leading whitespace between the HTML tag and the PHP value output
 * **SECURITY**: Added missing `esc_url()` and `esc_html__()` escaping to the Settings link in the Plugins list
+* **SECURITY**: Moved `esc_textarea()` escaping to the point of output for textarea values, preventing a potential XSS vector
 * **SECURITY**: Removed redundant custom nonce field and its bypassable verification; CSRF protection is handled by WordPress Settings API
 * **CODE QUALITY**: Fixed double-escaping — render callers now pass `__()` instead of `esc_html__()`, with escaping done at output in the render functions
 * **CODE QUALITY**: Renamed 11 globally-scoped functions to use the `es_optimizer_` prefix, preventing potential naming collisions with other plugins
