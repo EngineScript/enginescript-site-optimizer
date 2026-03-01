@@ -181,7 +181,7 @@ jobs:
           zip -r enginescript-site-optimizer.zip enginescript-site-optimizer
           
       - name: Upload build artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: enginescript-site-optimizer
           path: build/enginescript-site-optimizer.zip
