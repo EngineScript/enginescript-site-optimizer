@@ -1,13 +1,13 @@
-# Simple WP Optimizer
+# EngineScript Site Optimizer
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/cf82cdb35973466abe7895e6d37666ed)](https://app.codacy.com/gh/EngineScript/simple-wp-optimizer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/cf82cdb35973466abe7895e6d37666ed)](https://app.codacy.com/gh/EngineScript/enginescript-site-optimizer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Github License](https://img.shields.io/badge/License-GPL%20v3-green.svg?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![WordPress Compatible](https://img.shields.io/badge/WordPress-6.5%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
 [![PHP Compatible](https://img.shields.io/badge/PHP-7.4%2B-purple.svg?logo=php)](https://www.php.net/)
 
 ## Current Version
 
-[![Version](https://img.shields.io/badge/Version-1.8.1-orange.svg?logo=github)](https://github.com/EngineScript/simple-wp-optimizer/releases/download/v1.8.1/simple-wp-optimizer-1.8.1.zip)
+[![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg?logo=github)](https://github.com/EngineScript/enginescript-site-optimizer/releases/download/v2.0.0/enginescript-site-optimizer-2.0.0.zip)
 
 ## Description
 
@@ -25,20 +25,20 @@ A lightweight WordPress plugin designed to optimize your website by removing unn
 
 ### Manual Installation
 
-1. Download the latest release from the [releases page](https://github.com/EngineScript/simple-wp-optimizer/releases)
-2. Upload the plugin files to the `/wp-content/plugins/simple-wp-optimizer` directory
+1. Download the latest release from the [releases page](https://github.com/EngineScript/enginescript-site-optimizer/releases)
+2. Upload the plugin files to the `/wp-content/plugins/enginescript-site-optimizer` directory
 3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Configure the plugin settings via the 'WP Optimizer' menu
+4. Configure the plugin settings via the 'Site Optimizer' menu
 
 ### Using Composer
 
 ```bash
-composer require enginescript/simple-wp-optimizer
+composer require enginescript/enginescript-site-optimizer
 ```
 
 ## Usage
 
-1. Navigate to the WP Optimizer menu in your WordPress admin dashboard (under Settings)
+1. Navigate to the Site Optimizer menu in your WordPress admin dashboard (under Settings)
 2. Enable the optimization features you want to use
 3. Configure the DNS Prefetch domains if needed
 4. Save your changes
@@ -76,7 +76,7 @@ This plugin is fully compliant with WordPress.org standards:
 
 ### Will this plugin work with my theme?
 
-Simple WP Optimizer is designed to be compatible with most WordPress themes. The optimizations focus on removing unnecessary WordPress elements rather than modifying theme functionality.
+EngineScript Site Optimizer is designed to be compatible with most WordPress themes. The optimizations focus on removing unnecessary WordPress elements rather than modifying theme functionality.
 
 ### What does "Remove jQuery Migrate" do?
 
@@ -100,7 +100,7 @@ Yes, hiding the WordPress version can provide a minor security benefit by making
 
 ### Setting up the development environment
 
-1. Clone this repository: `git clone https://github.com/EngineScript/simple-wp-optimizer.git`
+1. Clone this repository: `git clone https://github.com/EngineScript/enginescript-site-optimizer.git`
 2. Install dependencies: `composer install`
 3. Set up the test environment: `bin/install-wp-tests.sh wordpress_test root '' localhost latest`
 4. Run tests: `composer test`

@@ -4,7 +4,7 @@ includes:
 parameters:
     level: 5
     paths:
-        - simple-wp-optimizer.php
+        - enginescript-site-optimizer.php
 
     excludePaths:
         - .github

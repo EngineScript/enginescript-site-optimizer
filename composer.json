@@ -1,6 +1,6 @@
 {
-  "name": "enginescript/simple-wp-optimizer",
-  "description": "Simple WP Optimizer - A lightweight WordPress optimization plugin",
+  "name": "enginescript/enginescript-site-optimizer",
+  "description": "EngineScript Site Optimizer - A lightweight WordPress optimization plugin",
   "type": "wordpress-plugin",
   "license": "GPL-3.0-or-later",
   "authors": [

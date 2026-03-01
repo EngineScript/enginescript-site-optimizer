@@ -1,6 +1,6 @@
 # This workflow automatically posts a guidance comment on new pull requests.
 # It welcomes contributors and provides a brief message to acknowledge their 
-# contribution to the Simple WP Optimizer plugin.
+# contribution to the EngineScript Site Optimizer plugin.
 # The workflow is triggered whenever a new pull request is opened.
 
 name: New Pull Request Guidance
@@ -21,7 +21,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Thanks for contributing to Simple WP Optimizer! 🎉
+            Thanks for contributing to EngineScript Site Optimizer! 🎉
 
             **Before we review:**
             - [ ] Have you tested your changes with WordPress 6.5+?

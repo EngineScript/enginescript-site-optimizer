@@ -255,7 +255,7 @@ jobs:
               <rule ref="WordPress.WP.I18n">
                   <properties>
                       <property name="text_domain" type="array">
-                          <element value="simple-wp-optimizer"/>
+                          <element value="enginescript-site-optimizer"/>
                       </property>
                   </properties>
               </rule>
@@ -364,7 +364,7 @@ jobs:
           # Use WordPress-specific PHPMD configuration (WordPress snake_case compatible)
           echo "Using WordPress-specific PHPMD configuration (WordPress snake_case compatible)..."
           # Run PHPMD but don't fail the build on naming convention issues
-          phpmd simple-wp-optimizer.php text phpmd.xml || echo "PHPMD completed with warnings (WordPress naming conventions may differ from PHPMD defaults)"
+          phpmd enginescript-site-optimizer.php text phpmd.xml || echo "PHPMD completed with warnings (WordPress naming conventions may differ from PHPMD defaults)"
 
       - name: Create issue on PHPMD failure
         if: ${{ failure() }}
@@ -767,7 +767,7 @@ jobs:
           /**
            * PHPUnit bootstrap file for plugin tests.
            *
-           * @package Simple_WP_Optimizer
+           * @package EngineScript_Site_Optimizer
            */
           
           require_once '/tmp/wordpress-tests-lib/includes/functions.php';
@@ -777,7 +777,7 @@ jobs:
                   return;
               }, 0);
               
-              require dirname( dirname( __FILE__ ) ) . '/simple-wp-optimizer.php';
+              require dirname( dirname( __FILE__ ) ) . '/enginescript-site-optimizer.php';
           }
           
           tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
@@ -790,12 +790,12 @@ jobs:
           cat > tests/test-plugin.php << 'EOF'
           <?php
           /**
-           * Class Test_Simple_WP_Optimizer
+           * Class Test_EngineScript_Site_Optimizer
            *
-           * @package Simple_WP_Optimizer
+           * @package EngineScript_Site_Optimizer
            */
           
-          class Test_Simple_WP_Optimizer extends WP_UnitTestCase {
+          class Test_EngineScript_Site_Optimizer extends WP_UnitTestCase {
               public function test_plugin_loaded() {
                   $this->assertTrue(function_exists('es_optimizer_init_settings'), 'Plugin was not loaded correctly');
               }
@@ -825,7 +825,7 @@ jobs:
               convertWarningsToExceptions="true"
           >
               <testsuites>
-                  <testsuite name="Simple WP Optimizer">
+                  <testsuite name="EngineScript Site Optimizer">
                       <directory prefix="test-" suffix=".php">./tests/</directory>
                   </testsuite>
               </testsuites>

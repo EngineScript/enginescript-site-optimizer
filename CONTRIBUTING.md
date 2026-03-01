@@ -1,6 +1,6 @@
-# Contributing to Simple WP Optimizer
+# Contributing to EngineScript Site Optimizer
 
-Thank you for considering contributing to Simple WP Optimizer! This document provides guidelines and instructions for contributors.
+Thank you for considering contributing to EngineScript Site Optimizer! This document provides guidelines and instructions for contributors.
 
 ## Code of Conduct
 
@@ -21,8 +21,8 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/simple-wp-optimizer.git
-   cd simple-wp-optimizer
+   git clone https://github.com/YOUR-USERNAME/enginescript-site-optimizer.git
+   cd enginescript-site-optimizer
    ```
 
 3. Install dependencies:
@@ -61,7 +61,7 @@ This project adheres to **WordPress Coding Standards**:
 
 3. **Internationalization**: All user-facing strings must be translatable
    - Use `__()`, `_e()`, `esc_html__()`, `esc_html_e()` functions
-   - Text domain: `simple-wp-optimizer`
+   - Text domain: `enginescript-site-optimizer`
 
 4. **Accessibility**: Follow WCAG guidelines
    - Proper semantic markup
@@ -96,8 +96,8 @@ Run tests (when available):
 ## File Structure
 
 ```
-simple-wp-optimizer/
-├── simple-wp-optimizer.php    # Main plugin file
+enginescript-site-optimizer/
+├── enginescript-site-optimizer.php    # Main plugin file
 ├── README.md                  # Project documentation
 ├── readme.txt                 # WordPress.org readme
 ├── CHANGELOG.md              # Version history
@@ -108,7 +108,7 @@ simple-wp-optimizer/
 ├── phpstan.neon              # PHPStan configuration
 ├── phpmd.xml                 # PHPMD configuration
 ├── languages/                # Translation files
-│   └── simple-wp-optimizer.pot
+│   └── enginescript-site-optimizer.pot
 └── .github/                  # GitHub workflows
     └── workflows/
 ```
@@ -117,7 +117,7 @@ simple-wp-optimizer/
 
 ### Before You Start
 
-1. Check existing [issues](https://github.com/EngineScript/simple-wp-optimizer/issues) and [pull requests](https://github.com/EngineScript/simple-wp-optimizer/pulls)
+1. Check existing [issues](https://github.com/EngineScript/enginescript-site-optimizer/issues) and [pull requests](https://github.com/EngineScript/enginescript-site-optimizer/pulls)
 2. Create an issue for significant changes to discuss the approach
 3. Follow the existing code patterns and conventions
 
@@ -245,11 +245,11 @@ style: fix PHPCS formatting violations
 ### Updating Versions
 
 When releasing new versions, update these files:
-- `simple-wp-optimizer.php` (plugin header)
+- `enginescript-site-optimizer.php` (plugin header)
 - `README.md`
 - `readme.txt`
 - `CHANGELOG.md`
-- `languages/simple-wp-optimizer.pot`
+- `languages/enginescript-site-optimizer.pot`
 
 ### Semantic Versioning
 
@@ -260,8 +260,8 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ## Support Channels
 
-- **Issues**: [GitHub Issues](https://github.com/EngineScript/simple-wp-optimizer/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/EngineScript/simple-wp-optimizer/discussions)
+- **Issues**: [GitHub Issues](https://github.com/EngineScript/enginescript-site-optimizer/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/EngineScript/enginescript-site-optimizer/discussions)
 - **Security**: Email security@enginescript.com for security issues
 
 ## Resources
@@ -282,8 +282,8 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ## License
 
-By contributing to Simple WP Optimizer, you agree that your contributions will be licensed under the [GPL v2 or later](LICENSE) license.
+By contributing to EngineScript Site Optimizer, you agree that your contributions will be licensed under the [GPL v2 or later](LICENSE) license.
 
 ---
 
-Thank you for contributing to Simple WP Optimizer! 🚀
+Thank you for contributing to EngineScript Site Optimizer! 🚀

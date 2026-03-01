@@ -1,6 +1,6 @@
 # This workflow automatically posts a guidance comment on new issues.
 # It provides instructions to help users submit detailed information about their
-# WordPress environment and the issue they're experiencing with the Simple WP Optimizer plugin.
+# WordPress environment and the issue they're experiencing with the EngineScript Site Optimizer plugin.
 # This helps maintainers diagnose and fix issues more efficiently.
 
 name: Issue Guidance

@@ -22,7 +22,7 @@
     
     <filter>
         <whitelist>
-            <file>simple-wp-optimizer.php</file>
+            <file>enginescript-site-optimizer.php</file>
         </whitelist>
     </filter>
     
@@ -33,7 +33,7 @@
             <text outputFile="php://stdout" showUncoveredFiles="true"/>
         </report>
         <include>
-            <file>simple-wp-optimizer.php</file>
+            <file>enginescript-site-optimizer.php</file>
         </include>
     </coverage>
     

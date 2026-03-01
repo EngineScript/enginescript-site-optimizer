@@ -1,9 +1,9 @@
-=== Simple WP Optimizer ===
+=== EngineScript Site Optimizer ===
 Contributors: enginescript
 Tags: optimization, performance, cleanup
 Requires at least: 6.5
 Tested up to: 6.9
-Stable tag: 1.8.1
+Stable tag: 2.0.0
 Requires PHP: 7.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -12,7 +12,7 @@ Optimizes WordPress by removing unnecessary features and scripts to improve perf
 
 == Description ==
 
-Simple WP Optimizer removes unnecessary WordPress features and scripts to optimize your site's performance. 
+EngineScript Site Optimizer removes unnecessary WordPress features and scripts to optimize your site's performance. 
 It helps reduce page load times and improves overall site speed by disabling unused functionality.
 
 Key features:
@@ -26,7 +26,7 @@ Key features:
 
 == Installation ==
 
-1. Upload the plugin files to the `/wp-content/plugins/simple-wp-optimizer` directory.
+1. Upload the plugin files to the `/wp-content/plugins/enginescript-site-optimizer` directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
 3. Use the Settings page to configure the optimization options.
 
@@ -42,6 +42,12 @@ No, the plugin has a simple interface where you can toggle features on and off.
 
 
 == Changelog ==
+
+= 2.0.0 - 2026-02-28 =
+* **BREAKING**: Renamed plugin from "Simple WP Optimizer" to "EngineScript Site Optimizer" to comply with WordPress.org plugin directory naming restrictions
+* Plugin slug changed from `simple-wp-optimizer` to `enginescript-site-optimizer`
+* Text domain changed from `simple-wp-optimizer` to `enginescript-site-optimizer`
+* Admin menu label changed from "WP Optimizer" to "Site Optimizer"
 
 = 1.8.1 - 2026-02-28 =
 * **BUG FIX (Critical)**: Fixed whitespace inside form field `name` attributes that prevented all settings from being saved — browsers sent literal newlines/tabs as part of the field name so WordPress never received the data

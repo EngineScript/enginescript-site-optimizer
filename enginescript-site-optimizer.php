@@ -1,19 +1,19 @@
 <?php
 /**
- * Plugin Name: Simple WP Optimizer
- * Plugin URI: https://github.com/EngineScript/simple-wp-optimizer
+ * Plugin Name: EngineScript Site Optimizer
+ * Plugin URI: https://github.com/EngineScript/enginescript-site-optimizer
  * Description: Optimizes WordPress by removing unnecessary features and scripts to improve performance
- * Version: 1.8.1
+ * Version: 2.0.0
  * Author: EngineScript
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: simple-wp-optimizer
+ * Text Domain: enginescript-site-optimizer
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Tested up to: 6.9
  * Security: Follows OWASP security guidelines and WordPress best practices
  *
- * @package Simple_WP_Optimizer
+ * @package EngineScript_Site_Optimizer
  */
 
 /**
@@ -52,12 +52,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin version.
-if ( ! defined( 'ES_WP_OPTIMIZER_VERSION' ) ) {
-	define( 'ES_WP_OPTIMIZER_VERSION', '1.8.1' );
+if ( ! defined( 'ES_SITE_OPTIMIZER_VERSION' ) ) {
+	define( 'ES_SITE_OPTIMIZER_VERSION', '2.0.0' );
 }
 
 /**
- * Initialize the Simple WP Optimizer plugin
+ * Initialize the EngineScript Site Optimizer plugin
  *
  * This function is hooked to 'plugins_loaded' to ensure all other plugins
  * have been loaded first, preventing potential conflicts and ensuring
@@ -239,8 +239,8 @@ function es_optimizer_clear_options_cache() {
  */
 function es_optimizer_add_settings_page() {
 	add_options_page(
-		__( 'WP Optimizer Settings', 'simple-wp-optimizer' ),
-		__( 'WP Optimizer', 'simple-wp-optimizer' ),
+		__( 'Site Optimizer Settings', 'enginescript-site-optimizer' ),
+		__( 'Site Optimizer', 'enginescript-site-optimizer' ),
 		'manage_options',
 		'es-optimizer-settings',
 		'es_optimizer_settings_page'
@@ -256,14 +256,14 @@ function es_optimizer_settings_page() {
 	// Security: Check user capabilities before displaying the page.
 	// This prevents unauthorized access to plugin settings.
 	if ( ! current_user_can( 'manage_options' ) ) {
-		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'simple-wp-optimizer' ) );
+		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'enginescript-site-optimizer' ) );
 	}
 
 	$options = es_optimizer_get_options();
 	?>
 	<div class="wrap">
-		<h1><?php esc_html_e( 'WP Optimizer Settings', 'simple-wp-optimizer' ); ?></h1>
-		<p><?php esc_html_e( 'Select which optimizations you want to enable and customize the DNS prefetch domains.', 'simple-wp-optimizer' ); ?></p>
+		<h1><?php esc_html_e( 'Site Optimizer Settings', 'enginescript-site-optimizer' ); ?></h1>
+		<p><?php esc_html_e( 'Select which optimizations you want to enable and customize the DNS prefetch domains.', 'enginescript-site-optimizer' ); ?></p>
 
 		<form method="post" action="options.php">
 			<?php
@@ -284,15 +284,15 @@ function es_optimizer_settings_page() {
 			</table>
 
 			<p class="submit">
-				<input type="submit" class="button-primary" value="<?php esc_attr_e( 'Save Changes', 'simple-wp-optimizer' ); ?>" />
+				<input type="submit" class="button-primary" value="<?php esc_attr_e( 'Save Changes', 'enginescript-site-optimizer' ); ?>" />
 			</p>
 		</form>
 
 		<hr>
 		<p>
-			<?php esc_html_e( 'This plugin is part of the EngineScript project.', 'simple-wp-optimizer' ); ?>
+			<?php esc_html_e( 'This plugin is part of the EngineScript project.', 'enginescript-site-optimizer' ); ?>
 			<a href="https://github.com/EngineScript/EngineScript" target="_blank" rel="noopener noreferrer">
-				<?php esc_html_e( 'Visit the EngineScript GitHub page', 'simple-wp-optimizer' ); ?>
+				<?php esc_html_e( 'Visit the EngineScript GitHub page', 'enginescript-site-optimizer' ); ?>
 			</a>
 		</p>
 	</div>
@@ -310,24 +310,24 @@ function es_optimizer_render_performance_options( $options ) {
 	es_optimizer_render_checkbox_option(
 		$options,
 		'disable_emojis',
-		__( 'Disable WordPress Emojis', 'simple-wp-optimizer' ),
-		__( 'Remove emoji scripts and styles to improve page load time', 'simple-wp-optimizer' )
+		__( 'Disable WordPress Emojis', 'enginescript-site-optimizer' ),
+		__( 'Remove emoji scripts and styles to improve page load time', 'enginescript-site-optimizer' )
 	);
 
 	// jQuery Migrate settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'remove_jquery_migrate',
-		__( 'Remove jQuery Migrate', 'simple-wp-optimizer' ),
-		__( 'Remove jQuery Migrate script (may affect compatibility with very old plugins)', 'simple-wp-optimizer' )
+		__( 'Remove jQuery Migrate', 'enginescript-site-optimizer' ),
+		__( 'Remove jQuery Migrate script (may affect compatibility with very old plugins)', 'enginescript-site-optimizer' )
 	);
 
 	// Classic Theme Styles settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'disable_classic_theme_styles',
-		__( 'Disable Classic Theme Styles', 'simple-wp-optimizer' ),
-		__( 'Remove classic theme styles added in WordPress 6.1+', 'simple-wp-optimizer' )
+		__( 'Disable Classic Theme Styles', 'enginescript-site-optimizer' ),
+		__( 'Remove classic theme styles added in WordPress 6.1+', 'enginescript-site-optimizer' )
 	);
 }
 
@@ -342,40 +342,40 @@ function es_optimizer_render_header_options( $options ) {
 	es_optimizer_render_checkbox_option(
 		$options,
 		'remove_wp_version',
-		__( 'Remove WordPress Version', 'simple-wp-optimizer' ),
-		__( 'Remove WordPress version from header (security benefit)', 'simple-wp-optimizer' )
+		__( 'Remove WordPress Version', 'enginescript-site-optimizer' ),
+		__( 'Remove WordPress version from header (security benefit)', 'enginescript-site-optimizer' )
 	);
 
 	// RSD Link settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'remove_rsd_link',
-		__( 'Remove RSD Link', 'simple-wp-optimizer' ),
-		__( 'Remove Really Simple Discovery (RSD) link from header', 'simple-wp-optimizer' )
+		__( 'Remove RSD Link', 'enginescript-site-optimizer' ),
+		__( 'Remove Really Simple Discovery (RSD) link from header', 'enginescript-site-optimizer' )
 	);
 
 	// WLW Manifest settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'remove_wlw_manifest',
-		__( 'Remove WLW Manifest', 'simple-wp-optimizer' ),
-		__( 'Remove Windows Live Writer manifest link', 'simple-wp-optimizer' )
+		__( 'Remove WLW Manifest', 'enginescript-site-optimizer' ),
+		__( 'Remove Windows Live Writer manifest link', 'enginescript-site-optimizer' )
 	);
 
 	// Shortlink settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'remove_shortlink',
-		__( 'Remove Shortlink', 'simple-wp-optimizer' ),
-		__( 'Remove WordPress shortlink URLs from header', 'simple-wp-optimizer' )
+		__( 'Remove Shortlink', 'enginescript-site-optimizer' ),
+		__( 'Remove WordPress shortlink URLs from header', 'enginescript-site-optimizer' )
 	);
 
 	// Recent Comments Style settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'remove_recent_comments_style',
-		__( 'Remove Recent Comments Style', 'simple-wp-optimizer' ),
-		__( 'Remove recent comments widget inline CSS', 'simple-wp-optimizer' )
+		__( 'Remove Recent Comments Style', 'enginescript-site-optimizer' ),
+		__( 'Remove recent comments widget inline CSS', 'enginescript-site-optimizer' )
 	);
 }
 
@@ -390,48 +390,48 @@ function es_optimizer_render_additional_options( $options ) {
 	es_optimizer_render_checkbox_option(
 		$options,
 		'disable_jetpack_ads',
-		__( 'Disable Jetpack Ads', 'simple-wp-optimizer' ),
-		__( 'Remove Jetpack advertisements and promotions', 'simple-wp-optimizer' )
+		__( 'Disable Jetpack Ads', 'enginescript-site-optimizer' ),
+		__( 'Remove Jetpack advertisements and promotions', 'enginescript-site-optimizer' )
 	);
 
 	// Post via Email settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'disable_post_via_email',
-		__( 'Disable Post via Email', 'simple-wp-optimizer' ),
-		__( 'Disable WordPress post via email functionality for security and performance', 'simple-wp-optimizer' )
+		__( 'Disable Post via Email', 'enginescript-site-optimizer' ),
+		__( 'Disable WordPress post via email functionality for security and performance', 'enginescript-site-optimizer' )
 	);
 
 	// Preconnect settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'enable_preconnect',
-		__( 'Enable Preconnect', 'simple-wp-optimizer' ),
-		__( 'Preconnect to external domains for faster resource loading', 'simple-wp-optimizer' )
+		__( 'Enable Preconnect', 'enginescript-site-optimizer' ),
+		__( 'Preconnect to external domains for faster resource loading', 'enginescript-site-optimizer' )
 	);
 
 	// Preconnect Domains textarea.
 	es_optimizer_render_textarea_option(
 		$options,
 		'preconnect_domains',
-		__( 'Preconnect Domains', 'simple-wp-optimizer' ),
-		__( 'Use preconnect for domains that host critical, frequently used resources, like Google Fonts. This hint tells the browser to establish a connection (including DNS lookup, TCP handshake, and TLS negotiation) as soon as possible, which can save 100–500ms on the subsequent request. Enter one HTTPS domain per line (e.g., https://fonts.googleapis.com). Only clean domains are allowed - no file paths, query parameters, or fragments.', 'simple-wp-optimizer' )
+		__( 'Preconnect Domains', 'enginescript-site-optimizer' ),
+		__( 'Use preconnect for domains that host critical, frequently used resources, like Google Fonts. This hint tells the browser to establish a connection (including DNS lookup, TCP handshake, and TLS negotiation) as soon as possible, which can save 100–500ms on the subsequent request. Enter one HTTPS domain per line (e.g., https://fonts.googleapis.com). Only clean domains are allowed - no file paths, query parameters, or fragments.', 'enginescript-site-optimizer' )
 	);
 
 	// DNS Prefetch settings.
 	es_optimizer_render_checkbox_option(
 		$options,
 		'enable_dns_prefetch',
-		__( 'Enable DNS Prefetch', 'simple-wp-optimizer' ),
-		__( 'DNS prefetch for less critical external domains', 'simple-wp-optimizer' )
+		__( 'Enable DNS Prefetch', 'enginescript-site-optimizer' ),
+		__( 'DNS prefetch for less critical external domains', 'enginescript-site-optimizer' )
 	);
 
 	// DNS Prefetch Domains textarea.
 	es_optimizer_render_textarea_option(
 		$options,
 		'dns_prefetch_domains',
-		__( 'DNS Prefetch Domains', 'simple-wp-optimizer' ),
-		__( 'DNS-prefetch is a lighter-weight alternative to preconnect that performs only the DNS lookup. Use it for less critical domains or as a fallback for browsers that don\'t support preconnect. Enter one HTTPS domain per line (e.g., https://adservice.google.com). Only clean domains are allowed - no file paths, query parameters, or fragments.', 'simple-wp-optimizer' )
+		__( 'DNS Prefetch Domains', 'enginescript-site-optimizer' ),
+		__( 'DNS-prefetch is a lighter-weight alternative to preconnect that performs only the DNS lookup. Use it for less critical domains or as a fallback for browsers that don\'t support preconnect. Enter one HTTPS domain per line (e.g., https://adservice.google.com). Only clean domains are allowed - no file paths, query parameters, or fragments.', 'enginescript-site-optimizer' )
 	);
 }
 
@@ -641,12 +641,12 @@ function es_optimizer_show_dns_prefetch_rejection_notice( $rejected_domains ) {
 	$rejected_message = implode( ', ', $escaped_domains );
 
 	if ( count( $rejected_domains ) > 3 ) {
-		$rejected_message .= esc_html__( '...', 'simple-wp-optimizer' );
+		$rejected_message .= esc_html__( '...', 'enginescript-site-optimizer' );
 	}
 
 	$message = sprintf(
 		// translators: %s is the list of rejected domain names.
-		esc_html__( 'Some DNS prefetch domains were rejected for security reasons: %s', 'simple-wp-optimizer' ),
+		esc_html__( 'Some DNS prefetch domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
 		$rejected_message
 	);
 
@@ -757,12 +757,12 @@ function es_optimizer_show_domain_rejection_notice( $rejected_domains ) {
 	$rejected_message = implode( ', ', $escaped_domains );
 
 	if ( count( $rejected_domains ) > 3 ) {
-		$rejected_message .= esc_html__( '...', 'simple-wp-optimizer' );
+		$rejected_message .= esc_html__( '...', 'enginescript-site-optimizer' );
 	}
 
 	$message = sprintf(
 		// translators: %s is the list of rejected domain names.
-		esc_html__( 'Some preconnect domains were rejected for security reasons: %s', 'simple-wp-optimizer' ),
+		esc_html__( 'Some preconnect domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
 		$rejected_message
 	);
 
@@ -820,7 +820,7 @@ function es_optimizer_disable_emojis() {
  * @return array Modified plugin action links.
  */
 function es_optimizer_add_settings_link( $links ) {
-	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=es-optimizer-settings' ) ) . '">' . esc_html__( 'Settings', 'simple-wp-optimizer' ) . '</a>';
+	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=es-optimizer-settings' ) ) . '">' . esc_html__( 'Settings', 'enginescript-site-optimizer' ) . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;
 }

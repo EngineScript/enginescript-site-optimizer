@@ -2,17 +2,17 @@
 
 ## Project Overview
 
-**Simple WP Optimizer - WordPress Plugin**
+**EngineScript Site Optimizer - WordPress Plugin**
 This is a WordPress performance optimization plugin that removes unnecessary features and scripts to improve site performance. Designed for WordPress administrators who want to optimize their site's speed by disabling unused functionality and reducing resource overhead.
 
 ## Plugin Details
 
-- **Name:** Simple WP Optimizer
-- **Version:** 1.8.1
+- **Name:** EngineScript Site Optimizer
+- **Version:** 2.0.0
 - **WordPress Compatibility:** 6.5+
 - **PHP Compatibility:** 7.4+
 - **License:** GPL-3.0-or-later
-- **Text Domain:** simple-wp-optimizer
+- **Text Domain:** enginescript-site-optimizer
 
 ## Architecture & Design Patterns
 
@@ -21,7 +21,7 @@ This is a WordPress performance optimization plugin that removes unnecessary fea
 The plugin follows a single-file architecture pattern for simplicity:
 
 ```php
-// All functionality contained in simple-wp-optimizer.php
+// All functionality contained in enginescript-site-optimizer.php
 // Functions prefixed with 'es_optimizer_' for namespace consistency
 function es_optimizer_function_name() {
     // Implementation
@@ -45,7 +45,7 @@ add_action( 'plugins_loaded', 'es_optimizer_init' );
 
 ### File Structure
 
-- `simple-wp-optimizer.php` - Main plugin file (all functionality)
+- `enginescript-site-optimizer.php` - Main plugin file (all functionality)
 - `languages/` - Translation files (.pot file included)
 - `CHANGELOG.md` - Developer changelog
 - `README.md` - Developer documentation
@@ -58,8 +58,8 @@ add_action( 'plugins_loaded', 'es_optimizer_init' );
 
 - **Functions:** `es_optimizer_snake_case` (WordPress standard with plugin prefix)
 - **Variables:** `$snake_case`
-- **Constants:** `ES_WP_OPTIMIZER_UPPER_SNAKE_CASE`
-- **Text Domain:** Always use `'simple-wp-optimizer'`
+- **Constants:** `ES_SITE_OPTIMIZER_UPPER_SNAKE_CASE`
+- **Text Domain:** Always use `'enginescript-site-optimizer'`
 
 ### Security Requirements
 

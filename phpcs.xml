@@ -89,7 +89,7 @@
         <properties>
             <!-- Set the text domain for internationalization -->
             <property name="text_domain" type="array">
-                <element value="simple-wp-optimizer"/>
+                <element value="enginescript-site-optimizer"/>
             </property>
         </properties>
     </rule>

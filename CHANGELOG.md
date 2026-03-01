@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-02-28
+
+### Changed
+
+- **BREAKING**: Renamed plugin from "Simple WP Optimizer" to "EngineScript Site Optimizer" to comply with WordPress.org plugin directory naming restrictions (the term "wp" is not allowed in plugin names or slugs)
+- Plugin slug changed from `simple-wp-optimizer` to `enginescript-site-optimizer`
+- Text domain changed from `simple-wp-optimizer` to `enginescript-site-optimizer`
+- Version constant renamed from `ES_WP_OPTIMIZER_VERSION` to `ES_SITE_OPTIMIZER_VERSION`
+- Package name changed from `Simple_WP_Optimizer` to `EngineScript_Site_Optimizer`
+- Admin menu label changed from "WP Optimizer" to "Site Optimizer"
+
 ## [1.8.1] - 2026-02-28
 
 ### Changed

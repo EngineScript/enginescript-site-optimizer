@@ -7,7 +7,7 @@
 # Core plugin functionality
 core:
   - changed-files:
-    - any-glob-to-any-file: simple-wp-optimizer.php
+    - any-glob-to-any-file: enginescript-site-optimizer.php
     - any-glob-to-any-file: includes/**/*
     - any-glob-to-any-file: assets/js/**/*
 
