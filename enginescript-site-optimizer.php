@@ -71,10 +71,10 @@ function es_optimizer_init_plugin(): void {
 
 	// Initialize admin functionality.
 	es_optimizer_init_admin();
-	
+
 	// Initialize frontend optimizations.
 	es_optimizer_init_frontend_optimizations();
-	
+
 	// Initialize plugin settings link.
 	es_optimizer_init_plugin_links();
 }
@@ -90,7 +90,7 @@ function es_optimizer_activate_plugin(): void {
 	if ( false === get_option( 'es_optimizer_options' ) ) {
 		add_option( 'es_optimizer_options', es_optimizer_get_default_options() );
 	}
-	
+
 	// Clear any cached data.
 	es_optimizer_clear_options_cache();
 }
@@ -104,7 +104,7 @@ register_activation_hook( __FILE__, 'es_optimizer_activate_plugin' );
 function es_optimizer_deactivate_plugin(): void {
 	// Clear any cached data on deactivation.
 	es_optimizer_clear_options_cache();
-	
+
 	// Note: We don't delete options on deactivation to preserve user settings.
 	// Options are only deleted on plugin uninstall.
 }
@@ -612,14 +612,14 @@ function es_optimizer_show_rejection_notice( array $rejected_domains, string $co
 	}
 
 	if ( 'preconnect' === $context ) {
-		$message    = sprintf(
+		$message = sprintf(
 			// translators: %s is the list of rejected domain names.
 			esc_html__( 'Some preconnect domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
 			$rejected_message
 		);
 		$error_code = 'preconnect_security';
 	} else {
-		$message    = sprintf(
+		$message = sprintf(
 			// translators: %s is the list of rejected domain names.
 			esc_html__( 'Some DNS prefetch domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
 			$rejected_message

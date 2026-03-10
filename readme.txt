@@ -58,6 +58,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **MODERNIZATION**: Replaced `isset()` ternaries with null coalescing operator
 * **CODE QUALITY**: Standardized all option-checking to use `empty()` with early-return pattern
 * **CODE QUALITY**: Consolidated duplicate domain validation functions into shared helpers
+* **CODE QUALITY**: Fixed trailing whitespace on blank lines and equals-sign alignment flagged by PHPCS
 * **CODE QUALITY**: Removed unnecessary static caching in preconnect and DNS prefetch output functions
 * **CODE QUALITY**: Replaced deprecated HTML `valign` attribute in settings form
 * **CI**: Updated Node.js from EOL version 16 to LTS version 20

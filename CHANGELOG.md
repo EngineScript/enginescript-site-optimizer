@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `uninstall.php` to properly clean up plugin options from the database when the plugin is deleted
 - Added section headers ("Performance Optimizations", "Header Cleanup", "Additional Features") to the settings page for better UX
+
+### Code Quality
+
 - Added `phpcompatibility/phpcompatibility-wp` to `composer.json` `require-dev` (required by `phpcs.xml` ruleset)
 - Added `scripts` section to `composer.json` with `lint:php` and `analyze` commands for CI integration
 
