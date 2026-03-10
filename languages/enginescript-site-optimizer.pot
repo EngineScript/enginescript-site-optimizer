@@ -1,5 +1,5 @@
 # Copyright (C) 2025 EngineScript
-# This file is distributed under the GNU General Public License v2 or later.
+# This file is distributed under the GNU General Public License v3 or later.
 msgid ""
 msgstr ""
 "Project-Id-Version: EngineScript Site Optimizer 2.0.0\n"
@@ -16,164 +16,169 @@ msgstr ""
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
+#: enginescript-site-optimizer.php:242
 #: enginescript-site-optimizer.php:265
 msgid "Site Optimizer Settings"
+msgstr ""
+
+#: enginescript-site-optimizer.php:243
+msgid "Site Optimizer"
 msgstr ""
 
 #: enginescript-site-optimizer.php:266
 msgid "Select which optimizations you want to enable and customize the DNS prefetch domains."
 msgstr ""
 
-#: enginescript-site-optimizer.php:287
+#: enginescript-site-optimizer.php:273
+msgid "Performance Optimizations"
+msgstr ""
+
+#: enginescript-site-optimizer.php:278
+msgid "Header Cleanup"
+msgstr ""
+
+#: enginescript-site-optimizer.php:283
+msgid "Additional Features"
+msgstr ""
+
+#: enginescript-site-optimizer.php:289
 msgid "Save Changes"
 msgstr ""
 
-#: enginescript-site-optimizer.php:293
+#: enginescript-site-optimizer.php:295
 msgid "This plugin is part of the EngineScript project."
 msgstr ""
 
-#: enginescript-site-optimizer.php:295
+#: enginescript-site-optimizer.php:297
 msgid "Visit the EngineScript GitHub page"
 msgstr ""
 
-#: enginescript-site-optimizer.php:313
+#: enginescript-site-optimizer.php:315
 msgid "Disable WordPress Emojis"
 msgstr ""
 
-#: enginescript-site-optimizer.php:314
+#: enginescript-site-optimizer.php:316
 msgid "Remove emoji scripts and styles to improve page load time"
 msgstr ""
 
-#: enginescript-site-optimizer.php:321
+#: enginescript-site-optimizer.php:323
 msgid "Remove jQuery Migrate"
 msgstr ""
 
-#: enginescript-site-optimizer.php:322
+#: enginescript-site-optimizer.php:324
 msgid "Remove jQuery Migrate script (may affect compatibility with very old plugins)"
 msgstr ""
 
-#: enginescript-site-optimizer.php:329
+#: enginescript-site-optimizer.php:331
 msgid "Disable Classic Theme Styles"
 msgstr ""
 
-#: enginescript-site-optimizer.php:330
+#: enginescript-site-optimizer.php:332
 msgid "Remove classic theme styles added in WordPress 6.1+"
 msgstr ""
 
-#: enginescript-site-optimizer.php:345
+#: enginescript-site-optimizer.php:347
 msgid "Remove WordPress Version"
 msgstr ""
 
-#: enginescript-site-optimizer.php:346
+#: enginescript-site-optimizer.php:348
 msgid "Remove WordPress version from header (security benefit)"
 msgstr ""
 
-#: enginescript-site-optimizer.php:353
+#: enginescript-site-optimizer.php:355
 msgid "Remove RSD Link"
 msgstr ""
 
-#: enginescript-site-optimizer.php:354
+#: enginescript-site-optimizer.php:356
 msgid "Remove Really Simple Discovery (RSD) link from header"
 msgstr ""
 
-#: enginescript-site-optimizer.php:361
+#: enginescript-site-optimizer.php:363
 msgid "Remove WLW Manifest"
 msgstr ""
 
-#: enginescript-site-optimizer.php:362
+#: enginescript-site-optimizer.php:364
 msgid "Remove Windows Live Writer manifest link"
 msgstr ""
 
-#: enginescript-site-optimizer.php:369
+#: enginescript-site-optimizer.php:371
 msgid "Remove Shortlink"
 msgstr ""
 
-#: enginescript-site-optimizer.php:370
+#: enginescript-site-optimizer.php:372
 msgid "Remove WordPress shortlink URLs from header"
 msgstr ""
 
-#: enginescript-site-optimizer.php:377
+#: enginescript-site-optimizer.php:379
 msgid "Remove Recent Comments Style"
 msgstr ""
 
-#: enginescript-site-optimizer.php:378
+#: enginescript-site-optimizer.php:380
 msgid "Remove recent comments widget inline CSS"
 msgstr ""
 
-#: enginescript-site-optimizer.php:393
+#: enginescript-site-optimizer.php:395
 msgid "Disable Jetpack Ads"
 msgstr ""
 
-#: enginescript-site-optimizer.php:394
+#: enginescript-site-optimizer.php:396
 msgid "Remove Jetpack advertisements and promotions"
 msgstr ""
 
-#: enginescript-site-optimizer.php:401
+#: enginescript-site-optimizer.php:403
 msgid "Disable Post via Email"
 msgstr ""
 
-#: enginescript-site-optimizer.php:402
+#: enginescript-site-optimizer.php:404
 msgid "Disable WordPress post via email functionality for security and performance"
 msgstr ""
 
-#: enginescript-site-optimizer.php:409
+#: enginescript-site-optimizer.php:411
 msgid "Enable Preconnect"
 msgstr ""
 
-#: enginescript-site-optimizer.php:410
+#: enginescript-site-optimizer.php:412
 msgid "Preconnect to external domains for faster resource loading"
 msgstr ""
 
-#: enginescript-site-optimizer.php:417
+#: enginescript-site-optimizer.php:419
 msgid "Preconnect Domains"
 msgstr ""
 
-#: enginescript-site-optimizer.php:418
+#: enginescript-site-optimizer.php:420
 msgid "Use preconnect for domains that host critical, frequently used resources, like Google Fonts. This hint tells the browser to establish a connection (including DNS lookup, TCP handshake, and TLS negotiation) as soon as possible, which can save 100–500ms on the subsequent request. Enter one HTTPS domain per line (e.g., https://fonts.googleapis.com). Only clean domains are allowed - no file paths, query parameters, or fragments."
 msgstr ""
 
-#: enginescript-site-optimizer.php:425
+#: enginescript-site-optimizer.php:427
 msgid "Enable DNS Prefetch"
 msgstr ""
 
-#: enginescript-site-optimizer.php:426
+#: enginescript-site-optimizer.php:428
 msgid "DNS prefetch for less critical external domains"
 msgstr ""
 
-#: enginescript-site-optimizer.php:433
+#: enginescript-site-optimizer.php:435
 msgid "DNS Prefetch Domains"
 msgstr ""
 
-#: enginescript-site-optimizer.php:434
+#: enginescript-site-optimizer.php:436
 msgid "DNS-prefetch is a lighter-weight alternative to preconnect that performs only the DNS lookup. Use it for less critical domains or as a fallback for browsers that don't support preconnect. Enter one HTTPS domain per line (e.g., https://adservice.google.com). Only clean domains are allowed - no file paths, query parameters, or fragments."
 msgstr ""
 
-#: enginescript-site-optimizer.php:644
+#: enginescript-site-optimizer.php:611
 msgid "..."
 msgstr ""
 
-#: enginescript-site-optimizer.php:649
-#, php-format
-msgid "Some DNS prefetch domains were rejected for security reasons: %s"
-msgstr ""
-
-#: enginescript-site-optimizer.php:760
-msgid "..."
-msgstr ""
-
-#: enginescript-site-optimizer.php:765
+#: enginescript-site-optimizer.php:617
 #, php-format
 msgid "Some preconnect domains were rejected for security reasons: %s"
 msgstr ""
 
-#: enginescript-site-optimizer.php:823
+#: enginescript-site-optimizer.php:624
+#, php-format
+msgid "Some DNS prefetch domains were rejected for security reasons: %s"
+msgstr ""
+
+#: enginescript-site-optimizer.php:758
 msgid "Settings"
-msgstr ""
-
-#: enginescript-site-optimizer.php:242
-msgid "Site Optimizer Settings"
-msgstr ""
-
-#: enginescript-site-optimizer.php:243
-msgid "Site Optimizer"
 msgstr ""

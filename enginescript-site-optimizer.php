@@ -6,7 +6,7 @@
  * Version: 2.0.0
  * Author: EngineScript
  * License: GPL-3.0-or-later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: enginescript-site-optimizer
  * Requires at least: 6.5
  * Requires PHP: 7.4
@@ -65,10 +65,10 @@ if ( ! defined( 'ES_SITE_OPTIMIZER_VERSION' ) ) {
  *
  * @since 1.6.0
  */
-function es_optimizer_init_plugin() {
+function es_optimizer_init_plugin(): void {
 	// Clear options cache to ensure fresh data after all plugins are loaded.
 	es_optimizer_clear_options_cache();
-	
+
 	// Initialize admin functionality.
 	es_optimizer_init_admin();
 	
@@ -85,7 +85,7 @@ add_action( 'plugins_loaded', 'es_optimizer_init_plugin' );
  *
  * @since 1.6.0
  */
-function es_optimizer_activate_plugin() {
+function es_optimizer_activate_plugin(): void {
 	// Ensure default options are set on activation.
 	if ( false === get_option( 'es_optimizer_options' ) ) {
 		add_option( 'es_optimizer_options', es_optimizer_get_default_options() );
@@ -101,7 +101,7 @@ register_activation_hook( __FILE__, 'es_optimizer_activate_plugin' );
  *
  * @since 1.6.0
  */
-function es_optimizer_deactivate_plugin() {
+function es_optimizer_deactivate_plugin(): void {
 	// Clear any cached data on deactivation.
 	es_optimizer_clear_options_cache();
 	
@@ -115,7 +115,7 @@ register_deactivation_hook( __FILE__, 'es_optimizer_deactivate_plugin' );
  *
  * @since 1.6.0
  */
-function es_optimizer_init_admin() {
+function es_optimizer_init_admin(): void {
 	if ( is_admin() ) {
 		add_action( 'admin_init', 'es_optimizer_init_settings' );
 		add_action( 'admin_menu', 'es_optimizer_add_settings_page' );
@@ -127,7 +127,7 @@ function es_optimizer_init_admin() {
  *
  * @since 1.6.0
  */
-function es_optimizer_init_frontend_optimizations() {
+function es_optimizer_init_frontend_optimizations(): void {
 	add_action( 'init', 'es_optimizer_disable_emojis' );
 	add_action( 'wp_default_scripts', 'es_optimizer_remove_jquery_migrate' );
 	add_action( 'wp_enqueue_scripts', 'es_optimizer_disable_classic_theme_styles', 100 );
@@ -144,7 +144,7 @@ function es_optimizer_init_frontend_optimizations() {
  *
  * @since 1.6.0
  */
-function es_optimizer_init_plugin_links() {
+function es_optimizer_init_plugin_links(): void {
 	$plugin_basename = plugin_basename( __FILE__ );
 	add_filter( "plugin_action_links_{$plugin_basename}", 'es_optimizer_add_settings_link' );
 }
@@ -154,7 +154,7 @@ function es_optimizer_init_plugin_links() {
  *
  * @since 1.0.0
  */
-function es_optimizer_init_settings() {
+function es_optimizer_init_settings(): void {
 	// Register settings.
 	register_setting(
 		'es_optimizer_settings',
@@ -177,7 +177,7 @@ function es_optimizer_init_settings() {
  * @since 1.0.0
  * @return array Default options.
  */
-function es_optimizer_get_default_options() {
+function es_optimizer_get_default_options(): array {
 	return array(
 		'disable_emojis'               => 0,
 		'remove_jquery_migrate'        => 0,
@@ -213,7 +213,7 @@ function es_optimizer_get_default_options() {
  * @param bool $force_refresh Whether to force a fresh database read.
  * @return array Plugin options.
  */
-function es_optimizer_get_options( $force_refresh = false ) {
+function es_optimizer_get_options( bool $force_refresh = false ): array {
 	static $cached_options = null;
 
 	if ( null === $cached_options || $force_refresh ) {
@@ -228,7 +228,7 @@ function es_optimizer_get_options( $force_refresh = false ) {
  *
  * @since 1.5.13
  */
-function es_optimizer_clear_options_cache() {
+function es_optimizer_clear_options_cache(): void {
 	es_optimizer_get_options( true );
 }
 
@@ -237,7 +237,7 @@ function es_optimizer_clear_options_cache() {
  *
  * @since 1.0.0
  */
-function es_optimizer_add_settings_page() {
+function es_optimizer_add_settings_page(): void {
 	add_options_page(
 		__( 'Site Optimizer Settings', 'enginescript-site-optimizer' ),
 		__( 'Site Optimizer', 'enginescript-site-optimizer' ),
@@ -252,7 +252,7 @@ function es_optimizer_add_settings_page() {
  *
  * @since 1.0.0
  */
-function es_optimizer_settings_page() {
+function es_optimizer_settings_page(): void {
 	// Security: Check user capabilities before displaying the page.
 	// This prevents unauthorized access to plugin settings.
 	if ( ! current_user_can( 'manage_options' ) ) {
@@ -270,17 +270,19 @@ function es_optimizer_settings_page() {
 			settings_fields( 'es_optimizer_settings' );
 			?>
 
+			<h2><?php esc_html_e( 'Performance Optimizations', 'enginescript-site-optimizer' ); ?></h2>
 			<table class="form-table">
-				<?php
-				// Render performance optimization options.
-				es_optimizer_render_performance_options( $options );
+				<?php es_optimizer_render_performance_options( $options ); ?>
+			</table>
 
-				// Render header cleanup options.
-				es_optimizer_render_header_options( $options );
+			<h2><?php esc_html_e( 'Header Cleanup', 'enginescript-site-optimizer' ); ?></h2>
+			<table class="form-table">
+				<?php es_optimizer_render_header_options( $options ); ?>
+			</table>
 
-				// Render additional features.
-				es_optimizer_render_additional_options( $options );
-				?>
+			<h2><?php esc_html_e( 'Additional Features', 'enginescript-site-optimizer' ); ?></h2>
+			<table class="form-table">
+				<?php es_optimizer_render_additional_options( $options ); ?>
 			</table>
 
 			<p class="submit">
@@ -305,7 +307,7 @@ function es_optimizer_settings_page() {
  * @since 1.0.0
  * @param array $options Plugin options.
  */
-function es_optimizer_render_performance_options( $options ) {
+function es_optimizer_render_performance_options( array $options ): void {
 	// Emoji settings.
 	es_optimizer_render_checkbox_option(
 		$options,
@@ -337,7 +339,7 @@ function es_optimizer_render_performance_options( $options ) {
  * @since 1.0.0
  * @param array $options Plugin options.
  */
-function es_optimizer_render_header_options( $options ) {
+function es_optimizer_render_header_options( array $options ): void {
 	// WordPress Version settings.
 	es_optimizer_render_checkbox_option(
 		$options,
@@ -385,7 +387,7 @@ function es_optimizer_render_header_options( $options ) {
  * @since 1.0.0
  * @param array $options Plugin options.
  */
-function es_optimizer_render_additional_options( $options ) {
+function es_optimizer_render_additional_options( array $options ): void {
 	// Jetpack Ads settings.
 	es_optimizer_render_checkbox_option(
 		$options,
@@ -449,9 +451,9 @@ function es_optimizer_render_additional_options( $options ) {
  * @param string $title         Option title.
  * @param string $description   Option description.
  */
-function es_optimizer_render_checkbox_option( $options, $option_name, $title, $description ) {
+function es_optimizer_render_checkbox_option( array $options, string $option_name, string $title, string $description ): void {
 	?>
-	<tr valign="top">
+	<tr>
 		<th scope="row">
 			<?php
 			// Using esc_html for secure output of titles.
@@ -460,7 +462,7 @@ function es_optimizer_render_checkbox_option( $options, $option_name, $title, $d
 		</th>
 		<td>
 			<label>
-				<input type="checkbox" name="<?php printf( 'es_optimizer_options[%s]', esc_attr( $option_name ) ); ?>" value="1" <?php checked( 1, isset( $options[ $option_name ] ) ? $options[ $option_name ] : 0 ); ?> />
+				<input type="checkbox" name="<?php printf( 'es_optimizer_options[%s]', esc_attr( $option_name ) ); ?>" value="1" <?php checked( 1, $options[ $option_name ] ?? 0 ); ?> />
 				<?php echo esc_html( $description ); ?>
 			</label>
 		</td>
@@ -482,9 +484,9 @@ function es_optimizer_render_checkbox_option( $options, $option_name, $title, $d
  * @param string $title         Option title.
  * @param string $description   Option description.
  */
-function es_optimizer_render_textarea_option( $options, $option_name, $title, $description ) {
+function es_optimizer_render_textarea_option( array $options, string $option_name, string $title, string $description ): void {
 	?>
-	<tr valign="top">
+	<tr>
 		<th scope="row">
 			<?php
 			// Using esc_html for secure output of titles.
@@ -499,7 +501,7 @@ function es_optimizer_render_textarea_option( $options, $option_name, $title, $d
 				?>
 			</small></p>
 			<?php
-			$textarea_value = isset( $options[ $option_name ] ) ? $options[ $option_name ] : '';
+			$textarea_value = $options[ $option_name ] ?? '';
 			?>
 			<textarea name="<?php printf( 'es_optimizer_options[%s]', esc_attr( $option_name ) ); ?>" rows="5" cols="50" class="large-text code"><?php echo esc_textarea( $textarea_value ); ?></textarea>
 		</td>
@@ -522,7 +524,7 @@ function es_optimizer_render_textarea_option( $options, $option_name, $title, $d
  * @param array $input User submitted options.
  * @return array Validated and sanitized options.
  */
-function es_optimizer_validate_options( $input ) {
+function es_optimizer_validate_options( array $input ): array {
 	// CSRF protection is handled by WordPress Settings API via settings_fields() nonce.
 	$valid = array();
 
@@ -548,25 +550,26 @@ function es_optimizer_validate_options( $input ) {
 
 	// Validate and sanitize the preconnect domains with enhanced security.
 	if ( isset( $input['preconnect_domains'] ) ) {
-		$valid['preconnect_domains'] = es_optimizer_validate_preconnect_domains( $input['preconnect_domains'] );
+		$valid['preconnect_domains'] = es_optimizer_validate_domain_list( $input['preconnect_domains'], 'preconnect' );
 	}
 
 	// Validate and sanitize the DNS prefetch domains with enhanced security.
 	if ( isset( $input['dns_prefetch_domains'] ) ) {
-		$valid['dns_prefetch_domains'] = es_optimizer_validate_dns_prefetch_domains( $input['dns_prefetch_domains'] );
+		$valid['dns_prefetch_domains'] = es_optimizer_validate_domain_list( $input['dns_prefetch_domains'], 'dns_prefetch' );
 	}
 
 	return $valid;
 }
 
 /**
- * Validate preconnect domains with enhanced security
+ * Validate a list of domains with enhanced security
  *
  * @since 1.4.0
  * @param string $domains_input Raw domain input from user.
+ * @param string $context       Either 'preconnect' or 'dns_prefetch'.
  * @return string Validated and sanitized domains.
  */
-function es_optimizer_validate_preconnect_domains( $domains_input ) {
+function es_optimizer_validate_domain_list( string $domains_input, string $context ): string {
 	$domains           = explode( "\n", trim( $domains_input ) );
 	$sanitized_domains = array();
 	$rejected_domains  = array();
@@ -586,57 +589,21 @@ function es_optimizer_validate_preconnect_domains( $domains_input ) {
 		}
 	}
 
-	// Show admin notice if any domains were rejected for security reasons.
 	if ( ! empty( $rejected_domains ) ) {
-		es_optimizer_show_domain_rejection_notice( $rejected_domains );
+		es_optimizer_show_rejection_notice( $rejected_domains, $context );
 	}
 
 	return implode( "\n", $sanitized_domains );
 }
 
 /**
- * Validate DNS prefetch domains with enhanced security
+ * Show admin notice for rejected domains
  *
- * @since 1.8.0
- * @param string $domains_input Raw domain input from user.
- * @return string Validated and sanitized domains.
+ * @since 1.4.0
+ * @param array  $rejected_domains Array of rejected domain strings.
+ * @param string $context          Either 'preconnect' or 'dns_prefetch'.
  */
-function es_optimizer_validate_dns_prefetch_domains( $domains_input ) {
-	$domains           = explode( "\n", trim( $domains_input ) );
-	$sanitized_domains = array();
-	$rejected_domains  = array();
-
-	foreach ( $domains as $domain ) {
-		$domain = trim( $domain );
-		if ( empty( $domain ) ) {
-			continue;
-		}
-
-		$validation_result = es_optimizer_validate_single_domain( $domain );
-
-		if ( $validation_result['valid'] ) {
-			$sanitized_domains[] = $validation_result['domain'];
-		} else {
-			$rejected_domains[] = $validation_result['error'];
-		}
-	}
-
-	// Show admin notice if any domains were rejected for security reasons.
-	if ( ! empty( $rejected_domains ) ) {
-		es_optimizer_show_dns_prefetch_rejection_notice( $rejected_domains );
-	}
-
-	return implode( "\n", $sanitized_domains );
-}
-
-/**
- * Show admin notice for rejected DNS prefetch domains
- *
- * @since 1.8.0
- * @param array $rejected_domains Array of rejected domain strings.
- */
-function es_optimizer_show_dns_prefetch_rejection_notice( $rejected_domains ) {
-	// Security: Properly escape and limit the rejected domains in error messages.
+function es_optimizer_show_rejection_notice( array $rejected_domains, string $context ): void {
 	$escaped_domains  = array_map( 'esc_html', array_slice( $rejected_domains, 0, 3 ) );
 	$rejected_message = implode( ', ', $escaped_domains );
 
@@ -644,29 +611,38 @@ function es_optimizer_show_dns_prefetch_rejection_notice( $rejected_domains ) {
 		$rejected_message .= esc_html__( '...', 'enginescript-site-optimizer' );
 	}
 
-	$message = sprintf(
-		// translators: %s is the list of rejected domain names.
-		esc_html__( 'Some DNS prefetch domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
-		$rejected_message
-	);
+	if ( 'preconnect' === $context ) {
+		$message    = sprintf(
+			// translators: %s is the list of rejected domain names.
+			esc_html__( 'Some preconnect domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
+			$rejected_message
+		);
+		$error_code = 'preconnect_security';
+	} else {
+		$message    = sprintf(
+			// translators: %s is the list of rejected domain names.
+			esc_html__( 'Some DNS prefetch domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
+			$rejected_message
+		);
+		$error_code = 'dns_prefetch_security';
+	}
 
 	add_settings_error(
 		'es_optimizer_options',
-		'dns_prefetch_security',
+		$error_code,
 		$message,
 		'warning'
 	);
 }
 
 /**
- * Validate a single preconnect domain
+ * Validate a single domain for preconnect or DNS prefetch use
  *
  * @since 1.4.0
  * @param string $domain Domain to validate.
- * @return array Validation result with 'valid' boolean and 'domain' or 'error'
+ * @return array Validation result with 'valid' boolean and 'domain' or 'error'.
  */
-function es_optimizer_validate_single_domain( $domain ) {
-	// Enhanced URL validation with security checks.
+function es_optimizer_validate_single_domain( string $domain ): array {
 	if ( ! filter_var( $domain, FILTER_VALIDATE_URL ) ) {
 		return array(
 			'valid' => false,
@@ -674,10 +650,8 @@ function es_optimizer_validate_single_domain( $domain ) {
 		);
 	}
 
-	// Use wp_parse_url instead of parse_url for WordPress compatibility.
 	$parsed_url = wp_parse_url( $domain );
 
-	// Security: Enforce HTTPS-only domains for preconnect.
 	if ( ! isset( $parsed_url['scheme'] ) || 'https' !== $parsed_url['scheme'] ) {
 		return array(
 			'valid' => false,
@@ -685,7 +659,6 @@ function es_optimizer_validate_single_domain( $domain ) {
 		);
 	}
 
-	// Additional security checks.
 	if ( ! isset( $parsed_url['host'] ) ) {
 		return array(
 			'valid' => false,
@@ -693,84 +666,46 @@ function es_optimizer_validate_single_domain( $domain ) {
 		);
 	}
 
-	// Security: Preconnect should only use clean domains, not file paths.
-	// Reject URLs with paths, query parameters, or fragments.
 	if ( isset( $parsed_url['path'] ) && '/' !== $parsed_url['path'] && '' !== $parsed_url['path'] ) {
 		return array(
 			'valid' => false,
-			'error' => $domain . ' (file paths not allowed for preconnect - use domain only)',
+			'error' => $domain . ' (file paths not allowed - use domain only)',
 		);
 	}
 
 	if ( isset( $parsed_url['query'] ) || isset( $parsed_url['fragment'] ) ) {
 		return array(
 			'valid' => false,
-			'error' => $domain . ' (query parameters and fragments not allowed for preconnect)',
+			'error' => $domain . ' (query parameters and fragments not allowed)',
 		);
 	}
 
 	$host = $parsed_url['host'];
 
-	// Security: Block localhost and known local addresses.
-	$is_local = in_array( $host, array( 'localhost', '127.0.0.1', '::1' ), true );
-	if ( $is_local ) {
+	if ( in_array( $host, array( 'localhost', '127.0.0.1', '::1' ), true ) ) {
 		return array(
 			'valid' => false,
 			'error' => $domain . ' (private/local address not allowed)',
 		);
 	}
 
-	// Security: If the host is an IP address, ensure it is not in a private or reserved range.
-	if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
-		if ( ! filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
-			return array(
-				'valid' => false,
-				'error' => $domain . ' (private/local address not allowed)',
-			);
-		}
+	if ( filter_var( $host, FILTER_VALIDATE_IP ) &&
+		! filter_var( $host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+		return array(
+			'valid' => false,
+			'error' => $domain . ' (private/local address not allowed)',
+		);
 	}
 
-	// Return clean domain URL with only scheme and host (no paths).
 	$clean_domain = $parsed_url['scheme'] . '://' . $parsed_url['host'];
 
-	// Add port if specified and not default HTTPS port.
 	if ( isset( $parsed_url['port'] ) && 443 !== $parsed_url['port'] ) {
 		$clean_domain .= ':' . $parsed_url['port'];
 	}
 
-	// Security: Use esc_url_raw to sanitize URLs before storing in database.
 	return array(
 		'valid'  => true,
 		'domain' => esc_url_raw( $clean_domain ),
-	);
-}
-
-/**
- * Show admin notice for rejected domains
- *
- * @since 1.4.0
- * @param array $rejected_domains Array of rejected domain strings.
- */
-function es_optimizer_show_domain_rejection_notice( $rejected_domains ) {
-	// Security: Properly escape and limit the rejected domains in error messages.
-	$escaped_domains  = array_map( 'esc_html', array_slice( $rejected_domains, 0, 3 ) );
-	$rejected_message = implode( ', ', $escaped_domains );
-
-	if ( count( $rejected_domains ) > 3 ) {
-		$rejected_message .= esc_html__( '...', 'enginescript-site-optimizer' );
-	}
-
-	$message = sprintf(
-		// translators: %s is the list of rejected domain names.
-		esc_html__( 'Some preconnect domains were rejected for security reasons: %s', 'enginescript-site-optimizer' ),
-		$rejected_message
-	);
-
-	add_settings_error(
-		'es_optimizer_options',
-		'preconnect_security',
-		$message,
-		'warning'
 	);
 }
 
@@ -782,11 +717,11 @@ function es_optimizer_show_domain_rejection_notice( $rejected_domains ) {
  *
  * @since 1.0.0
  */
-function es_optimizer_disable_emojis() {
+function es_optimizer_disable_emojis(): void {
 	$options = es_optimizer_get_options();
 
 	// Only proceed if the option is enabled.
-	if ( ! isset( $options['disable_emojis'] ) || ! $options['disable_emojis'] ) {
+	if ( empty( $options['disable_emojis'] ) ) {
 		return;
 	}
 
@@ -819,7 +754,7 @@ function es_optimizer_disable_emojis() {
  * @param array $links Plugin action links.
  * @return array Modified plugin action links.
  */
-function es_optimizer_add_settings_link( $links ) {
+function es_optimizer_add_settings_link( array $links ): array {
 	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=es-optimizer-settings' ) ) . '">' . esc_html__( 'Settings', 'enginescript-site-optimizer' ) . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;
@@ -832,7 +767,7 @@ function es_optimizer_add_settings_link( $links ) {
  * @param array $plugins Array of TinyMCE plugins.
  * @return array Difference betwen the two arrays.
  */
-function es_optimizer_disable_emojis_tinymce( $plugins ) {
+function es_optimizer_disable_emojis_tinymce( $plugins ): array {
 	if ( ! is_array( $plugins ) ) {
 		$plugins = array();
 	}
@@ -847,7 +782,7 @@ function es_optimizer_disable_emojis_tinymce( $plugins ) {
  * @param string $relation_type The relation type the URLs are printed for.
  * @return array Difference betwen the two arrays.
  */
-function es_optimizer_disable_emojis_remove_dns_prefetch( $urls, $relation_type ) {
+function es_optimizer_disable_emojis_remove_dns_prefetch( array $urls, string $relation_type ): array {
 	if ( 'dns-prefetch' === $relation_type ) {
 		$emoji_svg_url = apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2/svg/' );
 		$urls          = array_diff( $urls, array( $emoji_svg_url ) );
@@ -864,11 +799,11 @@ function es_optimizer_disable_emojis_remove_dns_prefetch( $urls, $relation_type 
  * @since 1.0.0
  * @param WP_Scripts $scripts WP_Scripts object.
  */
-function es_optimizer_remove_jquery_migrate( $scripts ) {
+function es_optimizer_remove_jquery_migrate( $scripts ): void {
 	$options = es_optimizer_get_options();
 
 	// Only proceed if the option is enabled.
-	if ( ! isset( $options['remove_jquery_migrate'] ) || ! $options['remove_jquery_migrate'] ) {
+	if ( empty( $options['remove_jquery_migrate'] ) ) {
 		return;
 	}
 
@@ -887,11 +822,11 @@ function es_optimizer_remove_jquery_migrate( $scripts ) {
  *
  * @since 1.3.0
  */
-function es_optimizer_disable_classic_theme_styles() {
+function es_optimizer_disable_classic_theme_styles(): void {
 	$options = es_optimizer_get_options();
 
 	// Only proceed if the option is enabled.
-	if ( ! isset( $options['disable_classic_theme_styles'] ) || ! $options['disable_classic_theme_styles'] ) {
+	if ( empty( $options['disable_classic_theme_styles'] ) ) {
 		return;
 	}
 
@@ -904,26 +839,26 @@ function es_optimizer_disable_classic_theme_styles() {
  *
  * @since 1.0.0
  */
-function es_optimizer_remove_header_items() {
+function es_optimizer_remove_header_items(): void {
 	$options = es_optimizer_get_options();
 
 	// Remove WordPress Version from Header.
-	if ( isset( $options['remove_wp_version'] ) && $options['remove_wp_version'] ) {
+	if ( ! empty( $options['remove_wp_version'] ) ) {
 		remove_action( 'wp_head', 'wp_generator' );
 	}
 
 	// Remove RSD Link.
-	if ( isset( $options['remove_rsd_link'] ) && $options['remove_rsd_link'] ) {
+	if ( ! empty( $options['remove_rsd_link'] ) ) {
 		remove_action( 'wp_head', 'rsd_link' );
 	}
 
 	// Remove Windows Live Writer Manifest.
-	if ( isset( $options['remove_wlw_manifest'] ) && $options['remove_wlw_manifest'] ) {
+	if ( ! empty( $options['remove_wlw_manifest'] ) ) {
 		remove_action( 'wp_head', 'wlwmanifest_link' );
 	}
 
 	// Remove WP Shortlink URLs.
-	if ( isset( $options['remove_shortlink'] ) && $options['remove_shortlink'] ) {
+	if ( ! empty( $options['remove_shortlink'] ) ) {
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10 );
 	}
 }
@@ -933,13 +868,46 @@ function es_optimizer_remove_header_items() {
  *
  * @since 1.0.0
  */
-function es_optimizer_remove_recent_comments_style() {
+function es_optimizer_remove_recent_comments_style(): void {
 	$options = es_optimizer_get_options();
 
-	// Only proceed if the option is enabled.
-	if ( isset( $options['remove_recent_comments_style'] ) && $options['remove_recent_comments_style'] ) {
-		add_filter( 'show_recent_comments_widget_style', '__return_false', PHP_INT_MAX );
+	if ( empty( $options['remove_recent_comments_style'] ) ) {
+		return;
 	}
+
+	add_filter( 'show_recent_comments_widget_style', '__return_false', PHP_INT_MAX );
+}
+
+/**
+ * Get validated domains from a settings option
+ *
+ * Parses and validates a newline-separated list of HTTPS domains from plugin options.
+ *
+ * @since 2.0.1
+ * @param string $option_key The option key to read domains from.
+ * @return array Validated domain URLs.
+ */
+function es_optimizer_get_validated_domains( string $option_key ): array {
+	$options = es_optimizer_get_options();
+	$raw     = $options[ $option_key ] ?? '';
+
+	if ( empty( $raw ) ) {
+		return array();
+	}
+
+	$domains = explode( "\n", $raw );
+	$domains = array_map( 'trim', $domains );
+	$domains = array_filter( $domains );
+	$domains = array_unique( $domains );
+
+	$valid_domains = array();
+	foreach ( $domains as $domain ) {
+		if ( filter_var( $domain, FILTER_VALIDATE_URL ) && strpos( $domain, 'https://' ) === 0 ) {
+			$valid_domains[] = $domain;
+		}
+	}
+
+	return $valid_domains;
 }
 
 /**
@@ -947,63 +915,31 @@ function es_optimizer_remove_recent_comments_style() {
  *
  * Preconnect establishes early connections (DNS + TCP + TLS handshake) to third-party domains.
  * This reduces latency when loading resources from external origins and improves LCP/FCP metrics.
- * More effective than dns-prefetch as it completes the full connection setup.
- *
- * Security note: All output is properly escaped with esc_url() before output to prevent XSS.
  *
  * @since 1.4.1
  */
-function es_optimizer_add_preconnect() {
-	// Only add if not admin and not doing AJAX.
+function es_optimizer_add_preconnect(): void {
 	if ( is_admin() || wp_doing_ajax() ) {
 		return;
 	}
 
-	// Use static caching to avoid repeated option retrieval.
-	static $domains_cache   = null;
-	static $options_checked = false;
+	$options = es_optimizer_get_options();
 
-	if ( ! $options_checked ) {
-		$options         = es_optimizer_get_options();
-		$options_checked = true;
-
-		// Only proceed if the option is enabled.
-		if ( ! isset( $options['enable_preconnect'] ) || ! $options['enable_preconnect'] ) {
-			$domains_cache = array(); // Cache empty array to avoid re-checking.
-			return;
-		}
-
-		// Get and process domains from settings.
-		if ( isset( $options['preconnect_domains'] ) && ! empty( $options['preconnect_domains'] ) ) {
-			// Process domains with optimization.
-			$domains = explode( "\n", $options['preconnect_domains'] );
-			$domains = array_map( 'trim', $domains );
-			$domains = array_filter( $domains );
-
-			// Remove duplicates and validate domains.
-			$domains       = array_unique( $domains );
-			$valid_domains = array();
-
-			foreach ( $domains as $domain ) {
-				// Validate URL format and ensure HTTPS.
-				if ( filter_var( $domain, FILTER_VALIDATE_URL ) && strpos( $domain, 'https://' ) === 0 ) {
-					$valid_domains[] = $domain;
-				}
-			}
-
-			$domains_cache = $valid_domains;
-		} else {
-			$domains_cache = array();
-		}
+	if ( empty( $options['enable_preconnect'] ) ) {
+		return;
 	}
 
-	// Output the preconnect links.
-	if ( ! empty( $domains_cache ) ) {
-		foreach ( $domains_cache as $domain ) {
-			// Add crossorigin attribute for font domains (required for CORS requests).
-			$crossorigin = ( strpos( $domain, 'fonts.g' ) !== false || strpos( $domain, 'gstatic' ) !== false ) ? ' crossorigin' : '';
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<link rel="preconnect" href="' . esc_url( $domain ) . '"' . $crossorigin . '>' . "\n";
+	$domains = es_optimizer_get_validated_domains( 'preconnect_domains' );
+
+	// Known font domains that require the crossorigin attribute for CORS requests.
+	$font_domains = array( 'fonts.googleapis.com', 'fonts.gstatic.com' );
+
+	foreach ( $domains as $domain ) {
+		$parsed_host = wp_parse_url( $domain, PHP_URL_HOST );
+		if ( in_array( $parsed_host, $font_domains, true ) ) {
+			echo '<link rel="preconnect" href="' . esc_url( $domain ) . '" crossorigin>' . "\n";
+		} else {
+			echo '<link rel="preconnect" href="' . esc_url( $domain ) . '">' . "\n";
 		}
 	}
 }
@@ -1013,62 +949,24 @@ function es_optimizer_add_preconnect() {
  *
  * DNS-prefetch performs only the DNS lookup for third-party domains.
  * This is a lighter-weight alternative to preconnect for less critical resources.
- * Use for domains that may not be used immediately or as a fallback.
- *
- * Security note: All output is properly escaped with esc_url() before output to prevent XSS.
  *
  * @since 1.8.0
  */
-function es_optimizer_add_dns_prefetch() {
-	// Only add if not admin and not doing AJAX.
+function es_optimizer_add_dns_prefetch(): void {
 	if ( is_admin() || wp_doing_ajax() ) {
 		return;
 	}
 
-	// Use static caching to avoid repeated option retrieval.
-	static $domains_cache   = null;
-	static $options_checked = false;
+	$options = es_optimizer_get_options();
 
-	if ( ! $options_checked ) {
-		$options         = es_optimizer_get_options();
-		$options_checked = true;
-
-		// Only proceed if the option is enabled.
-		if ( ! isset( $options['enable_dns_prefetch'] ) || ! $options['enable_dns_prefetch'] ) {
-			$domains_cache = array(); // Cache empty array to avoid re-checking.
-			return;
-		}
-
-		// Get and process domains from settings.
-		if ( isset( $options['dns_prefetch_domains'] ) && ! empty( $options['dns_prefetch_domains'] ) ) {
-			// Process domains with optimization.
-			$domains = explode( "\n", $options['dns_prefetch_domains'] );
-			$domains = array_map( 'trim', $domains );
-			$domains = array_filter( $domains );
-
-			// Remove duplicates and validate domains.
-			$domains       = array_unique( $domains );
-			$valid_domains = array();
-
-			foreach ( $domains as $domain ) {
-				// Validate URL format and ensure HTTPS.
-				if ( filter_var( $domain, FILTER_VALIDATE_URL ) && strpos( $domain, 'https://' ) === 0 ) {
-					$valid_domains[] = $domain;
-				}
-			}
-
-			$domains_cache = $valid_domains;
-		} else {
-			$domains_cache = array();
-		}
+	if ( empty( $options['enable_dns_prefetch'] ) ) {
+		return;
 	}
 
-	// Output the DNS prefetch links.
-	if ( ! empty( $domains_cache ) ) {
-		foreach ( $domains_cache as $domain ) {
-			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			echo '<link rel="dns-prefetch" href="' . esc_url( $domain ) . '">' . "\n";
-		}
+	$domains = es_optimizer_get_validated_domains( 'dns_prefetch_domains' );
+
+	foreach ( $domains as $domain ) {
+		echo '<link rel="dns-prefetch" href="' . esc_url( $domain ) . '">' . "\n";
 	}
 }
 
@@ -1077,15 +975,16 @@ function es_optimizer_add_dns_prefetch() {
  *
  * @since 1.0.0
  */
-function es_optimizer_disable_jetpack_ads() {
+function es_optimizer_disable_jetpack_ads(): void {
 	$options = es_optimizer_get_options();
 
-	// Only proceed if the option is enabled.
-	if ( isset( $options['disable_jetpack_ads'] ) && $options['disable_jetpack_ads'] ) {
-		add_filter( 'jetpack_just_in_time_msgs', '__return_false', PHP_INT_MAX );
-		add_filter( 'jetpack_show_promotions', '__return_false', PHP_INT_MAX );
-		add_filter( 'jetpack_blaze_enabled', '__return_false', PHP_INT_MAX );
+	if ( empty( $options['disable_jetpack_ads'] ) ) {
+		return;
 	}
+
+	add_filter( 'jetpack_just_in_time_msgs', '__return_false', PHP_INT_MAX );
+	add_filter( 'jetpack_show_promotions', '__return_false', PHP_INT_MAX );
+	add_filter( 'jetpack_blaze_enabled', '__return_false', PHP_INT_MAX );
 }
 
 /**
@@ -1093,11 +992,12 @@ function es_optimizer_disable_jetpack_ads() {
  *
  * @since 1.0.0
  */
-function es_optimizer_disable_post_via_email() {
+function es_optimizer_disable_post_via_email(): void {
 	$options = es_optimizer_get_options();
 
-	// Only proceed if the option is enabled.
-	if ( isset( $options['disable_post_via_email'] ) && $options['disable_post_via_email'] ) {
-		add_filter( 'enable_post_by_email_configuration', '__return_false', PHP_INT_MAX );
+	if ( empty( $options['disable_post_via_email'] ) ) {
+		return;
 	}
+
+	add_filter( 'enable_post_by_email_configuration', '__return_false', PHP_INT_MAX );
 }

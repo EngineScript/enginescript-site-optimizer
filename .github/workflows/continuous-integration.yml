@@ -46,7 +46,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '16'
+          node-version: '20'
           # Use conditional caching based on package-lock.json existence
           cache: ${{ steps.check-lockfile.outputs.lockfile_exists == 'true' && 'npm' || '' }}
           cache-dependency-path: |
@@ -76,7 +76,7 @@ jobs:
         
       - name: Lint PHP
         run: |
-          if [ -f composer.json ] && ([ -f .phpcs.xml ] || [ -f phpcs.xml.dist ]); then
+          if [ -f composer.json ] && ([ -f .phpcs.xml ] || [ -f phpcs.xml.dist ] || [ -f phpcs.xml ]); then
             if grep -q "\"lint:php\"" composer.json; then
               composer run lint:php
             else
@@ -115,7 +115,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '16'
+          node-version: '20'
           # Use conditional caching based on package-lock.json existence
           cache: ${{ steps.check-lockfile-build.outputs.lockfile_exists == 'true' && 'npm' || '' }}
           cache-dependency-path: |

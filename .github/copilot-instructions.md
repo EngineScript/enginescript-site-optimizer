@@ -2,111 +2,82 @@
 applyTo: '**'
 ---
 
-# WordPress Plugin Development Standards
+# EngineScript Site Optimizer — Development Standards
 
-## 🎯 Core Principles
+## Project Context
 
-**Work Environment:** Remote GitHub Codespaces only. Never suggest local Terminal commands.
+- **Plugin:** EngineScript Site Optimizer — WordPress performance optimization plugin
+- **Text Domain:** `enginescript-site-optimizer`
+- **Function/Hook Prefix:** `es_optimizer_`
+- **Version Constant:** `ES_SITE_OPTIMIZER_VERSION`
+- **WordPress:** 6.5+ | **PHP:** 7.4+
+- **Work Environment:** GitHub Codespaces (remote). Never suggest local terminal commands.
 
-**WordPress First:** Use WordPress APIs, hooks, and standards exclusively. Avoid non-WP frameworks.
+## Code Standards
 
-**Security Critical:** Sanitize all input, escape all output, use WordPress security functions.
+### WordPress & PHP
 
-**Thorough Analysis:** Read complete files (minimum 1500 lines) for accurate code review.
-
-## 📋 Essential Requirements
-
-### WordPress Compatibility
-
-- **WordPress:** 6.5+ minimum
-- **PHP:** 7.4+ minimum  
-- **WooCommerce:** 5.0+ (when applicable)
 - Follow [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/) for PHP, JS, CSS, HTML, and accessibility
+- Use WordPress APIs and hooks exclusively — no raw PHP/SQL or non-WP frameworks
+- Prefix all functions, classes, hooks, and globals with `es_optimizer_`
+- Use `wp_die()` instead of `die()` or `exit()`
+- Use `WP_Error` for error handling; log errors without exposing sensitive data
+- Use PHPDoc with `@param`, `@return`, `@since` tags on all functions
+- Organize code by feature; use descriptive names; remove unused code
+- Validate all function parameters and handle edge cases gracefully
 
-### Code Quality Standards
+### Modern PHP
 
-1. **Security First:** Always sanitize input (`sanitize_*()`) and escape output (`esc_*()`)
-2. **WordPress APIs:** Use WP functions instead of raw PHP/SQL
-3. **Hook System:** Proper use of `add_action()` and `add_filter()`
-4. **Internationalization:** Use `__()`, `_e()`, `esc_html__()` for all strings
-5. **Performance:** Avoid N+1 queries, use WP caching, optimize database calls
+- PHP 7.4+ features are required; PHP 8.x features are allowed if they degrade gracefully on 7.4
+- Use typed function signatures wherever possible
+- Before submitting changes, run `phpcs`, `phpmd`, and `phpstan` (config files present in project root)
 
-## 🔒 Security Requirements (Critical)
+## Security (Critical)
 
-**Input Handling:**
-- Use `sanitize_text_field()`, `sanitize_email()`, `wp_kses()` for user input
-- Validate with `is_email()`, `absint()`, `wp_verify_nonce()` for security
-- Use prepared statements for database queries (`$wpdb->prepare()`)
+All code must follow OWASP Top 10 and WordPress security best practices. **Auto-identify and fix security vulnerabilities whenever found — never leave them.**
 
-**Output Security:**
-- Escape all output: `esc_html()`, `esc_attr()`, `esc_url()`, `esc_js()`
-- Use `wp_nonce_field()` and `wp_verify_nonce()` for forms
-- Check permissions with `current_user_can()` before sensitive operations
+**Input:**
+- Sanitize with `sanitize_text_field()`, `sanitize_email()`, `absint()`, or `wp_kses()` as appropriate
+- Validate nonces with `wp_verify_nonce()` on all form submissions and AJAX handlers
+- Use `$wpdb->prepare()` for every database query
 
-**Vulnerability Prevention:**
-- Prevent SQL injection, XSS, CSRF, Local File Inclusion (LFI), and path traversal
-- Follow principle of least privilege
-- Auto-identify and fix security issues when found
+**Output:**
+- Escape with context-appropriate functions: `esc_html()`, `esc_attr()`, `esc_url()`, `esc_js()`, `esc_textarea()`
+- Use `wp_nonce_field()` for all admin forms
 
-## 📝 Documentation & Versioning
+**Access Control:**
+- Check `current_user_can('manage_options')` before any settings operation
+- Always include `if ( ! defined( 'ABSPATH' ) ) { return; }` at the top of every PHP file
+- Prevent SQL injection, XSS, CSRF, LFI, and path traversal at all times
 
-**Changelog Management:**
-- Always update CHANGELOG.md and readme.txt when making code changes
-- **Sync both changelogs:** CHANGELOG.md and readme.txt changelog section
-- Use "Unreleased" section for ongoing changes
+## Performance
 
-**Version Release Process (only when instructed):**
+- Cache expensive operations with `wp_cache_*()` and transients
+- Avoid N+1 queries; optimize all database calls
+- Enqueue assets via `wp_enqueue_scripts()` / `wp_enqueue_styles()` with correct dependencies and version strings
+- Conditionally load admin assets only on relevant admin pages; conditionally load frontend assets only when needed
+
+## Internationalization (i18n)
+
+- Mark all user-facing strings with `__()`, `_e()`, `esc_html__()`, or `esc_attr__()`
+- Always use text domain `enginescript-site-optimizer`
+- Update `languages/enginescript-site-optimizer.pot` whenever translatable strings are added or changed
+
+## Documentation & Versioning
+
+**On every code change:**
+- Add an entry to the `Unreleased` section of `CHANGELOG.md`
+- Mirror the same entry in the changelog section of `readme.txt`
+
+**Version releases (only when explicitly instructed):**
 - Follow semantic versioning (MAJOR.MINOR.PATCH)
-- Update version in: plugin header, README.md, readme.txt, CHANGELOG.md, GEMINI.md, and `.pot` language files, constants section, package.json, and composer.json
-- Move "Unreleased" changes to new version section in both changelogs
-- **Never auto-update versions** - wait for explicit instruction
+- Update version in: plugin file header, `ES_SITE_OPTIMIZER_VERSION` constant, `README.md`, `readme.txt`, `CHANGELOG.md`, `GEMINI.md`, `composer.json`, and `languages/enginescript-site-optimizer.pot`
+- Move all `Unreleased` entries to the new version section in both `CHANGELOG.md` and `readme.txt`
+- **Never auto-bump versions** — wait for an explicit instruction to do so
 
-**Code Documentation:**
-- Use PHPDoc with `@param`, `@return`, `@since` tags
-- Write clear function/class descriptions
-- Document security considerations and hooks used
+## Workflow
 
-**Internationalization (i18n):**
-- Update `.pot` language files when adding or modifying translatable strings
-- Always use the correct text domain when dealing with translation functions
-- Mark all user-facing strings with `__()`, `_e()`, `esc_html__()`, `esc_attr__()`, etc.
-
-## ⚡ Performance & Quality
-
-**Performance Optimization:**
-- Use WordPress caching (`wp_cache_*()`, transients)
-- Optimize database queries, avoid N+1 problems
-- Proper asset enqueueing with `wp_enqueue_*()` functions
-- Focus on correctness first, then optimize
-
-**Code Architecture:**
-- Group by feature, not by type
-- Use descriptive function/variable names
-- Remove unused code automatically
-- Follow feature-sliced design when applicable
-
-**Error Handling:**
-- Use `WP_Error` for WordPress-specific errors
-- Log errors without exposing sensitive data
-- Handle edge cases gracefully
-- Validate all function parameters
-
-## 🚀 Workflow & Automation
-
-**Task Execution:**
-- Make changes directly to existing files (don't create duplicates)
-- Proceed automatically unless action is destructive
-- Auto-identify and fix bugs when possible
-- Only ask confirmation for data loss/deletion scenarios
-
-**File Management:**
-- Edit files in place (e.g., modify `admin.php` directly)
-- Create new files only when truly necessary
-- Avoid file duplication and unnecessary rewrites
-- Maintain clean project structure
-
-**Communication:**
-- Provide concise, actionable responses
-- Use clear formatting for readability
-- Never create change summaries as separate .md files
-- Focus on specific changes made, not verbose explanations
+- Edit files in place — never create duplicate files or unnecessary new files
+- Proceed automatically on non-destructive changes; ask before deleting files or data
+- Auto-fix bugs and security issues when identified
+- Keep responses concise and focused on what changed — no summary `.md` files

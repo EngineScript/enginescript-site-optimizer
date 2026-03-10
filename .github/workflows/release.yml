@@ -53,13 +53,15 @@ jobs:
           cp README.md enginescript-site-optimizer/
           cp CHANGELOG.md enginescript-site-optimizer/
           cp LICENSE enginescript-site-optimizer/ || echo "No LICENSE file found"
+          cp readme.txt enginescript-site-optimizer/ || echo "No readme.txt found"
+          [ -d languages ] && cp -r languages enginescript-site-optimizer/ || echo "No languages directory found"
           zip -r enginescript-site-optimizer-${{ steps.get_version.outputs.version }}.zip enginescript-site-optimizer
 
       - name: Get changelog entry
         if: steps.check_release.outputs.exists == 'false'
         id: get_changelog
         run: |
-          CHANGELOG_ENTRY=$(awk -v ver="## ${{ steps.get_version.outputs.version }}" 'BEGIN{flag=0} $0~ver{flag=1; print; next} /^## [0-9]+\.[0-9]+\.[0-9]+/{flag=0} flag{print}' CHANGELOG.md | tail -n +2)
+          CHANGELOG_ENTRY=$(awk -v ver="\\[${{ steps.get_version.outputs.version }}\\]" 'BEGIN{flag=0} $0 ~ "^## " ver{flag=1; next} /^## \[/{flag=0} flag{print}' CHANGELOG.md)
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT

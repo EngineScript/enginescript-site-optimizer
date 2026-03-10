@@ -6,7 +6,7 @@ Tested up to: 6.9
 Stable tag: 2.0.0
 Requires PHP: 7.4
 License: GPLv3 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Optimizes WordPress by removing unnecessary features and scripts to improve performance.
 
@@ -16,13 +16,13 @@ EngineScript Site Optimizer removes unnecessary WordPress features and scripts t
 It helps reduce page load times and improves overall site speed by disabling unused functionality.
 
 Key features:
-* Disable XML-RPC
-* Disable JSON REST API for non-logged users
+* Disable WordPress emojis
 * Remove jQuery Migrate
-* Remove unnecessary header meta
-* Disable auto-embeds
-* Disable emoji support
-* Remove Gutenberg CSS
+* Disable classic theme styles
+* Remove unnecessary header meta (version, RSD, WLW, shortlinks, recent comments style)
+* DNS prefetch and preconnect management
+* Disable Jetpack ads and promotions
+* Disable post via email
 
 == Installation ==
 
@@ -42,6 +42,29 @@ No, the plugin has a simple interface where you can toggle features on and off.
 
 
 == Changelog ==
+
+= Unreleased =
+* **BUG FIX (Critical)**: Fixed License URI pointing to GPL 2.0 instead of GPL 3.0 in plugin header and readme.txt
+* **BUG FIX (Critical)**: Fixed release workflow producing incomplete zip files missing `languages/` directory and `readme.txt`
+* **BUG FIX**: Fixed changelog parser in release workflow that could not match heading format in CHANGELOG.md
+* **BUG FIX**: Consolidated duplicate msgid entries in POT translation file and corrected license header
+* **BUG FIX**: Fixed CI lint step that never ran because it checked for wrong PHPCS config filename
+* **BUG FIX**: Fixed README.md license text incorrectly stating GPL-2.0+
+* **ADDED**: `uninstall.php` to properly clean up plugin options when the plugin is deleted
+* **ADDED**: Section headers to settings page for better organization (Performance, Header Cleanup, Additional Features)
+* **ADDED**: `phpcompatibility/phpcompatibility-wp` composer dependency required by PHPCS ruleset
+* **ADDED**: Composer `scripts` section with `lint:php` and `analyze` commands for CI
+* **MODERNIZATION**: Added PHP 7.4+ type declarations to all functions
+* **MODERNIZATION**: Replaced `isset()` ternaries with null coalescing operator
+* **CODE QUALITY**: Standardized all option-checking to use `empty()` with early-return pattern
+* **CODE QUALITY**: Consolidated duplicate domain validation functions into shared helpers
+* **CODE QUALITY**: Removed unnecessary static caching in preconnect and DNS prefetch output functions
+* **CODE QUALITY**: Replaced deprecated HTML `valign` attribute in settings form
+* **CI**: Updated Node.js from EOL version 16 to LTS version 20
+* **DOCS**: Corrected feature lists in GEMINI.md and readme.txt to match actually implemented features
+* **DOCS**: Updated POT translation file with correct line references and new section header strings
+* **SECURITY**: Eliminated `phpcs:ignore` on preconnect output with explicit if/else for crossorigin
+* **SECURITY**: Replaced fragile substring crossorigin detection with exact hostname matching
 
 = 2.0.0 - 2026-02-28 =
 * **BREAKING**: Renamed plugin from "Simple WP Optimizer" to "EngineScript Site Optimizer" to comply with WordPress.org plugin directory naming restrictions

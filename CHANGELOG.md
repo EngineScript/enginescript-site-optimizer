@@ -3,6 +3,38 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- **Critical**: Fixed License URI in plugin header and readme.txt pointing to GPL 2.0 instead of GPL 3.0
+- **Critical**: Fixed release workflow producing incomplete zip files missing `languages/` directory and `readme.txt`
+- **Bug**: Fixed changelog parser in release workflow that could not match `## [VERSION]` heading format in CHANGELOG.md, resulting in empty release bodies
+- **Bug**: Consolidated duplicate `msgid` entries in POT translation file and corrected license header
+- **Bug**: Fixed CI lint step that never ran because it checked for `.phpcs.xml` or `phpcs.xml.dist` but the actual file is `phpcs.xml`
+- **Bug**: Fixed README.md license text incorrectly stating GPL-2.0+ instead of GPL-3.0-or-later
+
+### Added
+
+- Added `uninstall.php` to properly clean up plugin options from the database when the plugin is deleted
+- Added section headers ("Performance Optimizations", "Header Cleanup", "Additional Features") to the settings page for better UX
+- Added `phpcompatibility/phpcompatibility-wp` to `composer.json` `require-dev` (required by `phpcs.xml` ruleset)
+- Added `scripts` section to `composer.json` with `lint:php` and `analyze` commands for CI integration
+
+### Changed
+
+- **Modernization**: Added PHP 7.4+ type declarations (parameter types and return types) to all functions
+- **Modernization**: Replaced `isset()` ternaries with null coalescing operator (`??`) in render helpers
+- **Code Quality**: Standardized all option-checking to use `empty()` with early-return pattern
+- **Code Quality**: Consolidated duplicate domain validation, rejection notice, and output functions into shared helpers (`es_optimizer_validate_domain_list()`, `es_optimizer_show_rejection_notice()`, `es_optimizer_get_validated_domains()`)
+- **Code Quality**: Removed unnecessary static caching in `es_optimizer_add_preconnect()` and `es_optimizer_add_dns_prefetch()` (hooks only fire once per page load; `es_optimizer_get_options()` already caches)
+- **Code Quality**: Replaced deprecated HTML `valign="top"` attribute with standard `<tr>` (WordPress `form-table` CSS already handles alignment)
+- **CI**: Updated Node.js from EOL version 16 to LTS version 20 in continuous integration workflow
+- **Docs**: Corrected `GEMINI.md` and `readme.txt` feature lists to only include actually implemented features (removed references to XML-RPC, REST API restriction, auto-embeds, and Gutenberg CSS)
+- **Docs**: Updated POT translation file with correct line references and added new translatable section header strings
+- **Security**: Removed `phpcs:ignore` suppression on preconnect output by using explicit `if/else` branches for the crossorigin attribute
+- **Security**: Replaced fragile substring crossorigin detection (`fonts.g`, `gstatic`) with exact hostname matching against `fonts.googleapis.com` and `fonts.gstatic.com`
+
 ## [2.0.0] - 2026-02-28
 
 ### Changed

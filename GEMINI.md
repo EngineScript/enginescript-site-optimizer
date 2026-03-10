@@ -84,14 +84,14 @@ add_action( 'plugins_loaded', 'es_optimizer_init' );
 
 #### Performance Optimization Features
 
-- **XML-RPC Disabling:** Remove XML-RPC functionality for security and performance
-- **JSON REST API Control:** Disable REST API for non-logged users
 - **jQuery Migrate Removal:** Remove unnecessary jQuery Migrate script
-- **Header Meta Cleanup:** Remove unnecessary WordPress meta tags from head
-- **Auto-Embeds Disabling:** Disable WordPress auto-embed functionality
+- **Header Meta Cleanup:** Remove unnecessary WordPress meta tags from head (version, RSD, WLW, shortlinks, recent comments style)
 - **Emoji Support Removal:** Remove emoji scripts and styles
-- **Gutenberg CSS Removal:** Remove unused Gutenberg block styles
+- **Classic Theme Styles Removal:** Remove classic theme styles added in WordPress 6.1+
 - **DNS Prefetch Management:** User-configurable DNS prefetch for external domains
+- **Preconnect Management:** User-configurable preconnect for critical external domains
+- **Jetpack Ads Disabling:** Remove Jetpack advertisements and promotions
+- **Post via Email Disabling:** Disable WordPress post via email functionality
 
 #### Settings Management
 
