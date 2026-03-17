@@ -767,10 +767,7 @@ function es_optimizer_add_settings_link( array $links ): array {
  * @param array $plugins Array of TinyMCE plugins.
  * @return array Difference betwen the two arrays.
  */
-function es_optimizer_disable_emojis_tinymce( $plugins ): array {
-	if ( ! is_array( $plugins ) ) {
-		$plugins = array();
-	}
+function es_optimizer_disable_emojis_tinymce( array $plugins ): array {
 	return array_diff( $plugins, array( 'wpemoji' ) );
 }
 

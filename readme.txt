@@ -44,6 +44,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 == Changelog ==
 
 = Unreleased =
+* **BUG FIX**: Removed a redundant `is_array()` check in `es_optimizer_disable_emojis_tinymce()` after adding a strict `array` parameter type, resolving a PHPStan always-true warning on PHP 8.3
 * **BUG FIX (Critical)**: Fixed License URI pointing to GPL 2.0 instead of GPL 3.0 in plugin header and readme.txt
 * **BUG FIX (Critical)**: Fixed release workflow producing incomplete zip files missing `languages/` directory and `readme.txt`
 * **BUG FIX**: Fixed changelog parser in release workflow that could not match heading format in CHANGELOG.md

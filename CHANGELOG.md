@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Bug**: Removed a redundant `is_array()` check in `es_optimizer_disable_emojis_tinymce()` after adding a strict `array` parameter type, resolving a PHPStan always-true warning on PHP 8.3
 - **Critical**: Fixed License URI in plugin header and readme.txt pointing to GPL 2.0 instead of GPL 3.0
 - **Critical**: Fixed release workflow producing incomplete zip files missing `languages/` directory and `readme.txt`
 - **Bug**: Fixed changelog parser in release workflow that could not match `## [VERSION]` heading format in CHANGELOG.md, resulting in empty release bodies
