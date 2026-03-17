@@ -2,7 +2,7 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cf82cdb35973466abe7895e6d37666ed)](https://app.codacy.com/gh/EngineScript/enginescript-site-optimizer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Github License](https://img.shields.io/badge/License-GPL%20v3-green.svg?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![WordPress Compatible](https://img.shields.io/badge/WordPress-6.5%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
+[![WordPress Compatible](https://img.shields.io/badge/WordPress-6.6%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
 [![PHP Compatible](https://img.shields.io/badge/PHP-7.4%2B-purple.svg?logo=php)](https://www.php.net/)
 
 ## Current Version
@@ -95,7 +95,7 @@ Yes, hiding the WordPress version can provide a minor security benefit by making
 ### Requirements
 
 - PHP 7.4 or higher
-- WordPress 6.5 or higher
+- WordPress 6.6 or higher
 - Composer (for development and testing)
 
 ### Setting up the development environment
@@ -107,13 +107,13 @@ Yes, hiding the WordPress version can provide a minor security benefit by making
 
 ### PHP 8.x Compatibility
 
-This plugin is fully compatible with PHP versions 7.4 through 8.4. For testing with PHP 8.x, we provide a custom PHPUnit runner script that helps avoid common compatibility issues between PHPUnit and newer PHP versions:
+This plugin is fully compatible with PHP versions 7.4 through 8.5. For testing with PHP 8.x, we provide a custom PHPUnit runner script that helps avoid common compatibility issues between PHPUnit and newer PHP versions:
 
 ```bash
 # For PHP 7.4 (standard testing)
 composer test
 
-# For PHP 8.0, 8.1, 8.2, 8.3, and 8.4 (using the custom runner)
+# For PHP 8.0, 8.1, 8.2, 8.3, 8.4, and 8.5 (using the custom runner)
 composer test:php8
 ```
 
@@ -135,8 +135,8 @@ This ensures our plugin stays up-to-date with the latest WordPress versions with
 
 The plugin includes a comprehensive PHPUnit test suite that runs automatically on GitHub Actions. Our testing matrix includes:
 
-- PHP versions: 7.4, 8.0, 8.1, 8.2, 8.3, 8.4
-- WordPress versions: 6.5, latest, nightly
+- PHP versions: 7.4, 8.0, 8.1, 8.2, 8.3, 8.4, 8.5
+- WordPress versions: 6.6, latest, nightly
 - Both single site and multisite installations
 
 This ensures code quality and compatibility across different PHP versions and WordPress configurations.

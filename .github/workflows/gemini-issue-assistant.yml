@@ -252,7 +252,7 @@ jobs:
             echo "4. Check for existing similar functionality" >> analysis_prompt.txt
             echo "5. Provide actionable recommendations" >> analysis_prompt.txt
           echo "" >> analysis_prompt.txt
-            echo "REPOSITORY CONTEXT: WordPress plugin project (WordPress 6.5+, PHP 7.4+)" >> analysis_prompt.txt
+            echo "REPOSITORY CONTEXT: WordPress plugin project (WordPress 6.6+, PHP 7.4+)" >> analysis_prompt.txt
           echo "" >> analysis_prompt.txt
           elif [ "$ANALYSIS_TYPE" = "comment-analysis" ]; then
             # Create comment-focused prompt - FOCUS ON CONVERSATION CONTEXT
@@ -275,7 +275,7 @@ jobs:
             echo "3. Are there code implications from this comment?" >> analysis_prompt.txt
             echo "4. What follow-up actions are suggested?" >> analysis_prompt.txt
             echo "" >> analysis_prompt.txt
-            echo "REPOSITORY CONTEXT: WordPress plugin project (WordPress 6.5+, PHP 7.4+)" >> analysis_prompt.txt
+            echo "REPOSITORY CONTEXT: WordPress plugin project (WordPress 6.6+, PHP 7.4+)" >> analysis_prompt.txt
           fi
           
           # Add codebase context if available

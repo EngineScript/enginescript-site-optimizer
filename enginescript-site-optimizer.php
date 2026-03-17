@@ -8,7 +8,7 @@
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain: enginescript-site-optimizer
- * Requires at least: 6.5
+ * Requires at least: 6.6
  * Requires PHP: 7.4
  * Tested up to: 6.9
  * Security: Follows OWASP security guidelines and WordPress best practices

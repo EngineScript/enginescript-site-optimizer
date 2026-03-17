@@ -11,7 +11,7 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 ### Requirements
 
 - **PHP**: 7.4 or higher
-- **WordPress**: 6.5 or higher
+- **WordPress**: 6.6 or higher
 - **Composer**: For dependency management
 - **Node.js**: 16+ (if working with build tools)
 - **Git**: For version control
@@ -162,7 +162,7 @@ function es_optimizer_example_function( $input ) {
 ### Testing
 
 1. **Manual Testing**:
-   - Test in WordPress 6.5+ and latest version
+   - Test in WordPress 6.6+ and latest version
    - Test with PHP 7.4 and 8.3+
    - Verify admin interface functionality
    - Check frontend optimizations

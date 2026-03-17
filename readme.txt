@@ -1,7 +1,7 @@
 === EngineScript Site Optimizer ===
 Contributors: enginescript
 Tags: optimization, performance, cleanup
-Requires at least: 6.5
+Requires at least: 6.6
 Tested up to: 6.9
 Stable tag: 2.0.0
 Requires PHP: 7.4
