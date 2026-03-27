@@ -26,6 +26,6 @@ The code does not meet WordPress coding standards as defined by PHPCS.
 
 **Resources:**
 - [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/)
-- [PHP CodeSniffer Documentation](https://github.com/squizlabs/PHP_CodeSniffer)
+- [PHP CodeSniffer Documentation](https://github.com/PHPCSStandards/PHP_CodeSniffer)
 
 This issue was automatically created by the CI/CD pipeline.

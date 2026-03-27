@@ -276,7 +276,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 - [WordPress Security Handbook](https://make.wordpress.org/core/handbook/testing/reporting-security-vulnerabilities/)
 
 ### Tools
-- [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
+- [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer)
 - [PHPStan](https://phpstan.org/)
 - [WordPress Plugin Check](https://wordpress.org/plugins/plugin-check/)
 
