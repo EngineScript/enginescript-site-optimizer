@@ -322,7 +322,7 @@ jobs:
           echo "📊 Final response size: $(wc -c < formatted_response.txt) characters"
 
       - name: Comment on Issue
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
