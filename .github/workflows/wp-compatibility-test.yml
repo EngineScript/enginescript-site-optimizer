@@ -70,7 +70,7 @@ jobs:
           echo "✅ Cleanup complete"
 
       - name: WordPress Plugin Check
-        uses: WordPress/plugin-check-action@v1.1.5
+        uses: WordPress/plugin-check-action@v1.1.6
         with:
           # Build directory - using repository root
           build-dir: './'
