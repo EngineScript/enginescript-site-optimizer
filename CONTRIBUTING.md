@@ -73,6 +73,7 @@ This project adheres to **WordPress Coding Standards**:
 ### PHP CodeSniffer (PHPCS)
 
 Run coding standards checks:
+
 ```bash
 composer run phpcs
 ```
@@ -80,6 +81,7 @@ composer run phpcs
 ### PHPStan
 
 Run static analysis:
+
 ```bash
 composer run phpstan
 ```
@@ -87,13 +89,14 @@ composer run phpstan
 ### PHPUnit
 
 Run tests (when available):
+
 ```bash
 composer test
 ```
 
 ## File Structure
 
-```
+```text
 enginescript-site-optimizer/
 |-- enginescript-site-optimizer.php    # Main plugin file
 |-- includes/                          # Plugin source files
@@ -123,6 +126,7 @@ enginescript-site-optimizer/
 ### Code Requirements
 
 #### Security
+
 - **Input Validation**: Validate all user inputs
 - **Output Escaping**: Use `esc_html()`, `esc_attr()`, `esc_url()` as appropriate
 - **Sanitization**: Use `sanitize_text_field()`, `sanitize_textarea_field()`, etc.
@@ -130,12 +134,14 @@ enginescript-site-optimizer/
 - **Capability Checks**: Verify user permissions with `current_user_can()`
 
 #### Documentation
+
 - **PHPDoc**: All functions must have PHPDoc comments
 - **@since**: Include version tags for new functions
 - **Inline Comments**: Explain complex logic
 - **Security Notes**: Document security measures taken
 
 #### Example Function
+
 ```php
 /**
  * Example function with proper documentation
@@ -222,7 +228,8 @@ Use [Conventional Commits](https://conventionalcommits.org/):
 - `chore:` Maintenance tasks
 
 Examples:
-```
+
+```text
 feat: add DNS prefetch domain validation
 fix: resolve jQuery migrate removal issue
 docs: update installation instructions
@@ -244,6 +251,7 @@ style: fix PHPCS formatting violations
 ### Updating Versions
 
 When releasing new versions, update these files:
+
 - `enginescript-site-optimizer.php` (plugin header)
 - `README.md`
 - `readme.txt`
@@ -253,6 +261,7 @@ When releasing new versions, update these files:
 ### Semantic Versioning
 
 This project follows [Semantic Versioning](https://semver.org/):
+
 - **MAJOR**: Breaking changes
 - **MINOR**: New features (backward compatible)
 - **PATCH**: Bug fixes (backward compatible)
@@ -266,15 +275,18 @@ This project follows [Semantic Versioning](https://semver.org/):
 ## Resources
 
 ### WordPress Development
+
 - [WordPress Plugin Handbook](https://developer.wordpress.org/plugins/)
 - [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/)
 - [WordPress Security Guidelines](https://developer.wordpress.org/plugins/security/)
 
 ### Security Resources
+
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [WordPress Security Handbook](https://make.wordpress.org/core/handbook/testing/reporting-security-vulnerabilities/)
 
 ### Tools
+
 - [PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
 - [PHPStan](https://phpstan.org/)
 - [WordPress Plugin Check](https://wordpress.org/plugins/plugin-check/)

@@ -74,11 +74,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed missing `esc_url()` and `esc_html__()` escaping on the Settings link rendered in the Plugins list
 - Removed unreachable dead code (`if ( ! is_admin() ) { return; }`) inside `es_optimizer_add_settings_page()`, which is only ever called from the `admin_menu` hook
 
-
-
 ## [1.8.0] - 2025-10-23
 
 ### Added
+
 - Added new option to remove RSD (Really Simple Discovery) link from WordPress header
 - **NEW FEATURE**: Added separate DNS Prefetch option alongside Preconnect for better resource hint control
   - DNS-prefetch performs lighter-weight DNS-only lookups for less critical domains
@@ -88,6 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added DNS prefetch domain: `https://adservice.google.com`
 
 ### Changed
+
 - **PERFORMANCE UPGRADE**: Changed from DNS-prefetch to Preconnect for better performance
   - Preconnect establishes full connection (DNS + TCP + TLS) vs dns-prefetch which only does DNS lookup
   - Adds `crossorigin` attribute for font domains (required for CORS requests)
@@ -97,12 +97,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved preconnect textarea display to eliminate extra whitespace on first line
 
 ### Fixed
+
 - Fixed WordPress coding standards compliance: PHP opening and closing tags now on separate lines
 - Fixed indentation in textarea rendering function (3 tabs instead of 4)
 
 ## [1.7.0] - 2025-01-27
 
 ### Changed
+
 - **Major Plugin Architecture Refactor**: Completely restructured plugin initialization to use the WordPress `plugins_loaded` hook
 - Improved plugin load order by removing immediate global scope execution
 - Consolidated plugin initialization into proper WordPress lifecycle management
@@ -110,16 +112,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced plugin activation, deactivation, and uninstall lifecycle management
 
 ### Removed
+
 - Removed unused `es_optimizer_enqueue_admin_scripts()` function (dead code removal)
 - Cleaned up scattered global scope function calls
 
 ### Fixed
+
 - Fixed inline comment punctuation to comply with WordPress coding standards
 - Improved code organization and readability
 - Enhanced plugin stability and compatibility with other WordPress plugins
 
 ## [1.6.0] - 2025-08-10
+
 ### Added
+
 - **Performance Optimization**: Implemented conditional admin asset loading - admin scripts and styles now only load on the plugin settings page
 - **Option Caching System**: Added `es_optimizer_get_options()` function with static caching to reduce database queries throughout the plugin
 - **DNS Prefetch Security Enhancement**: Enhanced DNS prefetch validation to reject file paths, query parameters, and fragments - only clean domains are now accepted
@@ -127,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Developer Guidelines**: Created comprehensive CONTRIBUTING.md file with development standards, security requirements, and contribution workflow
 
 ### Enhanced
+
 - **DNS Prefetch Optimization**: Improved DNS prefetch function with static caching, duplicate removal, AJAX detection, and enhanced domain validation
 - **Security Validation**: Strengthened DNS prefetch domain validation to prevent file path injection (e.g., `https://google.com/file.php` is now rejected)
 - **User Experience**: Updated DNS prefetch textarea description to clearly explain that only clean domains are allowed
@@ -134,31 +141,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing Infrastructure**: Complete test suite with fixtures, helpers, and comprehensive coverage reporting
 
 ### Security
+
 - **Domain Validation**: Enhanced DNS prefetch security to block file paths, query parameters, and URL fragments
 - **Input Sanitization**: Maintained comprehensive input validation and output escaping throughout all changes
 - **Clean Domain Output**: DNS prefetch now automatically strips paths and returns only clean domain URLs for security
 - **Security Testing**: Comprehensive security validation tests including XSS prevention and malicious input handling
 
 ### Performance
+
 - **Reduced Database Queries**: Option caching system minimizes repeated database calls
 - **Conditional Loading**: Admin assets only load when needed, reducing unnecessary resource usage
 - **Optimized DNS Prefetch**: Enhanced processing efficiency with static caching and validation improvements
 
 ### Developer Experience
+
 - **Testing Framework**: PHPUnit with WP_Mock for WordPress-specific testing
 - **Code Coverage**: 80% minimum coverage requirement with detailed reporting
 - **Quality Assurance**: PHPCS, PHPMD, and PHPStan integration for code quality
 - **Development Workflow**: Automated testing with GitHub Actions CI/CD pipeline
 
 ## [1.5.12] - 2025-08-02
+
 ### Added
+
 - **Disable Post via Email**: New option to disable the post-via-email feature for enhanced security and performance.
 
 ### Security
+
 - **Hardened Disabling Filters**: Updated all feature-disabling filters to use `PHP_INT_MAX` priority, ensuring they cannot be overridden by other plugins or themes.
 
 ## [1.5.11] - 2025-07-11
+
 ### Code Quality
+
 - **WordPress Coding Standards**: Converted all code to use spaces instead of tabs for indentation
 - **Code Style**: Fixed file comment header to use "/**" style instead of "/*" style
 - **Code Style**: Added proper spacing around operators (e.g., `! defined` instead of `!defined`)
@@ -169,15 +184,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Array Formatting**: Enhanced array formatting with proper alignment and trailing commas
 
 ## [1.5.10] - 2025-07-07
+
 ### Maintenance
+
 - Updated changelog and version references across documentation files for new release
+
 ### Documentation
+
 - Synced CHANGELOG.md and readme.txt as per project standards
+
 ### Note
+
 - No code changes in this release; documentation and changelog only
 
 ## [1.5.9] - 2025-06-26
+
 ### Updated
+
 - **Requirements**: Updated minimum WordPress version requirement to 6.5+ across all files for modern WordPress compatibility
 - **Internationalization**: Created languages/simple-wp-optimizer.pot file for translation support
 - **Documentation**: Updated all version references to reflect new WordPress 6.5+ minimum requirement
@@ -185,13 +208,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Compliance**: Enhanced project structure compliance with copilot coding standards and documentation guidelines
 
 ## [1.5.8] - 2025-06-15
+
 ### Added
+
 - Enhanced code organization with single responsibility principle implementation
 - Dedicated DNS domain validation functions for improved maintainability
 - Proper translator comments for all internationalization strings with placeholders
 - Additional sanitization layer for nonce verification using sanitize_text_field()
 
 ### Fixed
+
 - **WordPress Plugin Check Compliance**: Resolved all WordPress.org compatibility issues
 - **Variable Naming**: Implemented camelCase convention for all variables (nonceValue, domainsInput, etc.)
 - **Function Complexity**: Reduced cyclomatic complexity by extracting validation logic into separate functions
@@ -200,6 +226,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Documentation**: Updated upgrade notice character limits to meet WordPress.org requirements
 
 ### Enhanced
+
 - Improved code architecture with es_optimizer_validate_single_domain() function
 - Better error handling with es_optimizer_show_domain_rejection_notice() function
 - Enhanced maintainability through function separation and reduced complexity
@@ -207,12 +234,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optimized function organization for better testing and debugging
 
 ### Security
+
 - **Enhanced Nonce Handling**: Additional sanitization layer for CSRF protection
 - **Improved Input Validation**: Strengthened domain validation with dedicated functions
 - **WordPress Standards**: Full compliance with WordPress security best practices
 
 ## [1.5.7] - 2025-06-15
+
 ### Added
+
 - WordPress nonce protection for CSRF security in settings forms
 - Enhanced DNS prefetch security with HTTPS-only domain enforcement
 - Private IP and localhost blocking for DNS prefetch domains to prevent SSRF attacks
@@ -221,6 +251,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Security event notifications for administrators when domains are rejected
 
 ### Enhanced
+
 - Strengthened form security with wp_nonce_field() and wp_verify_nonce() implementation
 - Improved DNS prefetch domain validation with parse_url() and enhanced filtering
 - Enhanced error handling with proper WordPress admin notices and escaping
@@ -229,6 +260,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive input validation preventing malicious domain submissions
 
 ### Security
+
 - **CSRF Protection**: Added WordPress nonce verification for all form submissions
 - **HTTPS Enforcement**: DNS prefetch domains now require HTTPS protocol for security
 - **SSRF Prevention**: Blocked private IP ranges and localhost addresses in DNS prefetch
@@ -237,12 +269,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Attack Surface Reduction**: Eliminated potential vectors for security exploitation
 
 ### Fixed
+
 - Resolved potential XSS vulnerability in error message display by adding proper HTML escaping
 - Fixed domain validation to prevent bypass of security checks
 - Improved error message construction to prevent information disclosure
 
 ## [1.5.6] - 2025-05-31
+
 ### Added
+
 - Enhanced GitHub Actions workflows for comprehensive plugin testing and security analysis
 - PHPStan WordPress static analysis with proper WordPress stubs configuration
 - WordPress Vulnerability Scanner integration for security testing
@@ -259,6 +294,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive code documentation with security explanations
 
 ### Fixed
+
 - Fixed register_setting() function to use proper array parameters instead of string callback
 - Corrected remove_action() function calls to use proper parameter count (removed invalid 4th parameter)
 - Replaced non-existent wp_print_link_tag() function with proper HTML output using esc_url()
@@ -268,6 +304,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed potential security vulnerabilities with proper WordPress best practices
 
 ### Enhanced
+
 - Updated plugin to pass PHPStan level 5 analysis with zero errors
 - Improved workflow reliability by removing problematic external dependencies
 - Enhanced security scanning with WordPress-specific vulnerability patterns
@@ -280,115 +317,150 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Direct script access prevention with proper WordPress checks
 
 ### Security
+
 - Enhanced all user input validation and output escaping
 - Added security-focused code comments explaining safety measures
 - Implemented OWASP-compliant security patterns throughout the codebase
 
 ## [1.5.5] - 2025-05-21
+
 ### Added
+
 - WordPress 6.8 compatibility
 - WordPress Plugin Check workflow for code quality verification
 - Automated GitHub issue creation for test failures
 
 ### Fixed
+
 - Changed text domain from 'simple-wp-optimizer-enginescript' to 'simple-wp-optimizer' to comply with WordPress.org standards
 - Updated all internationalization function calls with the correct text domain
 - Added missing text domain parameter in translation functions
 - Fixed issue template formatting for automated GitHub issue creation
 
 ### Improved
+
 - Made the plugin fully compatible with the WordPress Plugin Check tool
 - Enhanced plugin repo compatibility
 - Improved documentation and code comments
 
 ## [1.5.4] - 2025-05-04
+
 ### Changed
+
 - Updated plugin name to "EngineScript: Simple WP Optimization"
 - Improved code documentation and security notes
 - Aligned version numbers in plugin header and constant definition
 
 ## [1.5.3] - 2025-03-15
+
 ### Added
+
 - Enhanced security implementation with detailed documentation
 - Added PHPCS ignore comments with security explanations
 - Improved validation for DNS prefetch domains
 
 ### Fixed
+
 - Fixed potential security issues with escaped outputs
 - Fixed DNS prefetch implementation for better performance
 
 ## [1.5.2] - 2025-01-20
+
 ### Added
+
 - Added Jetpack Blaze disabling feature
 
 ### Changed
+
 - Improved function documentation with security notes
 - Enhanced settings page with better organization
 
 ## [1.5.1] - 2024-11-05
+
 ### Changed
+
 - Updated WordPress compatibility to 6.5
 - Improved code organization
 - Enhanced settings validation
 
 ## [1.5.0] - 2024-09-10
+
 ### Added
+
 - Added option to disable Jetpack advertisements and promotions
 - Implemented settings link in plugins page
 
 ### Changed
+
 - Refactored settings page rendering for better security
 - Updated text domain for better translation support
 
 ## [1.4.1] - 2024-07-25
+
 ### Added
+
 - Enhanced DNS prefetching with better security measures
 - Added proper input validation for domain entries
 
 ### Fixed
+
 - Fixed escaping in DNS prefetch output
 - Improved error handling for invalid domains
 
 ## [1.4.0] - 2024-05-30
+
 ### Added
+
 - Added DNS prefetching for common external domains
 - Added textarea input for custom DNS prefetch domains
 - Implemented domain validation and sanitization
 
 ### Changed
+
 - Improved settings organization with grouped options
 - Enhanced option descriptions
 
 ## [1.3.0] - 2024-03-15
+
 ### Added
+
 - Option to disable classic theme styles (added in WordPress 6.1+)
 - Improved header cleanup options
 
 ### Changed
+
 - Enhanced security for settings page
 - Better user capability checks
 
 ## [1.2.0] - 2023-12-10
+
 ### Added
+
 - Option to remove recent comments widget inline CSS
 - Option to remove shortlinks from WordPress header
 
 ### Changed
+
 - Improved settings validation
 - Better code organization
 
 ## [1.1.0] - 2023-09-05
+
 ### Added
+
 - Option to remove WLW manifest
 - Option to remove WordPress version from header
 - Comprehensive settings page with checkboxes
 
 ### Changed
+
 - Switched to WordPress Settings API
 - Better organization of options
 
 ## [1.0.0] - 2023-06-01
+
 ### Added
+
 - Initial release
 - Option to disable WordPress emojis
 - Option to remove jQuery Migrate

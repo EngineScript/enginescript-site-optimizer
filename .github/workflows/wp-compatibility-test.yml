@@ -692,7 +692,7 @@ jobs:
               WP_TESTS_TAG="trunk"
           else
               download https://api.wordpress.org/core/version-check/1.7/ /tmp/wp-latest.json
-              LATEST_VERSION=$(grep -o '"version":"[^"]*' /tmp/wp-latest.json | sed 's/"version":"//')
+              LATEST_VERSION=$(grep -o '"version":"[^"]*' /tmp/wp-latest.json | head -n 1 | sed 's/"version":"//')
               if [[ -z "$LATEST_VERSION" ]]; then
                   echo "Latest WordPress version could not be found"
                   exit 1
@@ -807,15 +807,16 @@ jobs:
 
       - name: Create Test File
         run: |
-          cat > tests/EngineScriptSiteOptimizerTest.php << 'EOF'
+          mkdir -p tests/integration
+          cat > tests/integration/EngineScriptSiteOptimizerWpTest.php << 'EOF'
           <?php
           /**
-           * Class EngineScriptSiteOptimizerTest
+           * Class EngineScriptSiteOptimizerWpTest
            *
            * @package EngineScript_Site_Optimizer
            */
 
-          class EngineScriptSiteOptimizerTest extends WP_UnitTestCase {
+          class EngineScriptSiteOptimizerWpTest extends WP_UnitTestCase {
               public function test_plugin_loaded() {
                   $this->assertTrue(function_exists('es_optimizer_init_plugin'), 'Plugin was not loaded correctly');
                   $this->assertTrue(function_exists('es_optimizer_get_default_options'));
@@ -974,7 +975,7 @@ jobs:
           >
               <testsuites>
                   <testsuite name="EngineScript Site Optimizer">
-                      <directory suffix="Test.php">./tests/</directory>
+                      <file>./tests/integration/EngineScriptSiteOptimizerWpTest.php</file>
                   </testsuite>
               </testsuites>
           </phpunit>
