@@ -10,7 +10,7 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 
 ### Requirements
 
-- **PHP**: 7.4 or higher
+- **PHP**: 8.2 or higher
 - **WordPress**: 6.6 or higher
 - **Composer**: For dependency management
 - **Node.js**: 16+ (if working with build tools)
@@ -74,43 +74,42 @@ This project adheres to **WordPress Coding Standards**:
 
 Run coding standards checks:
 ```bash
-composer run lint:php
-# OR
-./vendor/bin/phpcs
+composer run phpcs
 ```
 
 ### PHPStan
 
 Run static analysis:
 ```bash
-./vendor/bin/phpstan analyse
+composer run phpstan
 ```
 
 ### PHPUnit
 
 Run tests (when available):
 ```bash
-./vendor/bin/phpunit
+composer test
 ```
 
 ## File Structure
 
 ```
 enginescript-site-optimizer/
-├── enginescript-site-optimizer.php    # Main plugin file
-├── README.md                  # Project documentation
-├── readme.txt                 # WordPress.org readme
-├── CHANGELOG.md              # Version history
-├── CONTRIBUTING.md           # This file
-├── LICENSE                   # GPL license
-├── composer.json             # PHP dependencies
-├── phpcs.xml                 # PHPCS configuration
-├── phpstan.neon              # PHPStan configuration
-├── phpmd.xml                 # PHPMD configuration
-├── languages/                # Translation files
-│   └── enginescript-site-optimizer.pot
-└── .github/                  # GitHub workflows
-    └── workflows/
+|-- enginescript-site-optimizer.php    # Main plugin file
+|-- includes/                          # Plugin source files
+|-- README.md                          # Project documentation
+|-- readme.txt                         # WordPress.org readme
+|-- CHANGELOG.md                       # Version history
+|-- CONTRIBUTING.md                    # This file
+|-- LICENSE                            # GPL license
+|-- composer.json                      # PHP dependencies
+|-- phpcs.xml                          # PHPCS configuration
+|-- phpstan.neon                       # PHPStan configuration
+|-- phpmd.xml                          # PHPMD configuration
+|-- languages/                         # Translation files
+|   `-- enginescript-site-optimizer.pot
+`-- .github/                           # GitHub workflows
+    `-- workflows/
 ```
 
 ## Making Changes
@@ -136,7 +135,7 @@ enginescript-site-optimizer/
 - **Inline Comments**: Explain complex logic
 - **Security Notes**: Document security measures taken
 
-#### Example Function:
+#### Example Function
 ```php
 /**
  * Example function with proper documentation
@@ -146,24 +145,24 @@ enginescript-site-optimizer/
  * @return string Sanitized output.
  */
 function es_optimizer_example_function( $input ) {
-    // Security: Validate and sanitize input
-    if ( ! current_user_can( 'manage_options' ) ) {
-        return '';
-    }
-    
-    $sanitized = sanitize_text_field( $input );
-    
-    // Additional processing...
-    
-    return esc_html( $sanitized );
+	// Security: Validate and sanitize input.
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return '';
+	}
+
+	$sanitized = sanitize_text_field( $input );
+
+	// Additional processing.
+
+	return esc_html( $sanitized );
 }
 ```
 
 ### Testing
 
 1. **Manual Testing**:
-   - Test in WordPress 6.6+ and latest version
-   - Test with PHP 7.4 and 8.3+
+   - Test in WordPress 6.6+ and the latest version
+   - Test with PHP 8.2 and 8.3+
    - Verify admin interface functionality
    - Check frontend optimizations
 
@@ -195,8 +194,8 @@ function es_optimizer_example_function( $input ) {
 
 3. **Test Changes**:
    ```bash
-   composer run lint:php
-   ./vendor/bin/phpstan analyse
+   composer run phpcs
+   composer run phpstan
    ```
 
 4. **Commit Changes**:
@@ -282,8 +281,8 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ## License
 
-By contributing to EngineScript Site Optimizer, you agree that your contributions will be licensed under the [GPL v2 or later](LICENSE) license.
+By contributing to EngineScript Site Optimizer, you agree that your contributions will be licensed under the [GPL-3.0-or-later](LICENSE) license.
 
 ---
 
-Thank you for contributing to EngineScript Site Optimizer! 🚀
+Thank you for contributing to EngineScript Site Optimizer!

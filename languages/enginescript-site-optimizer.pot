@@ -1,184 +1,212 @@
-# Copyright (C) 2025 EngineScript
-# This file is distributed under the GNU General Public License v3 or later.
+# Copyright (C) 2026 EngineScript
+# This file is distributed under the GPL-3.0-or-later.
 msgid ""
 msgstr ""
 "Project-Id-Version: EngineScript Site Optimizer 2.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/enginescript-site-optimizer\n"
-"POT-Creation-Date: 2026-02-28 00:00:00+00:00\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2026-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"POT-Creation-Date: 2026-05-15T01:24:37+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: enginescript-site-optimizer\n"
 
-#: enginescript-site-optimizer.php:259
-msgid "You do not have sufficient permissions to access this page."
+#. Plugin Name of the plugin
+#: enginescript-site-optimizer.php
+msgid "EngineScript Site Optimizer"
 msgstr ""
 
-#: enginescript-site-optimizer.php:242
-#: enginescript-site-optimizer.php:265
-msgid "Site Optimizer Settings"
+#. Plugin URI of the plugin
+#: enginescript-site-optimizer.php
+msgid "https://github.com/EngineScript/enginescript-site-optimizer"
 msgstr ""
 
-#: enginescript-site-optimizer.php:243
-msgid "Site Optimizer"
+#. Description of the plugin
+#: enginescript-site-optimizer.php
+msgid "Optimizes WordPress by removing unnecessary features and scripts to improve performance"
 msgstr ""
 
-#: enginescript-site-optimizer.php:266
-msgid "Select which optimizations you want to enable and customize the DNS prefetch domains."
+#. Author of the plugin
+#: enginescript-site-optimizer.php
+msgid "EngineScript"
 msgstr ""
 
-#: enginescript-site-optimizer.php:273
+#: includes/admin.php:69
 msgid "Performance Optimizations"
 msgstr ""
 
-#: enginescript-site-optimizer.php:278
+#: includes/admin.php:70
 msgid "Header Cleanup"
 msgstr ""
 
-#: enginescript-site-optimizer.php:283
+#: includes/admin.php:71
 msgid "Additional Features"
 msgstr ""
 
-#: enginescript-site-optimizer.php:289
-msgid "Save Changes"
-msgstr ""
-
-#: enginescript-site-optimizer.php:295
-msgid "This plugin is part of the EngineScript project."
-msgstr ""
-
-#: enginescript-site-optimizer.php:297
-msgid "Visit the EngineScript GitHub page"
-msgstr ""
-
-#: enginescript-site-optimizer.php:315
+#: includes/admin.php:102
 msgid "Disable WordPress Emojis"
 msgstr ""
 
-#: enginescript-site-optimizer.php:316
+#: includes/admin.php:103
 msgid "Remove emoji scripts and styles to improve page load time"
 msgstr ""
 
-#: enginescript-site-optimizer.php:323
+#: includes/admin.php:108
 msgid "Remove jQuery Migrate"
 msgstr ""
 
-#: enginescript-site-optimizer.php:324
-msgid "Remove jQuery Migrate script (may affect compatibility with very old plugins)"
+#: includes/admin.php:109
+msgid "Remove jQuery Migrate script. This may affect compatibility with very old plugins."
 msgstr ""
 
-#: enginescript-site-optimizer.php:331
+#: includes/admin.php:114
 msgid "Disable Classic Theme Styles"
 msgstr ""
 
-#: enginescript-site-optimizer.php:332
+#: includes/admin.php:115
 msgid "Remove classic theme styles added in WordPress 6.1+"
 msgstr ""
 
-#: enginescript-site-optimizer.php:347
+#: includes/admin.php:133
 msgid "Remove WordPress Version"
 msgstr ""
 
-#: enginescript-site-optimizer.php:348
-msgid "Remove WordPress version from header (security benefit)"
+#: includes/admin.php:134
+msgid "Remove WordPress version from the document head."
 msgstr ""
 
-#: enginescript-site-optimizer.php:355
+#: includes/admin.php:139
 msgid "Remove RSD Link"
 msgstr ""
 
-#: enginescript-site-optimizer.php:356
-msgid "Remove Really Simple Discovery (RSD) link from header"
+#: includes/admin.php:140
+msgid "Remove Really Simple Discovery (RSD) link from the document head."
 msgstr ""
 
-#: enginescript-site-optimizer.php:363
+#: includes/admin.php:145
 msgid "Remove WLW Manifest"
 msgstr ""
 
-#: enginescript-site-optimizer.php:364
-msgid "Remove Windows Live Writer manifest link"
+#: includes/admin.php:146
+msgid "Remove Windows Live Writer manifest link."
 msgstr ""
 
-#: enginescript-site-optimizer.php:371
+#: includes/admin.php:151
 msgid "Remove Shortlink"
 msgstr ""
 
-#: enginescript-site-optimizer.php:372
-msgid "Remove WordPress shortlink URLs from header"
+#: includes/admin.php:152
+msgid "Remove WordPress shortlink URLs from the document head."
 msgstr ""
 
-#: enginescript-site-optimizer.php:379
+#: includes/admin.php:157
 msgid "Remove Recent Comments Style"
 msgstr ""
 
-#: enginescript-site-optimizer.php:380
-msgid "Remove recent comments widget inline CSS"
+#: includes/admin.php:158
+msgid "Remove recent comments widget inline CSS."
 msgstr ""
 
-#: enginescript-site-optimizer.php:395
+#: includes/admin.php:176
 msgid "Disable Jetpack Ads"
 msgstr ""
 
-#: enginescript-site-optimizer.php:396
-msgid "Remove Jetpack advertisements and promotions"
+#: includes/admin.php:177
+msgid "Remove Jetpack advertisements and promotions."
 msgstr ""
 
-#: enginescript-site-optimizer.php:403
+#: includes/admin.php:182
 msgid "Disable Post via Email"
 msgstr ""
 
-#: enginescript-site-optimizer.php:404
-msgid "Disable WordPress post via email functionality for security and performance"
+#: includes/admin.php:183
+msgid "Disable WordPress post via email functionality for security and performance."
 msgstr ""
 
-#: enginescript-site-optimizer.php:411
+#: includes/admin.php:188
 msgid "Enable Preconnect"
 msgstr ""
 
-#: enginescript-site-optimizer.php:412
-msgid "Preconnect to external domains for faster resource loading"
+#: includes/admin.php:189
+msgid "Preconnect to external domains for faster resource loading."
 msgstr ""
 
-#: enginescript-site-optimizer.php:419
+#: includes/admin.php:194
 msgid "Preconnect Domains"
 msgstr ""
 
-#: enginescript-site-optimizer.php:420
-msgid "Use preconnect for domains that host critical, frequently used resources, like Google Fonts. This hint tells the browser to establish a connection (including DNS lookup, TCP handshake, and TLS negotiation) as soon as possible, which can save 100–500ms on the subsequent request. Enter one HTTPS domain per line (e.g., https://fonts.googleapis.com). Only clean domains are allowed - no file paths, query parameters, or fragments."
+#: includes/admin.php:195
+msgid "Use preconnect for domains that host critical, frequently used resources, such as Google Fonts. Enter one HTTPS domain per line. Only bare domains are allowed: no file paths, query parameters, fragments, or credentials."
 msgstr ""
 
-#: enginescript-site-optimizer.php:427
+#: includes/admin.php:200
 msgid "Enable DNS Prefetch"
 msgstr ""
 
-#: enginescript-site-optimizer.php:428
-msgid "DNS prefetch for less critical external domains"
+#: includes/admin.php:201
+msgid "DNS prefetch for less critical external domains."
 msgstr ""
 
-#: enginescript-site-optimizer.php:435
+#: includes/admin.php:206
 msgid "DNS Prefetch Domains"
 msgstr ""
 
-#: enginescript-site-optimizer.php:436
-msgid "DNS-prefetch is a lighter-weight alternative to preconnect that performs only the DNS lookup. Use it for less critical domains or as a fallback for browsers that don't support preconnect. Enter one HTTPS domain per line (e.g., https://adservice.google.com). Only clean domains are allowed - no file paths, query parameters, or fragments."
+#: includes/admin.php:207
+msgid "DNS prefetch is a lighter-weight alternative to preconnect that performs only the DNS lookup. Enter one HTTPS domain per line. Only bare domains are allowed: no file paths, query parameters, fragments, or credentials."
 msgstr ""
 
-#: enginescript-site-optimizer.php:611
+#: includes/admin.php:394
+#: includes/admin.php:413
+msgid "Site Optimizer Settings"
+msgstr ""
+
+#: includes/admin.php:395
+msgid "Site Optimizer"
+msgstr ""
+
+#: includes/admin.php:409
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: includes/admin.php:414
+msgid "Select which optimizations you want to enable and customize the resource hint domains."
+msgstr ""
+
+#: includes/admin.php:421
+msgid "Save Changes"
+msgstr ""
+
+#: includes/admin.php:427
+msgid "This plugin is part of the EngineScript project."
+msgstr ""
+
+#: includes/admin.php:429
+msgid "Visit the EngineScript GitHub page"
+msgstr ""
+
+#: includes/admin.php:481
+msgid "Settings"
+msgstr ""
+
+#: includes/options.php:186
 msgid "..."
 msgstr ""
 
-#: enginescript-site-optimizer.php:617
+#. translators: %s is the list of rejected domain names.
+#: includes/options.php:192
 #, php-format
 msgid "Some preconnect domains were rejected for security reasons: %s"
 msgstr ""
 
-#: enginescript-site-optimizer.php:624
+#. translators: %s is the list of rejected domain names.
+#: includes/options.php:199
 #, php-format
 msgid "Some DNS prefetch domains were rejected for security reasons: %s"
 msgstr ""
 
-#: enginescript-site-optimizer.php:758
-msgid "Settings"
+#: includes/options.php:224
+msgid "Empty domain"
 msgstr ""

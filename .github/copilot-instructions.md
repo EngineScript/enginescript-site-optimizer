@@ -2,15 +2,15 @@
 applyTo: '**'
 ---
 
-# EngineScript Site Optimizer — Development Standards
+# EngineScript Site Optimizer - Development Standards
 
 ## Project Context
 
-- **Plugin:** EngineScript Site Optimizer — WordPress performance optimization plugin
+- **Plugin:** EngineScript Site Optimizer - WordPress performance optimization plugin
 - **Text Domain:** `enginescript-site-optimizer`
 - **Function/Hook Prefix:** `es_optimizer_`
 - **Version Constant:** `ES_SITE_OPTIMIZER_VERSION`
-- **WordPress:** 6.6+ | **PHP:** 7.4+
+- **WordPress:** 6.6+ | **PHP:** 8.2+
 - **Work Environment:** GitHub Codespaces (remote). Never suggest local terminal commands.
 
 ## Code Standards
@@ -18,7 +18,7 @@ applyTo: '**'
 ### WordPress & PHP
 
 - Follow [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/) for PHP, JS, CSS, HTML, and accessibility
-- Use WordPress APIs and hooks exclusively — no raw PHP/SQL or non-WP frameworks
+- Use WordPress APIs and hooks exclusively; avoid raw PHP/SQL and non-WP frameworks
 - Prefix all functions, classes, hooks, and globals with `es_optimizer_`
 - Use `wp_die()` instead of `die()` or `exit()`
 - Use `WP_Error` for error handling; log errors without exposing sensitive data
@@ -28,22 +28,22 @@ applyTo: '**'
 
 ### Modern PHP
 
-- PHP 7.4+ features are required; PHP 8.x features are allowed if they degrade gracefully on 7.4
+- PHP 8.2+ features are available; keep code aligned with the configured PHP compatibility baseline
 - Use typed function signatures wherever possible
 - Before submitting changes, run `phpcs`, `phpmd`, and `phpstan` (config files present in project root)
 
 ## Security (Critical)
 
-All code must follow OWASP Top 10 and WordPress security best practices. **Auto-identify and fix security vulnerabilities whenever found — never leave them.**
+All code must follow OWASP Top 10 and WordPress security best practices. **Auto-identify and fix security vulnerabilities whenever found; never leave them unresolved.**
 
 **Input:**
 - Sanitize with `sanitize_text_field()`, `sanitize_email()`, `absint()`, or `wp_kses()` as appropriate
-- Validate nonces with `wp_verify_nonce()` on all form submissions and AJAX handlers
+- Validate nonces with WordPress nonce helpers or Settings API nonces on form submissions and AJAX handlers
 - Use `$wpdb->prepare()` for every database query
 
 **Output:**
 - Escape with context-appropriate functions: `esc_html()`, `esc_attr()`, `esc_url()`, `esc_js()`, `esc_textarea()`
-- Use `wp_nonce_field()` for all admin forms
+- Use `wp_nonce_field()` or `settings_fields()` for admin forms
 
 **Access Control:**
 - Check `current_user_can('manage_options')` before any settings operation
@@ -73,11 +73,11 @@ All code must follow OWASP Top 10 and WordPress security best practices. **Auto-
 - Follow semantic versioning (MAJOR.MINOR.PATCH)
 - Update version in: plugin file header, `ES_SITE_OPTIMIZER_VERSION` constant, `README.md`, `readme.txt`, `CHANGELOG.md`, `GEMINI.md`, `composer.json`, and `languages/enginescript-site-optimizer.pot`
 - Move all `Unreleased` entries to the new version section in both `CHANGELOG.md` and `readme.txt`
-- **Never auto-bump versions** — wait for an explicit instruction to do so
+- **Never auto-bump versions** - wait for an explicit instruction to do so
 
 ## Workflow
 
-- Edit files in place — never create duplicate files or unnecessary new files
+- Edit files in place; never create duplicate files or unnecessary new files
 - Proceed automatically on non-destructive changes; ask before deleting files or data
 - Auto-fix bugs and security issues when identified
-- Keep responses concise and focused on what changed — no summary `.md` files
+- Keep responses concise and focused on what changed; do not create summary `.md` files

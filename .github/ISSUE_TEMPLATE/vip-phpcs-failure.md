@@ -12,25 +12,25 @@ assignees: []
 
 ### Issue Description
 
-The WordPress VIP coding standards check has failed during the automated workflow. This scan specifically checks for enterprise-level WordPress development standards required for WordPress VIP platform compatibility.
+The WordPress VIP coding standards check failed during the automated workflow. This scan checks for enterprise-level WordPress development standards required for WordPress VIP platform compatibility.
 
 ### VIP Standards Focus Areas
 
-The WordPress VIP Go coding standards check for:
+The WordPress VIP Go coding standards check covers the following areas:
 
-🏢 **Enterprise Platform Requirements:**
+**Enterprise Platform Requirements:**
 - File system operation restrictions (VIP platform limitations)
 - Performance and caching best practices for high-traffic sites
 - Security vulnerabilities specific to enterprise WordPress environments
 - User experience guidelines for enterprise-level WordPress
 
-🚀 **Performance & Caching:**
+**Performance and Caching:**
 - Uncached function usage patterns
 - Database query optimization
 - Remote data fetching best practices
 - Resource-heavy operation detection
 
-🔒 **VIP-Specific Security:**
+**VIP-Specific Security:**
 - File operation security in restricted environments
 - Admin bar removal restrictions for VIP support users
 - Cookie and caching constraint validations
@@ -38,7 +38,7 @@ The WordPress VIP Go coding standards check for:
 
 ### Important Notes
 
-⚠️ **VIP Standards Context:**
+**VIP Standards Context:**
 - Many VIP standards are specific to the WordPress VIP hosting platform
 - Not all VIP recommendations may apply to standard WordPress installations
 - Some restrictions are platform-specific (e.g., file system limitations)
@@ -47,7 +47,7 @@ The WordPress VIP Go coding standards check for:
 ### Next Steps
 
 1. **Review the workflow logs** to identify specific VIP standard violations
-2. **Evaluate applicability** - determine which issues apply to your hosting environment
+2. **Evaluate applicability**: Determine which issues apply to your hosting environment
 3. **Prioritize fixes** based on your deployment target:
    - **High Priority:** Security and performance issues
    - **Medium Priority:** General code quality improvements

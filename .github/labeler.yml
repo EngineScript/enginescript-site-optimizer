@@ -36,7 +36,7 @@ documentation:
     - any-glob-to-any-file: '*.md'
     - any-glob-to-any-file: docs/**/*
 
-# Export functionality
+# Optimization functionality
 optimization:
   - changed-files:
     - any-glob-to-any-file: '**/optimi*.php'

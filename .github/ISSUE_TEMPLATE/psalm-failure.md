@@ -26,7 +26,7 @@ Psalm has detected potential issues in the code through static analysis.
    - Incorrect return types
    - Unused code
    - Potential null pointer issues
-3. Test locally with: `./vendor/bin/psalm`
+3. Test locally with: `composer run psalm`
 
 **Resources:**
 - [Psalm Documentation](https://psalm.dev/)

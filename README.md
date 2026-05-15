@@ -1,9 +1,9 @@
 # EngineScript Site Optimizer
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cf82cdb35973466abe7895e6d37666ed)](https://app.codacy.com/gh/EngineScript/enginescript-site-optimizer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![Github License](https://img.shields.io/badge/License-GPL%20v3-green.svg?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.html)
+[![GitHub License](https://img.shields.io/badge/License-GPL%20v3-green.svg?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![WordPress Compatible](https://img.shields.io/badge/WordPress-6.6%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
-[![PHP Compatible](https://img.shields.io/badge/PHP-7.4%2B-purple.svg?logo=php)](https://www.php.net/)
+[![PHP Compatible](https://img.shields.io/badge/PHP-8.2%2B-purple.svg?logo=php)](https://www.php.net/)
 
 ## Current Version
 
@@ -18,7 +18,7 @@ A lightweight WordPress plugin designed to optimize your website by removing unn
 - **Header Cleanup:** Remove WordPress version, WLW manifest links, and shortlinks
 - **Script Optimization:** Disable WordPress emojis and remove jQuery Migrate
 - **Style Optimization:** Remove inline styles from recent comments widget and disable classic theme styles
-- **DNS Prefetching:** Add DNS prefetch for common external domains to improve load times (HTTPS-only for security)
+- **Resource Hints:** Manage DNS prefetch and preconnect for external domains to improve load times (HTTPS only)
 - **Jetpack Optimization:** Remove Jetpack advertisements and promotions
 
 ## Installation
@@ -27,8 +27,8 @@ A lightweight WordPress plugin designed to optimize your website by removing unn
 
 1. Download the latest release from the [releases page](https://github.com/EngineScript/enginescript-site-optimizer/releases)
 2. Upload the plugin files to the `/wp-content/plugins/enginescript-site-optimizer` directory
-3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Configure the plugin settings via the 'Site Optimizer' menu
+3. Activate the plugin from the Plugins menu in WordPress
+4. Configure the plugin settings from the Site Optimizer menu
 
 ### Using Composer
 
@@ -40,7 +40,7 @@ composer require enginescript/enginescript-site-optimizer
 
 1. Navigate to the Site Optimizer menu in your WordPress admin dashboard (under Settings)
 2. Enable the optimization features you want to use
-3. Configure the DNS Prefetch domains if needed
+3. Configure resource hint domains if needed
 4. Save your changes
 
 ## Screenshots
@@ -54,11 +54,11 @@ composer require enginescript/enginescript-site-optimizer
 
 This plugin implements comprehensive security measures following WordPress and OWASP best practices:
 
-- **CSRF Protection:** WordPress nonce verification for all form submissions
+- **CSRF Protection:** WordPress Settings API nonce protection for settings submissions
 - **Input Validation:** Multi-layer validation and sanitization for all user inputs
 - **Output Escaping:** Context-appropriate escaping for all outputs (HTML, attributes, URLs)
-- **HTTPS Enforcement:** DNS prefetch domains must use HTTPS protocol for security
-- **SSRF Prevention:** Blocks private IP ranges and localhost addresses
+- **HTTPS Enforcement:** Resource hint domains must use HTTPS
+- **Host Validation:** Blocks IP addresses, private hosts, localhost addresses, and reserved hostnames
 - **Capability Checks:** Proper user permission verification for all admin functions
 - **Direct Access Prevention:** Prevents direct script execution outside WordPress
 
@@ -66,11 +66,11 @@ This plugin implements comprehensive security measures following WordPress and O
 
 This plugin is fully compliant with WordPress.org standards:
 
-- ✅ **Plugin Check Passed:** Passes all WordPress Plugin Check automated tests
-- ✅ **Security Standards:** Follows WordPress and OWASP security guidelines
-- ✅ **Coding Standards:** Adheres to WordPress coding conventions and best practices
-- ✅ **Internationalization:** Ready for translation with proper i18n implementation
-- ✅ **Performance:** Optimized code structure with reduced complexity
+- **Plugin Check Passed:** Passes all WordPress Plugin Check automated tests
+- **Security Standards:** Follows WordPress and OWASP security guidelines
+- **Coding Standards:** Adheres to WordPress coding conventions and best practices
+- **Internationalization:** Ready for translation with proper i18n implementation
+- **Performance:** Optimized code structure with reduced complexity
 
 ## Frequently Asked Questions
 
@@ -94,56 +94,43 @@ Yes, hiding the WordPress version can provide a minor security benefit by making
 
 ### Requirements
 
-- PHP 7.4 or higher
+- PHP 8.2 or higher
 - WordPress 6.6 or higher
 - Composer (for development and testing)
 
-### Setting up the development environment
+### Set Up the Development Environment
 
 1. Clone this repository: `git clone https://github.com/EngineScript/enginescript-site-optimizer.git`
 2. Install dependencies: `composer install`
 3. Set up the test environment: `bin/install-wp-tests.sh wordpress_test root '' localhost latest`
 4. Run tests: `composer test`
 
-### PHP 8.x Compatibility
+### PHP Compatibility
 
-This plugin is fully compatible with PHP versions 7.4 through 8.5. For testing with PHP 8.x, we provide a custom PHPUnit runner script that helps avoid common compatibility issues between PHPUnit and newer PHP versions:
+This plugin supports PHP 8.2 and newer. Run the standard Composer test command to verify compatibility locally:
 
 ```bash
-# For PHP 7.4 (standard testing)
 composer test
-
-# For PHP 8.0, 8.1, 8.2, 8.3, 8.4, and 8.5 (using the custom runner)
-composer test:php8
 ```
-
-The custom runner automatically detects your PHP version and applies the appropriate compatibility settings.
 
 ## Development & Maintenance
 
 ### Automated WordPress Compatibility
 
-This repository uses the [WordPress Version Checker](https://github.com/skaut/wordpress-version-checker) GitHub Action to automatically monitor WordPress compatibility. When a new WordPress version is released, the action:
-
-1. Creates a pull request to update the "Tested up to" version in readme.txt
-2. Adds "automated" and "documentation" labels to the PR
-3. Assigns repository maintainers for review
-
-This ensures our plugin stays up-to-date with the latest WordPress versions without manual intervention.
+This repository uses GitHub Actions to test the plugin against supported PHP and WordPress versions. The compatibility workflow runs WordPress Plugin Check, PHPCS, PHPMD, Psalm, PHPStan, dependency security checks, and generated WordPress integration tests.
 
 ### Automated Testing
 
 The plugin includes a comprehensive PHPUnit test suite that runs automatically on GitHub Actions. Our testing matrix includes:
 
-- PHP versions: 7.4, 8.0, 8.1, 8.2, 8.3, 8.4, 8.5
-- WordPress versions: 6.6, latest, nightly
-- Both single site and multisite installations
+- PHP versions: 8.2, 8.3, 8.4, 8.5
+- WordPress versions: 6.8, latest, nightly
 
 This ensures code quality and compatibility across different PHP versions and WordPress configurations.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome. Please feel free to submit a pull request.
 
 1. Fork the project
 2. Create your feature branch: `git checkout -b feature/new-optimization`
@@ -153,7 +140,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the GPL-3.0-or-later License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GPL-3.0-or-later license. See the [LICENSE](LICENSE) file for details.
 
 ## Changelog
 
@@ -166,4 +153,4 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each release.
 
 ## Support
 
-For support, please open an issue in the GitHub repository or contact us via [support@enginescript.com](mailto:support@enginescript.com).
+For support, please open an issue in the GitHub repository or contact us at [support@enginescript.com](mailto:support@enginescript.com).

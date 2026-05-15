@@ -1,5 +1,5 @@
 # This workflow automatically posts a guidance comment on new pull requests.
-# It welcomes contributors and provides a brief message to acknowledge their 
+# It welcomes contributors and provides a brief message to acknowledge their
 # contribution to the EngineScript Site Optimizer plugin.
 # The workflow is triggered whenever a new pull request is opened.
 
@@ -21,18 +21,18 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Thanks for contributing to EngineScript Site Optimizer! 🎉
+            Thanks for contributing to EngineScript Site Optimizer!
 
             **Before we review:**
             - [ ] Have you tested your changes with WordPress 6.6+?
-            - [ ] Are your changes compatible with PHP 7.4+?
+            - [ ] Are your changes compatible with PHP 8.2+?
             - [ ] Have you followed WordPress coding standards?
             - [ ] Did you update the CHANGELOG.md if needed?
-            
+
             **Security Reminder:**
             This plugin can handle sensitive site configuration information, so please ensure:
             - All user inputs are properly sanitized
             - All outputs are properly escaped
             - No security vulnerabilities are introduced
-            
-            We'll review your PR soon! 🚀
+
+            We'll review your PR soon.

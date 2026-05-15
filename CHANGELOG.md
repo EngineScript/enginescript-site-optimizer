@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `uninstall.php` to properly clean up plugin options from the database when the plugin is deleted
 - Added section headers ("Performance Optimizations", "Header Cleanup", "Additional Features") to the settings page for better UX
+- Split the monolithic plugin file into focused files under `includes/`
 
 ### Code Quality
 
@@ -27,16 +28,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Modernization**: Added PHP 7.4+ type declarations (parameter types and return types) to all functions
+- **Modernization**: Added modern PHP type declarations (parameter types and return types) to all functions
 - **Modernization**: Replaced `isset()` ternaries with null coalescing operator (`??`) in render helpers
 - **Code Quality**: Standardized all option-checking to use `empty()` with early-return pattern
 - **Code Quality**: Consolidated duplicate domain validation, rejection notice, and output functions into shared helpers (`es_optimizer_validate_domain_list()`, `es_optimizer_show_rejection_notice()`, `es_optimizer_get_validated_domains()`)
-- **Code Quality**: Removed unnecessary static caching in `es_optimizer_add_preconnect()` and `es_optimizer_add_dns_prefetch()` (hooks only fire once per page load; `es_optimizer_get_options()` already caches)
+- **Code Quality**: Replaced hand-written resource hint output with the native WordPress `wp_resource_hints` filter
 - **Code Quality**: Replaced deprecated HTML `valign="top"` attribute with standard `<tr>` (WordPress `form-table` CSS already handles alignment)
 - **CI**: Updated Node.js from EOL version 16 to LTS version 20 in continuous integration workflow
 - **Docs**: Corrected `GEMINI.md` and `readme.txt` feature lists to only include actually implemented features (removed references to XML-RPC, REST API restriction, auto-embeds, and Gutenberg CSS)
 - **Docs**: Updated POT translation file with correct line references and added new translatable section header strings
-- **Security**: Removed `phpcs:ignore` suppression on preconnect output by using explicit `if/else` branches for the crossorigin attribute
+- **Security**: Removed `phpcs:ignore` suppression on resource hint output by using the native WordPress resource hint API
 - **Security**: Replaced fragile substring crossorigin detection (`fonts.g`, `gstatic`) with exact hostname matching against `fonts.googleapis.com` and `fonts.gstatic.com`
 
 ## [2.0.0] - 2026-02-28
@@ -66,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Security**: Moved `esc_textarea()` escaping to the point of output for textarea values, preventing a potential XSS vector
 - **Code Quality**: Refactored textarea rendering to place PHP open/close tags on their own lines, resolving Codacy best-practice warnings
-- **Critical**: Fixed whitespace embedded inside form field `name` attributes (checkbox and textarea) that prevented settings from ever being saved — `$_POST['es_optimizer_options']` was never set because browsers sent the literal newlines/tabs as part of the field name
+- **Critical**: Fixed whitespace embedded inside form field `name` attributes (checkbox and textarea) that prevented settings from ever being saved; `$_POST['es_optimizer_options']` was never set because browsers sent the literal newlines/tabs as part of the field name
 - **Critical**: Fixed inverted IP-validation logic in `es_optimizer_validate_single_domain()` that caused every domain name (e.g. `fonts.googleapis.com`) to be incorrectly rejected when saving preconnect/DNS-prefetch settings
 - **Critical**: Fixed `es_optimizer_clear_options_cache()` which created an independent closure-scoped static variable and therefore never cleared the cache inside `es_optimizer_get_options()`
 - Fixed textarea content containing leading whitespace (newlines/tabs between `<textarea>` tag and PHP output)
@@ -102,7 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.7.0] - 2025-01-27
 
 ### Changed
-- **Major Plugin Architecture Refactor**: Completely restructured plugin initialization to use WordPress `plugins_loaded` hook
+- **Major Plugin Architecture Refactor**: Completely restructured plugin initialization to use the WordPress `plugins_loaded` hook
 - Improved plugin load order by removing immediate global scope execution
 - Consolidated plugin initialization into proper WordPress lifecycle management
 - Moved all `add_action` and `add_filter` calls into structured initialization functions
@@ -231,7 +232,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CSRF Protection**: Added WordPress nonce verification for all form submissions
 - **HTTPS Enforcement**: DNS prefetch domains now require HTTPS protocol for security
 - **SSRF Prevention**: Blocked private IP ranges and localhost addresses in DNS prefetch
-- **Input Validation**: Enhanced multi-layer validation for all user-submitted domains  
+- **Input Validation**: Enhanced multi-layer validation for all user-submitted domains
 - **Output Escaping**: Improved HTML escaping for all error messages and user feedback
 - **Attack Surface Reduction**: Eliminated potential vectors for security exploitation
 

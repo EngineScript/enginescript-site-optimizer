@@ -26,7 +26,7 @@ The code has quality issues detected by PHPMD analysis.
    - Code duplication
    - Naming conventions
    - Design issues
-3. Test locally with: `phpmd . text cleancode,codesize,controversial,design,naming,unusedcode`
+3. Test locally with: `composer run phpmd`
 
 **Resources:**
 - [PHPMD Documentation](https://phpmd.org/)

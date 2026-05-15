@@ -4,7 +4,7 @@ Tags: optimization, performance, cleanup
 Requires at least: 6.6
 Tested up to: 6.9
 Stable tag: 2.0.0
-Requires PHP: 7.4
+Requires PHP: 8.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -12,7 +12,7 @@ Optimizes WordPress by removing unnecessary features and scripts to improve perf
 
 == Description ==
 
-EngineScript Site Optimizer removes unnecessary WordPress features and scripts to optimize your site's performance. 
+EngineScript Site Optimizer removes unnecessary WordPress features and scripts to optimize your site's performance.
 It helps reduce page load times and improves overall site speed by disabling unused functionality.
 
 Key features:
@@ -34,7 +34,7 @@ Key features:
 
 = Will this plugin break my site? =
 
-The optimizations are carefully selected to be safe for most sites. You can enable/disable specific optimizations as needed.
+The optimizations are carefully selected to be safe for most sites. You can enable or disable specific optimizations as needed.
 
 = Do I need technical knowledge to use this plugin? =
 
@@ -55,7 +55,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **ADDED**: Section headers to settings page for better organization (Performance, Header Cleanup, Additional Features)
 * **ADDED**: `phpcompatibility/phpcompatibility-wp` composer dependency required by PHPCS ruleset
 * **ADDED**: Composer `scripts` section with `lint:php` and `analyze` commands for CI
-* **MODERNIZATION**: Added PHP 7.4+ type declarations to all functions
+* **MODERNIZATION**: Added modern PHP type declarations to all functions
 * **MODERNIZATION**: Replaced `isset()` ternaries with null coalescing operator
 * **CODE QUALITY**: Standardized all option-checking to use `empty()` with early-return pattern
 * **CODE QUALITY**: Consolidated duplicate domain validation functions into shared helpers
@@ -75,14 +75,14 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * Admin menu label changed from "WP Optimizer" to "Site Optimizer"
 
 = 1.8.1 - 2026-02-28 =
-* **BUG FIX (Critical)**: Fixed whitespace inside form field `name` attributes that prevented all settings from being saved — browsers sent literal newlines/tabs as part of the field name so WordPress never received the data
+* **BUG FIX (Critical)**: Fixed whitespace inside form field `name` attributes that prevented all settings from being saved; browsers sent literal newlines/tabs as part of the field name so WordPress never received the data
 * **BUG FIX (Critical)**: Fixed inverted IP-validation logic that caused every preconnect/DNS-prefetch domain name to be incorrectly rejected when saving settings
 * **BUG FIX (Critical)**: Fixed `es_optimizer_clear_options_cache()` which was not actually clearing the static options cache
 * **BUG FIX**: Fixed textarea content containing leading whitespace between the HTML tag and the PHP value output
 * **SECURITY**: Added missing `esc_url()` and `esc_html__()` escaping to the Settings link in the Plugins list
 * **SECURITY**: Moved `esc_textarea()` escaping to the point of output for textarea values, preventing a potential XSS vector
 * **SECURITY**: Removed redundant custom nonce field and its bypassable verification; CSRF protection is handled by WordPress Settings API
-* **CODE QUALITY**: Fixed double-escaping — render callers now pass `__()` instead of `esc_html__()`, with escaping done at output in the render functions
+* **CODE QUALITY**: Fixed double-escaping; render callers now pass `__()` instead of `esc_html__()`, with escaping done at output in the render functions
 * **CODE QUALITY**: Renamed 11 globally-scoped functions to use the `es_optimizer_` prefix, preventing potential naming collisions with other plugins
 * **CODE QUALITY**: Unified all option retrieval calls to use the `es_optimizer_get_options()` caching wrapper
 * **CODE QUALITY**: Settings page heading, description, and submit button are now fully translatable
@@ -103,7 +103,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **CODE QUALITY**: Fixed WordPress coding standards compliance for PHP tag formatting and indentation
 
 = 1.7.0 =
-* **ARCHITECTURE**: Major plugin architecture refactor - completely restructured initialization to use WordPress `plugins_loaded` hook
+* **ARCHITECTURE**: Major plugin architecture refactor: completely restructured initialization to use the WordPress `plugins_loaded` hook
 * **ARCHITECTURE**: Improved plugin load order by removing immediate global scope execution
 * **ARCHITECTURE**: Consolidated plugin initialization into proper WordPress lifecycle management
 * **ARCHITECTURE**: Enhanced plugin activation, deactivation, and uninstall lifecycle management
@@ -206,7 +206,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * Added Composer support with WordPress stubs for better development experience
 * Updated code to pass PHPStan level 5 analysis with zero errors
 * Added compatibility with WordPress 6.8
-* Fixed text domain to comply with WordPress.org standards (changed from 'simple-wp-optimizer-enginescript' to 'Simple-WP-Optimizer')
+* Fixed text domain to comply with WordPress.org standards (changed from `simple-wp-optimizer-enginescript` to `simple-wp-optimizer`)
 * Updated all internationalization function calls with proper text domain
 * Fixed missing text domain parameter in translation functions
 * Resolved issues with WordPress plugin check requirements

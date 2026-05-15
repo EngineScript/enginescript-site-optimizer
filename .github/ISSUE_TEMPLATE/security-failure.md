@@ -28,7 +28,7 @@ The security checker has identified known vulnerabilities in one or more of the 
    - Implementing workarounds
 5. Test the application after updates
 
-**⚠️ Priority:** This is a security issue and should be addressed immediately.
+**Priority:** This is a security issue and should be addressed immediately.
 
 **Resources:**
 - [Symfony Security Checker](https://github.com/FriendsOfPHP/security-advisories)

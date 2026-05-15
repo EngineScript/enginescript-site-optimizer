@@ -10,19 +10,18 @@ This is a WordPress performance optimization plugin that removes unnecessary fea
 - **Name:** EngineScript Site Optimizer
 - **Version:** 2.0.0
 - **WordPress Compatibility:** 6.6+
-- **PHP Compatibility:** 7.4+
+- **PHP Compatibility:** 8.2+
 - **License:** GPL-3.0-or-later
 - **Text Domain:** enginescript-site-optimizer
 
 ## Architecture & Design Patterns
 
-### Single-File Plugin Architecture
+### Modular Plugin Architecture
 
-The plugin follows a single-file architecture pattern for simplicity:
+The main plugin file is a small loader. Feature code lives in focused files under `includes/`, while all public functions keep the `es_optimizer_` prefix for namespace consistency:
 
 ```php
-// All functionality contained in enginescript-site-optimizer.php
-// Functions prefixed with 'es_optimizer_' for namespace consistency
+// enginescript-site-optimizer.php loads includes/*.php.
 function es_optimizer_function_name() {
     // Implementation
 }
@@ -45,7 +44,11 @@ add_action( 'plugins_loaded', 'es_optimizer_init' );
 
 ### File Structure
 
-- `enginescript-site-optimizer.php` - Main plugin file (all functionality)
+- `enginescript-site-optimizer.php` - Main plugin loader and plugin header
+- `includes/bootstrap.php` - WordPress hook registration and lifecycle callbacks
+- `includes/options.php` - Option defaults, caching, and validation
+- `includes/admin.php` - Settings API registration and admin settings page
+- `includes/frontend.php` - Frontend optimization callbacks
 - `languages/` - Translation files (.pot file included)
 - `CHANGELOG.md` - Developer changelog
 - `README.md` - Developer documentation

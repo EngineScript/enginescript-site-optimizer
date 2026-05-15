@@ -1,0 +1,16 @@
+# Test and build artifacts
+/vendor/
+/coverage/
+/build/
+/plugin-check-build/
+
+# Local private files
+/.private/
+
+# PHP tooling caches
+/.phpunit.cache/
+/.phpunit.result.cache
+/.php-cs-fixer.cache
+/.phpcs-cache
+/.phpstan.cache/
+/.psalm/cache/

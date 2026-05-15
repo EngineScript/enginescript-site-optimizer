@@ -25,7 +25,7 @@ We will acknowledge your report within 5 business days and work with you to reso
 
 ## Security Best Practices
 
-- Always keep your service installation and dependencies up to date.
+- Always keep your WordPress installation and dependencies up to date.
 - Use strong, unique passwords for all accounts.
 - Restrict SSH and admin access to trusted IPs.
 - Regularly back up your data.

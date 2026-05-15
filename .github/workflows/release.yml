@@ -1,9 +1,3 @@
-# This workflow automates the release process for the EngineScript Site Optimizer plugin.
-# It extracts the version number from the main plugin file, checks if a release already exists,
-# creates a zip file with the plugin contents, extracts release notes from the changelog,
-# creates a GitHub release with the zip file attached, and updates version references in the README.
-# The workflow is triggered on pushes to main/master branches or can be manually triggered.
-
 name: Create Release
 
 on:
@@ -15,7 +9,6 @@ on:
 
 permissions:
   contents: write
-  discussions: write
 
 jobs:
   check-and-release:
@@ -48,20 +41,25 @@ jobs:
       - name: Create zip file
         if: steps.check_release.outputs.exists == 'false'
         run: |
-          mkdir -p enginescript-site-optimizer
-          cp enginescript-site-optimizer.php enginescript-site-optimizer/
-          cp README.md enginescript-site-optimizer/
-          cp CHANGELOG.md enginescript-site-optimizer/
-          cp LICENSE enginescript-site-optimizer/ || echo "No LICENSE file found"
-          cp readme.txt enginescript-site-optimizer/ || echo "No readme.txt found"
-          [ -d languages ] && cp -r languages enginescript-site-optimizer/ || echo "No languages directory found"
-          zip -r enginescript-site-optimizer-${{ steps.get_version.outputs.version }}.zip enginescript-site-optimizer
+          PLUGIN_SLUG="enginescript-site-optimizer"
+          rm -rf "$PLUGIN_SLUG"
+          mkdir -p "$PLUGIN_SLUG"
+          cp enginescript-site-optimizer.php "$PLUGIN_SLUG/"
+          cp -r includes "$PLUGIN_SLUG/"
+          cp readme.txt "$PLUGIN_SLUG/"
+          cp README.md "$PLUGIN_SLUG/"
+          cp CHANGELOG.md "$PLUGIN_SLUG/"
+          cp LICENSE "$PLUGIN_SLUG/" || echo "No LICENSE file found"
+          if [ -d languages ]; then
+            cp -r languages "$PLUGIN_SLUG/"
+          fi
+          zip -r "${PLUGIN_SLUG}-${{ steps.get_version.outputs.version }}.zip" "$PLUGIN_SLUG"
 
       - name: Get changelog entry
         if: steps.check_release.outputs.exists == 'false'
         id: get_changelog
         run: |
-          CHANGELOG_ENTRY=$(awk -v ver="\\[${{ steps.get_version.outputs.version }}\\]" 'BEGIN{flag=0} $0 ~ "^## " ver{flag=1; next} /^## \[/{flag=0} flag{print}' CHANGELOG.md)
+          CHANGELOG_ENTRY=$(awk -v ver="${{ steps.get_version.outputs.version }}" 'BEGIN{flag=0; target="^## \\[?" ver "\\]?([[:space:]-]|$)"} $0 ~ target {flag=1; print; next} /^## \[?[0-9]+\.[0-9]+\.[0-9]+\]?([[:space:]-]|$)/ {flag=0} flag {print}' CHANGELOG.md | tail -n +2)
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG_ENTRY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -74,12 +72,12 @@ jobs:
           name: Release v${{ steps.get_version.outputs.version }}
           body: |
             ${{ steps.get_changelog.outputs.changelog }}
-            
+
             ## Installation
             1. Download the zip file
             2. Upload to your WordPress site through the Plugins > Add New > Upload menu
             3. Activate the plugin
-            
+
             [Full Documentation](https://github.com/${{ github.repository }})
           files: enginescript-site-optimizer-${{ steps.get_version.outputs.version }}.zip
           draft: false
@@ -94,28 +92,28 @@ jobs:
         run: |
           README_FILE="README.md"
           TMP_FILE=$(mktemp)
-          
+
           # Update the version badge with the new version and logo
-          sed -E 's/\[\!Version\]\(https:\/\/img\.shields\.io\/badge\/Version-[0-9]+\.[0-9]+\.[0-9]+-orange\.svg\?logo=github\)\]\(https:\/\/github\.com\/EngineScript\/enginescript-site-optimizer\/releases\/latest\/download\/enginescript-site-optimizer-[0-9]+\.[0-9]+\.[0-9]+\.zip\)/\[\!Version\]\(https:\/\/img\.shields\.io\/badge\/Version-'"$VERSION"'-orange\.svg\?logo=github\)\]\(https:\/\/github\.com\/EngineScript\/enginescript-site-optimizer\/releases\/latest\/download\/enginescript-site-optimizer-'"$VERSION"'\.zip\)/g' "$README_FILE" > "$TMP_FILE"
-          
+          sed -E 's#\[!\[Version\]\(https://img\.shields\.io/badge/Version-[0-9]+\.[0-9]+\.[0-9]+-orange\.svg\?logo=github\)\]\(https://github\.com/EngineScript/enginescript-site-optimizer/releases/download/v[0-9]+\.[0-9]+\.[0-9]+/enginescript-site-optimizer-[0-9]+\.[0-9]+\.[0-9]+\.zip\)#[![Version](https://img.shields.io/badge/Version-'"$VERSION"'-orange.svg?logo=github)](https://github.com/EngineScript/enginescript-site-optimizer/releases/download/v'"$VERSION"'/enginescript-site-optimizer-'"$VERSION"'.zip)#g' "$README_FILE" > "$TMP_FILE"
+
           # Replace file if changes were made
           if ! cmp -s "$README_FILE" "$TMP_FILE"; then
             cp "$TMP_FILE" "$README_FILE"
             echo "Updated README.md with version $VERSION"
-            
+
             # Configure git
             git config --local user.email "github-actions[bot]@users.noreply.github.com"
             git config --local user.name "github-actions[bot]"
-            
+
             # Commit and push the changes
             git add "$README_FILE"
             git commit -m "docs: update README.md version to $VERSION [skip ci]"
             git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-            
+
             echo "::notice::README.md updated with latest version $VERSION"
           else
             echo "::notice::README.md already has the correct version"
           fi
-          
+
           # Clean up temporary file
           rm "$TMP_FILE"

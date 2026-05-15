@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
     bootstrap="tests/bootstrap.php"
+    cacheDirectory=".phpunit.cache"
     colors="true"
-    convertErrorsToExceptions="true"
-    convertNoticesToExceptions="true"
-    convertWarningsToExceptions="true"
-    stopOnFailure="false"
     testdox="true"
     beStrictAboutTestsThatDoNotTestAnything="true"
     beStrictAboutOutputDuringTests="true"
@@ -13,34 +12,24 @@
 >
     <testsuites>
         <testsuite name="unit">
-            <directory>tests/unit</directory>
+            <directory suffix="Test.php">tests/unit</directory>
         </testsuite>
         <testsuite name="integration">
-            <directory>tests/integration</directory>
+            <directory suffix="Test.php">tests/integration</directory>
         </testsuite>
     </testsuites>
-    
-    <filter>
-        <whitelist>
-            <file>enginescript-site-optimizer.php</file>
-        </whitelist>
-    </filter>
-    
-    <coverage>
-        <report>
-            <html outputDirectory="coverage/html"/>
-            <clover outputFile="coverage/clover.xml"/>
-            <text outputFile="php://stdout" showUncoveredFiles="true"/>
-        </report>
+
+    <source>
         <include>
             <file>enginescript-site-optimizer.php</file>
+            <directory suffix=".php">includes</directory>
         </include>
-    </coverage>
-    
+    </source>
+
     <logging>
         <junit outputFile="coverage/junit.xml"/>
     </logging>
-    
+
     <php>
         <const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="vendor/yoast/phpunit-polyfills"/>
     </php>
