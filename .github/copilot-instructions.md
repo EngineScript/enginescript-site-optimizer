@@ -37,15 +37,18 @@ applyTo: '**'
 All code must follow OWASP Top 10 and WordPress security best practices. **Auto-identify and fix security vulnerabilities whenever found; never leave them unresolved.**
 
 **Input:**
+
 - Sanitize with `sanitize_text_field()`, `sanitize_email()`, `absint()`, or `wp_kses()` as appropriate
 - Validate nonces with WordPress nonce helpers or Settings API nonces on form submissions and AJAX handlers
 - Use `$wpdb->prepare()` for every database query
 
 **Output:**
+
 - Escape with context-appropriate functions: `esc_html()`, `esc_attr()`, `esc_url()`, `esc_js()`, `esc_textarea()`
 - Use `wp_nonce_field()` or `settings_fields()` for admin forms
 
 **Access Control:**
+
 - Check `current_user_can('manage_options')` before any settings operation
 - Always include `if ( ! defined( 'ABSPATH' ) ) { return; }` at the top of every PHP file
 - Prevent SQL injection, XSS, CSRF, LFI, and path traversal at all times
@@ -66,10 +69,12 @@ All code must follow OWASP Top 10 and WordPress security best practices. **Auto-
 ## Documentation & Versioning
 
 **On every code change:**
+
 - Add an entry to the `Unreleased` section of `CHANGELOG.md`
 - Mirror the same entry in the changelog section of `readme.txt`
 
 **Version releases (only when explicitly instructed):**
+
 - Follow semantic versioning (MAJOR.MINOR.PATCH)
 - Update version in: plugin file header, `ES_SITE_OPTIMIZER_VERSION` constant, `README.md`, `readme.txt`, `CHANGELOG.md`, `GEMINI.md`, `composer.json`, and `languages/enginescript-site-optimizer.pot`
 - Move all `Unreleased` entries to the new version section in both `CHANGELOG.md` and `readme.txt`

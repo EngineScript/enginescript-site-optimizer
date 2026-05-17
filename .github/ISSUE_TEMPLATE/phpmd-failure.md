@@ -11,6 +11,7 @@ assignees: []
 The PHPMD (PHP Mess Detector) check has failed for the repository.
 
 **Failure Details:**
+
 - **PHP Version:** {{ env.PHP_VERSION }}
 - **Workflow Run:** [View Details]({{ env.WORKFLOW_URL }})
 - **Run ID:** {{ env.RUN_ID }}
@@ -19,6 +20,7 @@ The PHPMD (PHP Mess Detector) check has failed for the repository.
 The code has quality issues detected by PHPMD analysis.
 
 **What needs to be done:**
+
 1. Review the PHPMD output in the failed workflow run
 2. Address code quality issues such as:
    - Complex methods that should be simplified
@@ -29,6 +31,7 @@ The code has quality issues detected by PHPMD analysis.
 3. Test locally with: `composer run phpmd`
 
 **Resources:**
+
 - [PHPMD Documentation](https://phpmd.org/)
 - [PHPMD Rules](https://phpmd.org/rules/index.html)
 

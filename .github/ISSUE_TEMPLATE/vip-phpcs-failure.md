@@ -19,18 +19,21 @@ The WordPress VIP coding standards check failed during the automated workflow. T
 The WordPress VIP Go coding standards check covers the following areas:
 
 **Enterprise Platform Requirements:**
+
 - File system operation restrictions (VIP platform limitations)
 - Performance and caching best practices for high-traffic sites
 - Security vulnerabilities specific to enterprise WordPress environments
 - User experience guidelines for enterprise-level WordPress
 
 **Performance and Caching:**
+
 - Uncached function usage patterns
 - Database query optimization
 - Remote data fetching best practices
 - Resource-heavy operation detection
 
 **VIP-Specific Security:**
+
 - File operation security in restricted environments
 - Admin bar removal restrictions for VIP support users
 - Cookie and caching constraint validations
@@ -39,6 +42,7 @@ The WordPress VIP Go coding standards check covers the following areas:
 ### Important Notes
 
 **VIP Standards Context:**
+
 - Many VIP standards are specific to the WordPress VIP hosting platform
 - Not all VIP recommendations may apply to standard WordPress installations
 - Some restrictions are platform-specific (e.g., file system limitations)

@@ -21,7 +21,7 @@ The automated compatibility test for PHP {{ env.PHP_VERSION }} has failed.
 
 This issue has been automatically created because the EngineScript Site Optimizer plugin failed to load properly with PHP {{ env.PHP_VERSION }}. This could indicate compatibility issues that need to be addressed.
 
-#### Recommended Actions:
+#### Recommended Actions
 
 1. Review the workflow logs for specific error messages
 2. Check for PHP {{ env.PHP_VERSION }} specific syntax or function compatibility issues

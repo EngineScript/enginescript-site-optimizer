@@ -20,17 +20,20 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 
 1. Fork the repository on GitHub
 2. Clone your fork locally:
+
    ```bash
    git clone https://github.com/YOUR-USERNAME/enginescript-site-optimizer.git
    cd enginescript-site-optimizer
    ```
 
 3. Install dependencies:
+
    ```bash
    composer install
    ```
 
 4. Create a feature branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -151,16 +154,16 @@ enginescript-site-optimizer/
  * @return string Sanitized output.
  */
 function es_optimizer_example_function( $input ) {
-	// Security: Validate and sanitize input.
-	if ( ! current_user_can( 'manage_options' ) ) {
-		return '';
-	}
+    // Security: Validate and sanitize input.
+    if ( ! current_user_can( 'manage_options' ) ) {
+        return '';
+    }
 
-	$sanitized = sanitize_text_field( $input );
+    $sanitized = sanitize_text_field( $input );
 
-	// Additional processing.
+    // Additional processing.
 
-	return esc_html( $sanitized );
+    return esc_html( $sanitized );
 }
 ```
 
@@ -189,6 +192,7 @@ function es_optimizer_example_function( $input ) {
 ### Pull Request Process
 
 1. **Create Feature Branch**:
+
    ```bash
    git checkout -b feature/description-of-change
    ```
@@ -199,18 +203,21 @@ function es_optimizer_example_function( $input ) {
    - Update documentation
 
 3. **Test Changes**:
+
    ```bash
    composer run phpcs
    composer run phpstan
    ```
 
 4. **Commit Changes**:
+
    ```bash
    git add .
    git commit -m "feat: add new optimization feature"
    ```
 
 5. **Push and Create PR**:
+
    ```bash
    git push origin feature/description-of-change
    ```
@@ -270,7 +277,7 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 - **Issues**: [GitHub Issues](https://github.com/EngineScript/enginescript-site-optimizer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/EngineScript/enginescript-site-optimizer/discussions)
-- **Security**: Email security@enginescript.com for security issues
+- **Security**: Email <security@enginescript.com> for security issues
 
 ## Resources
 

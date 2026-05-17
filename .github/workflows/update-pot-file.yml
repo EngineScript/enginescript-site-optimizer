@@ -1,14 +1,6 @@
 name: Update Translation File
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - '*.php'
-      - '**/*.php'
-      - '*.js'
-      - '**/*.js'
-      - '.github/workflows/update-pot-file.yml'
   workflow_dispatch:
 
 concurrency:

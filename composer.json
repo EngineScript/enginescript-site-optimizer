@@ -31,7 +31,7 @@
   "scripts": {
     "phpcs": "phpcs --standard=phpcs.xml",
     "phpcs:fix": "phpcbf --standard=phpcs.xml",
-    "phpmd": "phpmd . text phpmd.xml --exclude vendor",
+    "phpmd": "phpmd . text phpmd.xml --exclude vendor,tests,stubs,assets,.private",
     "psalm": "psalm --config=psalm.xml --show-info=true",
     "phpstan": "phpstan analyze --memory-limit=1G",
     "test": "phpunit --configuration phpunit.xml --do-not-fail-on-empty-test-suite",

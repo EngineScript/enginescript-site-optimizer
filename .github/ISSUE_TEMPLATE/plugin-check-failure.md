@@ -19,14 +19,16 @@ The WordPress Plugin Check action has identified issues with the EngineScript Si
 
 This issue has been automatically created because the WordPress Plugin Check found issues with the plugin that should be addressed. The check performed the following specific tests:
 
-#### Categories:
+#### Categories
+
 - **Accessibility**: Checks for accessibility compliance issues
 - **General**: General WordPress coding standards and best practices
 - **Performance**: Tests that identify performance bottlenecks
 - **Plugin Repo**: Requirements for WordPress.org plugin repository
 - **Security**: Security-focused checks to identify vulnerabilities
 
-#### Specific Checks:
+#### Specific Checks
+
 - **i18n_usage**: Proper internationalization usage
 - **code_obfuscation**: Detecting potentially obfuscated code
 - **direct_db_queries**: Identifying direct database queries that bypass WordPress APIs
@@ -44,7 +46,7 @@ This issue has been automatically created because the WordPress Plugin Check fou
 - **plugin_updater**: Checking plugin update mechanisms
 - **trademarks**: Checking for potential trademark violations
 
-#### Recommended Actions:
+#### Recommended Actions
 
 1. Review the workflow logs for specific error messages and warnings
 2. Address each identified issue in the plugin code
