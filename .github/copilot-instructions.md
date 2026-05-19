@@ -10,7 +10,7 @@ applyTo: '**'
 - **Text Domain:** `enginescript-site-optimizer`
 - **Function/Hook Prefix:** `es_optimizer_`
 - **Version Constant:** `ES_SITE_OPTIMIZER_VERSION`
-- **WordPress:** 6.6+ | **PHP:** 8.2+
+- **WordPress:** 6.8+ | **PHP:** 8.2+
 - **Work Environment:** GitHub Codespaces (remote). Never suggest local terminal commands.
 
 ## Code Standards

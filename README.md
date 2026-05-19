@@ -2,7 +2,7 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cf82cdb35973466abe7895e6d37666ed)](https://app.codacy.com/gh/EngineScript/enginescript-site-optimizer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![GitHub License](https://img.shields.io/badge/License-GPL%20v3-green.svg?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.html)
-[![WordPress Compatible](https://img.shields.io/badge/WordPress-6.6%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
+[![WordPress Compatible](https://img.shields.io/badge/WordPress-6.8%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
 [![PHP Compatible](https://img.shields.io/badge/PHP-8.2%2B-purple.svg?logo=php)](https://www.php.net/)
 
 ## Current Version
@@ -95,7 +95,7 @@ Yes, hiding the WordPress version can provide a minor security benefit by making
 ### Requirements
 
 - PHP 8.2 or higher
-- WordPress 6.6 or higher
+- WordPress 6.8 or higher
 - Composer (for development and testing)
 
 ### Set Up the Development Environment

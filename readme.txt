@@ -1,7 +1,7 @@
 === EngineScript Site Optimizer ===
 Contributors: enginescript
 Tags: optimization, performance, cleanup
-Requires at least: 6.6
+Requires at least: 6.8
 Tested up to: 6.9
 Stable tag: 2.0.0
 Requires PHP: 8.2
@@ -64,6 +64,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **CODE QUALITY**: Replaced deprecated HTML `valign` attribute in settings form
 * **CI**: Updated Node.js from EOL version 16 to LTS version 20
 * **DOCS**: Corrected feature lists in GEMINI.md and readme.txt to match actually implemented features
+* **DOCS**: Raised the documented WordPress baseline to 6.8+ across plugin metadata and contributor guidance
 * **DOCS**: Updated POT translation file with correct line references and new section header strings
 * **SECURITY**: Eliminated `phpcs:ignore` on preconnect output with explicit if/else for crossorigin
 * **SECURITY**: Replaced fragile substring crossorigin detection with exact hostname matching

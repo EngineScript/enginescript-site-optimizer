@@ -957,7 +957,7 @@ jobs:
                   $this->assertNotEmpty($wp_version, 'WordPress version should be available');
 
                   // Test that we're running on a supported WordPress version
-                  $min_wp_version = '6.6';
+                  $min_wp_version = '6.8';
                   $this->assertTrue(version_compare($wp_version, $min_wp_version, '>='),
                       "WordPress version {$wp_version} should be >= {$min_wp_version}");
               }

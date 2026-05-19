@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Code Quality**: Replaced deprecated HTML `valign="top"` attribute with standard `<tr>` (WordPress `form-table` CSS already handles alignment)
 - **CI**: Updated Node.js from EOL version 16 to LTS version 20 in continuous integration workflow
 - **Docs**: Corrected `GEMINI.md` and `readme.txt` feature lists to only include actually implemented features (removed references to XML-RPC, REST API restriction, auto-embeds, and Gutenberg CSS)
+- **Docs**: Raised the documented WordPress baseline to 6.8+ across plugin metadata and contributor guidance
 - **Docs**: Updated POT translation file with correct line references and added new translatable section header strings
 - **Security**: Removed `phpcs:ignore` suppression on resource hint output by using the native WordPress resource hint API
 - **Security**: Replaced fragile substring crossorigin detection (`fonts.g`, `gstatic`) with exact hostname matching against `fonts.googleapis.com` and `fonts.gstatic.com`
