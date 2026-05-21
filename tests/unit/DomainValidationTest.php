@@ -18,8 +18,27 @@ final class DomainValidationTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
+		$this->resetTestState();
+	}
+
+	/**
+	 * Reset options after tests.
+	 */
+	protected function tearDown(): void {
+		$this->resetTestState();
+
+		parent::tearDown();
+	}
+
+	/**
+	 * Reset mutable WordPress test state used by these tests.
+	 */
+	private function resetTestState(): void {
+		global $wp_settings_errors;
+
 		delete_option( 'es_optimizer_options' );
 		es_optimizer_clear_options_cache();
+		$wp_settings_errors = array();
 	}
 
 	/**
@@ -74,9 +93,20 @@ final class DomainValidationTest extends TestCase {
 	public function test_domain_list_keeps_unique_clean_https_domains(): void {
 		$input = "https://fonts.googleapis.com\nhttps://example.com/path\nhttps://fonts.googleapis.com\nhttps://cdn.example.com";
 
+		$result = es_optimizer_validate_domain_list( $input, 'preconnect' );
+
 		$this->assertSame(
 			"https://fonts.googleapis.com\nhttps://cdn.example.com",
-			es_optimizer_validate_domain_list( $input, 'preconnect' )
+			$result
+		);
+		$this->assertContains(
+			array(
+				'setting' => 'es_optimizer_options',
+				'code'    => 'preconnect_security',
+				'message' => 'Some preconnect domains were rejected for security reasons: https://example.com/path (file paths are not allowed; use domains only)',
+				'type'    => 'warning',
+			),
+			$GLOBALS['wp_settings_errors']
 		);
 	}
 

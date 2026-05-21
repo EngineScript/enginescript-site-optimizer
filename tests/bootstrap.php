@@ -308,8 +308,25 @@ if ( ! function_exists( 'esc_html__' ) ) {
 if ( ! function_exists( 'add_settings_error' ) ) {
 	/**
 	 * Register a settings error.
+	 *
+	 * @param string $setting Setting slug.
+	 * @param string $code    Error code.
+	 * @param string $message Error message.
+	 * @param string $type    Error type.
 	 */
-	function add_settings_error(): void {
+	function add_settings_error( string $setting, string $code, string $message, string $type = 'error' ): void {
+		global $wp_settings_errors;
+
+		if ( ! is_array( $wp_settings_errors ) ) {
+			$wp_settings_errors = array();
+		}
+
+		$wp_settings_errors[] = array(
+			'setting' => $setting,
+			'code'    => $code,
+			'message' => $message,
+			'type'    => $type,
+		);
 	}
 }
 
