@@ -24,5 +24,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Download WordPress version data
+        run: |
+          curl --fail --silent --show-error --location \
+            --proto '=https' --tlsv1.2 \
+            https://api.wordpress.org/core/version-check/1.7/ \
+            --output wordpress-version-check.json
+
       - name: Check WordPress Tested Up To metadata
         run: python3 .github/scripts/check-wordpress-tested-up-to.py

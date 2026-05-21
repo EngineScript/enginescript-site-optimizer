@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import http.client
 import json
 import os
 import re
@@ -11,9 +10,8 @@ import sys
 from pathlib import Path
 
 
-WORDPRESS_API_HOST = "api.wordpress.org"
-WORDPRESS_VERSION_CHECK_PATH = "/core/version-check/1.7/"
 WORDPRESS_LATEST_VERSION = os.environ.get("WORDPRESS_LATEST_VERSION")
+WORDPRESS_VERSION_CHECK_FILE = Path("wordpress-version-check.json")
 SCAN_EXTENSIONS = {".php", ".md", ".txt"}
 DEFAULT_EXCLUDED_DIRS = {
     ".git",
@@ -83,37 +81,24 @@ def get_latest_wordpress_major_minor() -> str:
     if WORDPRESS_LATEST_VERSION:
         return normalize_major_minor(WORDPRESS_LATEST_VERSION)
 
-    connection = http.client.HTTPSConnection(WORDPRESS_API_HOST, timeout=20)
-    connection.request(
-        "GET",
-        WORDPRESS_VERSION_CHECK_PATH,
-        headers={
-            "Accept": "application/json",
-            "User-Agent": "wordpress-tested-up-to-check/1.0",
-        },
-    )
+    if not WORDPRESS_VERSION_CHECK_FILE.is_file():
+        raise RuntimeError(
+            "WORDPRESS_LATEST_VERSION must be set, or wordpress-version-check.json must exist."
+        )
 
-    response = connection.getresponse()
-    try:
-        if response.status != http.client.OK:
-            raise RuntimeError(
-                f"WordPress version-check API returned HTTP {response.status}."
-            )
-
-        payload = json.loads(response.read().decode("utf-8"))
-    finally:
-        connection.close()
-
+    payload = json.loads(WORDPRESS_VERSION_CHECK_FILE.read_text(encoding="utf-8"))
     versions = []
+
     for offer in payload.get("offers", []):
         version = offer.get("current") or offer.get("version")
         if isinstance(version, str) and VERSION_PATTERN.match(version):
             versions.append(version)
 
     if not versions:
-        raise RuntimeError("Could not determine the latest WordPress version from the version-check API.")
+        raise RuntimeError("Could not determine the latest WordPress version.")
 
-    return normalize_major_minor(max(versions, key=version_sort_key))
+    latest = max(versions, key=version_sort_key)
+    return normalize_major_minor(latest)
 
 
 def normalize_major_minor(version: str) -> str:

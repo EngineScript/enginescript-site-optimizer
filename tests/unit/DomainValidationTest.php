@@ -42,6 +42,17 @@ final class DomainValidationTest extends TestCase {
 	}
 
 	/**
+	 * Get registered settings errors from the WordPress test state.
+	 *
+	 * @return array<int, array<string, string>> Registered settings errors.
+	 */
+	private function get_settings_errors(): array {
+		global $wp_settings_errors;
+
+		return is_array( $wp_settings_errors ) ? $wp_settings_errors : array();
+	}
+
+	/**
 	 * Clean HTTPS domains are accepted and normalized.
 	 *
 	 * @param string $domain   Domain to validate.
@@ -173,7 +184,7 @@ final class DomainValidationTest extends TestCase {
 				'message' => 'Some preconnect domains were rejected for security reasons: https://example.com/path (file paths are not allowed; use domains only)',
 				'type'    => 'warning',
 			),
-			$GLOBALS['wp_settings_errors']
+			$this->get_settings_errors()
 		);
 	}
 
