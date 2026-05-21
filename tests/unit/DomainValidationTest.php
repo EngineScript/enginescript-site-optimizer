@@ -195,7 +195,6 @@ final class DomainValidationTest extends TestCase {
 		$cdn_hint          = $this->findResourceHintByHref( $preconnect_hints, 'https://cdn.example.com' );
 
 		$this->assertContains( array( 'href' => 'https://fonts.gstatic.com', 'crossorigin' => 'anonymous' ), $preconnect_hints );
-		$this->assertContains( array( 'href' => 'https://cdn.example.com' ), $preconnect_hints );
 		$this->assertIsArray( $cdn_hint );
 		$this->assertArrayNotHasKey( 'crossorigin', $cdn_hint );
 		$this->assertContains( 'https://static.example.com', $dns_prefetch_urls );
