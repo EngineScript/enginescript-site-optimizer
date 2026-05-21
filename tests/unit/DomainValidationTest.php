@@ -43,47 +43,114 @@ final class DomainValidationTest extends TestCase {
 
 	/**
 	 * Clean HTTPS domains are accepted and normalized.
+	 *
+	 * @param string $domain   Domain to validate.
+	 * @param string $expected Expected normalized domain.
 	 */
-	public function test_accepts_clean_https_domains(): void {
-		$result = es_optimizer_validate_single_domain( 'https://Fonts.GStatic.com/' );
+	#[DataProvider( 'acceptedDomainProvider' )]
+	public function test_accepts_clean_https_domains( string $domain, string $expected ): void {
+		$result = es_optimizer_validate_single_domain( $domain );
 
 		$this->assertTrue( $result['valid'] );
-		$this->assertSame( 'https://fonts.gstatic.com', $result['domain'] );
+		$this->assertSame( $expected, $result['domain'] );
+	}
+
+	/**
+	 * Provide accepted domains.
+	 *
+	 * @return array<string, array{domain: string, expected: string}>
+	 */
+	public static function acceptedDomainProvider(): array {
+		return array(
+			'uppercase-with-root-path' => array(
+				'domain'   => 'https://Fonts.GStatic.com/',
+				'expected' => 'https://fonts.gstatic.com',
+			),
+			'default-https-port'      => array(
+				'domain'   => 'https://static.example.com:443',
+				'expected' => 'https://static.example.com',
+			),
+			'custom-port'             => array(
+				'domain'   => 'https://cdn.example.com:8443',
+				'expected' => 'https://cdn.example.com:8443',
+			),
+		);
 	}
 
 	/**
 	 * Unsafe or unclean domains are rejected.
 	 *
-	 * @param string $domain Domain to validate.
+	 * @param string $domain         Domain to validate.
+	 * @param string $expected_error Expected error message fragment.
 	 */
 	#[DataProvider( 'rejectedDomainProvider' )]
-	public function test_rejects_unsafe_or_unclean_domains( string $domain ): void {
+	public function test_rejects_unsafe_or_unclean_domains( string $domain, string $expected_error ): void {
 		$result = es_optimizer_validate_single_domain( $domain );
 
 		$this->assertFalse( $result['valid'] );
-		$this->assertNotSame( '', $result['error'] );
+		$this->assertStringContainsString( $domain, $result['error'] );
+		$this->assertStringContainsString( $expected_error, $result['error'] );
 	}
 
 	/**
 	 * Provide rejected domains.
 	 *
-	 * @return array<string, array{domain: string}>
+	 * @return array<string, array{domain: string, expected_error: string}>
 	 */
 	public static function rejectedDomainProvider(): array {
 		return array(
-			'http'                => array( 'domain' => 'http://example.com' ),
-			'path'                => array( 'domain' => 'https://example.com/file.css' ),
-			'query'               => array( 'domain' => 'https://example.com?cache=bust' ),
-			'credentials'         => array( 'domain' => 'https://user:pass@example.com' ),
-			'localhost'           => array( 'domain' => 'https://localhost' ),
-			'localhost-subdomain' => array( 'domain' => 'https://cdn.localhost' ),
-			'special-use-domain'  => array( 'domain' => 'https://cache.internal' ),
-			'single-label-host'   => array( 'domain' => 'https://cdn' ),
-			'public-ip'           => array( 'domain' => 'https://8.8.8.8' ),
-			'private-ip'          => array( 'domain' => 'https://192.168.1.1' ),
-			'obfuscated-ip'       => array( 'domain' => 'https://127.000.000.001' ),
-			'invalid-label'       => array( 'domain' => 'https://-example.com' ),
-			'invalid-port'        => array( 'domain' => 'https://example.com:0' ),
+			'http'                => array(
+				'domain'         => 'http://example.com',
+				'expected_error' => 'invalid URL',
+			),
+			'path'                => array(
+				'domain'         => 'https://example.com/file.css',
+				'expected_error' => 'file paths are not allowed; use domains only',
+			),
+			'query'               => array(
+				'domain'         => 'https://example.com?cache=bust',
+				'expected_error' => 'query parameters, fragments, and credentials are not allowed',
+			),
+			'credentials'         => array(
+				'domain'         => 'https://user:pass@example.com',
+				'expected_error' => 'query parameters, fragments, and credentials are not allowed',
+			),
+			'localhost'           => array(
+				'domain'         => 'https://localhost',
+				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+			),
+			'localhost-subdomain' => array(
+				'domain'         => 'https://cdn.localhost',
+				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+			),
+			'special-use-domain'  => array(
+				'domain'         => 'https://cache.internal',
+				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+			),
+			'single-label-host'   => array(
+				'domain'         => 'https://cdn',
+				'expected_error' => 'invalid hostname',
+			),
+			'public-ip'           => array(
+				'domain'         => 'https://8.8.8.8',
+				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+			),
+			'private-ip'          => array(
+				'domain'         => 'https://192.168.1.1',
+				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+			),
+			'obfuscated-ip'       => array(
+				'domain'         => 'https://127.000.000.001',
+				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+			),
+			'invalid-label'       => array(
+				'domain'         => 'https://-example.com',
+				'expected_error' => 'invalid URL',
+			),
+			'invalid-port'        => array(
+				'domain'         => 'https://example.com:0',
+				'expected_error' => 'invalid port',
+			),
 		);
 	}
 
@@ -132,6 +199,34 @@ final class DomainValidationTest extends TestCase {
 		$this->assertIsArray( $cdn_hint );
 		$this->assertArrayNotHasKey( 'crossorigin', $cdn_hint );
 		$this->assertContains( 'https://static.example.com', $dns_prefetch_urls );
+	}
+
+	/**
+	 * Resource hints are not added when their feature flags are disabled.
+	 */
+	public function test_resource_hints_are_not_added_when_feature_flags_are_disabled(): void {
+		$options                         = es_optimizer_get_default_options();
+		$options['enable_preconnect']    = 0;
+		$options['preconnect_domains']   = 'https://cdn.example.com';
+		$options['enable_dns_prefetch']  = 0;
+		$options['dns_prefetch_domains'] = 'https://static.example.com';
+
+		update_option( 'es_optimizer_options', $options );
+		es_optimizer_clear_options_cache();
+
+		$existing_preconnect_hints = array(
+			array( 'href' => 'https://existing.example.com' ),
+		);
+		$existing_dns_prefetch_urls = array( 'https://existing.example.com' );
+
+		$this->assertSame(
+			$existing_preconnect_hints,
+			es_optimizer_add_preconnect_resource_hints( $existing_preconnect_hints, 'preconnect' )
+		);
+		$this->assertSame(
+			$existing_dns_prefetch_urls,
+			es_optimizer_add_dns_prefetch_resource_hints( $existing_dns_prefetch_urls, 'dns-prefetch' )
+		);
 	}
 
 	/**
