@@ -3,19 +3,16 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import os
 import re
-import subprocess
 import sys
-import urllib.request
 from pathlib import Path
 
 
-WORDPRESS_VERSION_CHECK_URL = os.environ.get(
-    "WORDPRESS_VERSION_CHECK_URL",
-    "https://api.wordpress.org/core/version-check/1.7/",
-)
+WORDPRESS_API_HOST = "api.wordpress.org"
+WORDPRESS_VERSION_CHECK_PATH = "/core/version-check/1.7/"
 WORDPRESS_LATEST_VERSION = os.environ.get("WORDPRESS_LATEST_VERSION")
 SCAN_EXTENSIONS = {".php", ".md", ".txt"}
 DEFAULT_EXCLUDED_DIRS = {
@@ -25,6 +22,7 @@ DEFAULT_EXCLUDED_DIRS = {
     "dist",
     "node_modules",
     "plugin-check-build",
+    "__pycache__",
     "vendor",
 }
 TESTED_UP_TO_PATTERN = re.compile(
@@ -41,7 +39,7 @@ def main() -> int:
     findings = find_tested_up_to_entries(excluded_dirs)
 
     if not findings:
-        message = "No Tested up to metadata was found in tracked PHP, Markdown, or text files."
+        message = "No Tested up to metadata was found in PHP, Markdown, or text files."
         print_github_error(message)
         write_summary(latest_version, [], [message])
         return 1
@@ -85,13 +83,26 @@ def get_latest_wordpress_major_minor() -> str:
     if WORDPRESS_LATEST_VERSION:
         return normalize_major_minor(WORDPRESS_LATEST_VERSION)
 
-    request = urllib.request.Request(
-        WORDPRESS_VERSION_CHECK_URL,
-        headers={"User-Agent": "wordpress-tested-up-to-check/1.0"},
+    connection = http.client.HTTPSConnection(WORDPRESS_API_HOST, timeout=20)
+    connection.request(
+        "GET",
+        WORDPRESS_VERSION_CHECK_PATH,
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "wordpress-tested-up-to-check/1.0",
+        },
     )
 
-    with urllib.request.urlopen(request, timeout=20) as response:
-        payload = json.load(response)
+    response = connection.getresponse()
+    try:
+        if response.status != http.client.OK:
+            raise RuntimeError(
+                f"WordPress version-check API returned HTTP {response.status}."
+            )
+
+        payload = json.loads(response.read().decode("utf-8"))
+    finally:
+        connection.close()
 
     versions = []
     for offer in payload.get("offers", []):
@@ -130,7 +141,7 @@ def find_tested_up_to_entries(
 ) -> list[dict[str, str | int | None]]:
     findings = []
 
-    for path in get_tracked_files():
+    for path in get_scanned_files(excluded_dirs):
         if not should_scan(path, excluded_dirs):
             continue
 
@@ -152,16 +163,24 @@ def find_tested_up_to_entries(
     return findings
 
 
-def get_tracked_files() -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "*.php", "*.md", "*.txt"],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+def get_scanned_files(excluded_dirs: set[str]) -> list[Path]:
+    root = Path.cwd()
+    paths = []
 
-    return [Path(line) for line in result.stdout.splitlines() if line.strip()]
+    for current_dir, dirnames, filenames in os.walk(root):
+        dirnames[:] = [
+            dirname for dirname in dirnames if dirname not in excluded_dirs
+        ]
+
+        current_path = Path(current_dir)
+        for filename in filenames:
+            path = current_path / filename
+            relative_path = path.relative_to(root)
+
+            if should_scan(relative_path, excluded_dirs):
+                paths.append(relative_path)
+
+    return sorted(paths)
 
 
 def should_scan(path: Path, excluded_dirs: set[str]) -> bool:

@@ -5,12 +5,8 @@
 name: WordPress Tested Up To
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
   schedule:
     - cron: '23 12 * * *'
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

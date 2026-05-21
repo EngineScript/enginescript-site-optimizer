@@ -192,7 +192,7 @@ final class DomainValidationTest extends TestCase {
 
 		$preconnect_hints  = es_optimizer_add_preconnect_resource_hints( array(), 'preconnect' );
 		$dns_prefetch_urls = es_optimizer_add_dns_prefetch_resource_hints( array(), 'dns-prefetch' );
-		$cdn_hint          = $this->findResourceHintByHref( $preconnect_hints, 'https://cdn.example.com' );
+		$cdn_hint          = $this->find_resource_hint_by_href( $preconnect_hints, 'https://cdn.example.com' );
 
 		$this->assertContains( array( 'href' => 'https://fonts.gstatic.com', 'crossorigin' => 'anonymous' ), $preconnect_hints );
 		$this->assertIsArray( $cdn_hint );
@@ -235,7 +235,7 @@ final class DomainValidationTest extends TestCase {
 	 * @param string                                  $href  Hint href to locate.
 	 * @return array<string, mixed>|null Matching hint, if present.
 	 */
-	private function findResourceHintByHref( array $hints, string $href ): ?array {
+	private function find_resource_hint_by_href( array $hints, string $href ): ?array {
 		foreach ( $hints as $hint ) {
 			if ( is_array( $hint ) && $href === ( $hint['href'] ?? null ) ) {
 				return $hint;
