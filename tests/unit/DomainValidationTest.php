@@ -16,9 +16,9 @@ final class DomainValidationTest extends TestCase {
 	 * Reset options between tests.
 	 */
 	protected function setUp(): void {
-		parent::setUp();
-
 		$this->resetTestState();
+
+		parent::setUp();
 	}
 
 	/**
@@ -207,6 +207,7 @@ final class DomainValidationTest extends TestCase {
 
 		$this->assertContains( array( 'href' => 'https://fonts.gstatic.com', 'crossorigin' => 'anonymous' ), $preconnect_hints );
 		$this->assertIsArray( $cdn_hint );
+		$this->assertSame( 'https://cdn.example.com', $cdn_hint['href'] );
 		$this->assertArrayNotHasKey( 'crossorigin', $cdn_hint );
 		$this->assertContains( 'https://static.example.com', $dns_prefetch_urls );
 	}
