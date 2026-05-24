@@ -1,6 +1,6 @@
 # This workflow automatically posts a guidance comment on new issues.
 # It provides instructions to help users submit detailed information about their
-# WordPress environment and the issue they're experiencing with the EngineScript Site Optimizer plugin.
+# WordPress environment and the issue they are experiencing with EngineScript Site Optimizer.
 # This helps maintainers diagnose and fix issues more efficiently.
 
 name: Issue Guidance
@@ -10,8 +10,11 @@ on:
     types: [opened]
 
 permissions:
-  contents: write
+  contents: read
   issues: write
+
+env:
+  PLUGIN_SLUG: enginescript-site-optimizer
 
 jobs:
   guide:
@@ -22,11 +25,11 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Thanks for opening an issue. Please provide a detailed description of the problem you're facing. If you have error messages or logs, please include them as well.
+            Thanks for opening an issue. Please provide a detailed description of the problem you are seeing. If you have error messages or logs, include them as well.
 
             To help us diagnose the issue, please include:
             - WordPress version
             - PHP version
-            - List of other plugins you're using
+            - List of other plugins you are using
             - Steps to reproduce the issue
             - What you expected to happen vs. what actually happened
