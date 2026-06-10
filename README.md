@@ -7,7 +7,7 @@
 
 ## Current Version
 
-[![Version](https://img.shields.io/badge/Version-2.1.0-orange.svg?logo=github)](https://github.com/EngineScript/enginescript-site-optimizer/releases/download/v2.1.0/enginescript-site-optimizer-2.1.0.zip)
+[![Version](https://img.shields.io/badge/Version-2.1.0-orange.svg?logo=github)](https://github.com/EngineScript/enginescript-site-optimizer/releases/latest/download/enginescript-site-optimizer-2.1.0.zip)
 
 ## Description
 
