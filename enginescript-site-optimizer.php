@@ -3,7 +3,7 @@
  * Plugin Name: EngineScript Site Optimizer
  * Plugin URI: https://github.com/EngineScript/enginescript-site-optimizer
  * Description: Optimizes WordPress by removing unnecessary features and scripts to improve performance
- * Version: 2.0.0
+ * Version: 2.1.0
  * Author: EngineScript
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin version.
 if ( ! defined( 'ES_SITE_OPTIMIZER_VERSION' ) ) {
-	define( 'ES_SITE_OPTIMIZER_VERSION', '2.0.0' );
+	define( 'ES_SITE_OPTIMIZER_VERSION', '2.1.0' );
 }
 
 if ( ! defined( 'ES_SITE_OPTIMIZER_FILE' ) ) {

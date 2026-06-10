@@ -8,7 +8,7 @@ This is a WordPress performance optimization plugin that removes unnecessary fea
 ## Plugin Details
 
 - **Name:** EngineScript Site Optimizer
-- **Version:** 2.0.0
+- **Version:** 2.1.0
 - **WordPress Compatibility:** 6.8+
 - **PHP Compatibility:** 8.2+
 - **License:** GPL-3.0-or-later

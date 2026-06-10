@@ -3,7 +3,7 @@ Contributors: enginescript
 Tags: optimization, performance, cleanup
 Requires at least: 6.8
 Tested up to: 7.0
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 Requires PHP: 8.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -43,7 +43,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 
 == Changelog ==
 
-= Unreleased =
+= 2.1.0 - 2026-06-10 =
 * **BUG FIX**: Removed a redundant `is_array()` check in `es_optimizer_disable_emojis_tinymce()` after adding a strict `array` parameter type, resolving a PHPStan always-true warning on PHP 8.3
 * **BUG FIX (Critical)**: Fixed License URI pointing to GPL 2.0 instead of GPL 3.0 in plugin header and readme.txt
 * **BUG FIX (Critical)**: Fixed release workflow producing incomplete zip files missing `languages/` directory and `readme.txt`
@@ -66,6 +66,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 * **DOCS**: Corrected feature lists in GEMINI.md and readme.txt to match actually implemented features
 * **DOCS**: Raised the documented WordPress baseline to 6.8+ across plugin metadata and contributor guidance
 * **DOCS**: Updated POT translation file with correct line references and new section header strings
+* **TOOLING**: Expanded `.gitignore` coverage for local instruction files, IDE settings, caches, logs, temporary files, dependencies, and distribution artifacts
 * **SECURITY**: Eliminated `phpcs:ignore` on preconnect output with explicit if/else for crossorigin
 * **SECURITY**: Replaced fragile substring crossorigin detection with exact hostname matching
 
