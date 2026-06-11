@@ -6,6 +6,8 @@
         "markdown": true,
         "scminput": true,
         "shellscript": true,
+        "javascript": true,
         "github-actions-workflow": true
-    }
+    },
+    "git.autofetch": true
 }
