@@ -43,6 +43,9 @@ No, the plugin has a simple interface where you can toggle features on and off.
 
 == Changelog ==
 
+= Unreleased =
+* **CODE QUALITY**: Replaced PHP-native IP validation with WordPress native IP validation for resource hint host checks
+
 = 2.1.0 - 2026-06-10 =
 * **BUG FIX**: Removed a redundant `is_array()` check in `es_optimizer_disable_emojis_tinymce()` after adding a strict `array` parameter type, resolving a PHPStan always-true warning on PHP 8.3
 * **BUG FIX (Critical)**: Fixed License URI pointing to GPL 2.0 instead of GPL 3.0 in plugin header and readme.txt

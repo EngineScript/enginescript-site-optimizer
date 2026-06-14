@@ -269,6 +269,18 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'rest_is_ip_address' ) ) {
+	/**
+	 * Check whether a value is an IP address.
+	 *
+	 * @param string $ip IP address.
+	 * @return string|false IP address when valid; false otherwise.
+	 */
+	function rest_is_ip_address( string $ip ): string|false {
+		return false !== filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : false;
+	}
+}
+
 if ( ! function_exists( '__' ) ) {
 	/**
 	 * Return translated text.

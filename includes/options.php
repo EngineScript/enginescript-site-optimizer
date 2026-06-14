@@ -458,7 +458,7 @@ function es_optimizer_is_disallowed_resource_hint_host( string $host ): bool {
  * @return bool True when the host is an IP literal.
  */
 function es_optimizer_is_ip_literal_host( string $host ): bool {
-	return false !== filter_var( $host, FILTER_VALIDATE_IP );
+	return false !== rest_is_ip_address( $host );
 }
 
 /**

@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- **Code Quality**: Replaced PHP-native IP validation with WordPress native IP validation for resource hint host checks
+
 ## [2.1.0] - 2026-06-10
 
 ### Fixed
