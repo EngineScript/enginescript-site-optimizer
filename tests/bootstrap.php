@@ -82,10 +82,13 @@ if ( ! function_exists( 'remove_action' ) ) {
 	/**
 	 * Remove an action callback.
 	 *
+	 * @param string                $hook     Hook name.
+	 * @param callable|string|array $callback Callback.
+	 * @param int                   $priority Hook priority.
 	 * @return bool True.
 	 */
-	function remove_action(): bool {
-		return true;
+	function remove_action( string $hook, callable|string|array $callback, int $priority = 10 ): bool {
+		return remove_filter( $hook, $callback, $priority );
 	}
 }
 
@@ -93,9 +96,13 @@ if ( ! function_exists( 'remove_filter' ) ) {
 	/**
 	 * Remove a filter callback.
 	 *
+	 * @param string                $hook     Hook name.
+	 * @param callable|string|array $callback Callback.
+	 * @param int                   $priority Hook priority.
 	 * @return bool True.
 	 */
-	function remove_filter(): bool {
+	function remove_filter( string $hook, callable|string|array $callback, int $priority = 10 ): bool {
+		unset( $hook, $callback, $priority );
 		return true;
 	}
 }
@@ -195,7 +202,19 @@ if ( ! function_exists( 'wp_unslash' ) ) {
 	 * @return mixed Unslashed value.
 	 */
 	function wp_unslash( mixed $value ): mixed {
-		return is_array( $value ) ? array_map( 'wp_unslash', $value ) : stripslashes( (string) $value );
+		if ( is_array( $value ) ) {
+			return array_map( 'wp_unslash', $value );
+		}
+
+		if ( is_object( $value ) ) {
+			foreach ( get_object_vars( $value ) as $key => $property_value ) {
+				$value->$key = wp_unslash( $property_value );
+			}
+
+			return $value;
+		}
+
+		return is_string( $value ) ? stripslashes( $value ) : $value;
 	}
 }
 
@@ -261,11 +280,47 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	 * Parse a URL.
 	 *
 	 * @param string   $url       URL.
-	 * @param int|null $component URL component.
+	 * @param int      $component URL component.
 	 * @return mixed Parsed URL.
 	 */
-	function wp_parse_url( string $url, ?int $component = null ): mixed {
-		return null === $component ? parse_url( $url ) : parse_url( $url, $component );
+	function wp_parse_url( string $url, int $component = -1 ): mixed {
+		$to_unset = array();
+
+		if ( str_starts_with( $url, '//' ) ) {
+			$to_unset[] = 'scheme';
+			$url        = 'placeholder:' . $url;
+		} elseif ( str_starts_with( $url, '/' ) ) {
+			$to_unset[] = 'scheme';
+			$to_unset[] = 'host';
+			$url        = 'placeholder://placeholder' . $url;
+		}
+
+		$parts = parse_url( $url );
+		if ( false === $parts ) {
+			return false;
+		}
+
+		foreach ( $to_unset as $key ) {
+			unset( $parts[ $key ] );
+		}
+
+		if ( -1 === $component ) {
+			return $parts;
+		}
+
+		$translation = array(
+			PHP_URL_SCHEME   => 'scheme',
+			PHP_URL_HOST     => 'host',
+			PHP_URL_PORT     => 'port',
+			PHP_URL_USER     => 'user',
+			PHP_URL_PASS     => 'pass',
+			PHP_URL_PATH     => 'path',
+			PHP_URL_QUERY    => 'query',
+			PHP_URL_FRAGMENT => 'fragment',
+		);
+		$key         = $translation[ $component ] ?? false;
+
+		return false !== $key && isset( $parts[ $key ] ) ? $parts[ $key ] : null;
 	}
 }
 
