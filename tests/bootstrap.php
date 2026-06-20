@@ -285,10 +285,12 @@ if ( ! function_exists( '__' ) ) {
 	/**
 	 * Return translated text.
 	 *
-	 * @param string $text Text.
+	 * @param string $text   Text.
+	 * @param string $domain Text domain.
 	 * @return string Text.
 	 */
-	function __( string $text ): string {
+	function __( string $text, string $domain = 'default' ): string {
+		unset( $domain );
 		return $text;
 	}
 }
@@ -309,10 +311,12 @@ if ( ! function_exists( 'esc_html__' ) ) {
 	/**
 	 * Return escaped translated text.
 	 *
-	 * @param string $text Text.
+	 * @param string $text   Text.
+	 * @param string $domain Text domain.
 	 * @return string Escaped text.
 	 */
-	function esc_html__( string $text ): string {
+	function esc_html__( string $text, string $domain = 'default' ): string {
+		unset( $domain );
 		return esc_html( $text );
 	}
 }
@@ -384,7 +388,7 @@ if ( ! function_exists( '__return_null' ) ) {
 	 *
 	 * @return null
 	 */
-	function __return_null() {
+	function __return_null(): null {
 		return null;
 	}
 }
