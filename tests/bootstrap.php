@@ -301,14 +301,18 @@ if ( ! function_exists( 'esc_url_raw' ) ) {
 	 * @param array<int, string>|null $protocols Allowed protocols.
 	 * @return string Sanitized URL.
 	 */
-	function esc_url_raw( string $url, ?array $protocols = null ): string {
-		$url               = trim( $url );
-		$scheme            = parse_url( $url, PHP_URL_SCHEME );
-		$allowed_protocols = $protocols ?? array();
+		function esc_url_raw( string $url, ?array $protocols = null ): string {
+			$url               = trim( $url );
+			$scheme            = parse_url( $url, PHP_URL_SCHEME );
+			$allowed_protocols = $protocols ?? array();
 
-		if ( ! empty( $allowed_protocols ) && is_string( $scheme ) && ! in_array( $scheme, $allowed_protocols, true ) ) {
-			return '';
-		}
+			if ( false === $scheme ) {
+				return '';
+			}
+
+			if ( ! empty( $allowed_protocols ) && is_string( $scheme ) && ! in_array( $scheme, $allowed_protocols, true ) ) {
+				return '';
+			}
 
 		return filter_var( $url, FILTER_VALIDATE_URL ) ? $url : '';
 	}
