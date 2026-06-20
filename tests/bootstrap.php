@@ -254,7 +254,7 @@ if ( ! function_exists( 'esc_url_raw' ) ) {
 		$url    = trim( $url );
 		$scheme = parse_url( $url, PHP_URL_SCHEME );
 
-		if ( ! empty( $protocols ) && ( ! is_string( $scheme ) || ! in_array( $scheme, $protocols, true ) ) ) {
+		if ( ! empty( $protocols ) && is_string( $scheme ) && ! in_array( $scheme, $protocols, true ) ) {
 			return '';
 		}
 
@@ -443,7 +443,7 @@ if ( ! function_exists( '__return_null' ) ) {
 	 *
 	 * @return null
 	 */
-	function __return_null(): null {
+	function __return_null(): mixed {
 		return null;
 	}
 }
