@@ -443,7 +443,7 @@ if ( ! function_exists( '__return_null' ) ) {
 	 *
 	 * @return null
 	 */
-	function __return_null(): mixed {
+	function __return_null(): null {
 		return null;
 	}
 }
