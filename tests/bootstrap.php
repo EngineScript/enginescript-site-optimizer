@@ -332,7 +332,9 @@ if ( ! function_exists( 'rest_is_ip_address' ) ) {
 	 * @return string|false IP address when valid; false otherwise.
 	 */
 	function rest_is_ip_address( string $ip ): string|false {
-		return false !== filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : false;
+		$validated_ip = filter_var( $ip, FILTER_VALIDATE_IP );
+
+		return is_string( $validated_ip ) ? $validated_ip : false;
 	}
 }
 
@@ -443,7 +445,7 @@ if ( ! function_exists( '__return_null' ) ) {
 	 *
 	 * @return null
 	 */
-	function __return_null(): null {
+	function __return_null() {
 		return null;
 	}
 }
