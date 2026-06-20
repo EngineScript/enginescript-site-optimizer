@@ -168,7 +168,7 @@ if ( ! function_exists( 'add_option' ) ) {
 	 *
 	 * @param string           $option     Option name.
 	 * @param mixed            $value      Option value.
-	 * @param string           $deprecated Deprecated description.
+	 * @param string           $deprecated Deprecated parameter, not used.
 	 * @param bool|string|null $autoload   Autoload setting.
 	 * @return bool True.
 	 */
@@ -280,7 +280,13 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 		$value = strip_tags( $value );
 
 		if ( $remove_breaks ) {
-			$value = preg_replace( '/[\r\n\t ]+/', ' ', $value ) ?? $value;
+			$normalized_value = preg_replace( '/[\r\n\t ]+/', ' ', $value );
+
+			if ( null === $normalized_value ) {
+				throw new RuntimeException( 'Failed to normalize stripped tag whitespace.' );
+			}
+
+			$value = $normalized_value;
 		}
 
 		return trim( $value );
@@ -327,7 +333,7 @@ if ( ! function_exists( 'wp_parse_url' ) ) {
 	 *
 	 * @param string   $url       URL.
 	 * @param int      $component URL component.
-	 * @return mixed Parsed URL.
+	 * @return array<string, mixed>|string|int|false|null Parsed URL.
 	 */
 	function wp_parse_url( string $url, int $component = -1 ): mixed {
 		$to_unset = array();
