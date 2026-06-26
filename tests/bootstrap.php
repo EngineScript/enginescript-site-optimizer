@@ -508,9 +508,11 @@ if ( ! function_exists( '__return_null' ) ) {
 	/**
 	 * Return null.
 	 *
+	 * The native null return type is intentional; this project requires PHP 8.2+.
+	 *
 	 * @return null
 	 */
-	function __return_null() {
+	function __return_null(): null {
 		return null;
 	}
 }
