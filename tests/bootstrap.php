@@ -121,7 +121,11 @@ if ( ! function_exists( 'register_activation_hook' ) ) {
 			$es_optimizer_test_activation_hooks = array();
 		}
 
-		$es_optimizer_test_activation_hooks[ $file ] = $callback;
+		if ( ! isset( $es_optimizer_test_activation_hooks[ $file ] ) || ! is_array( $es_optimizer_test_activation_hooks[ $file ] ) ) {
+			$es_optimizer_test_activation_hooks[ $file ] = array();
+		}
+
+		$es_optimizer_test_activation_hooks[ $file ][] = $callback;
 	}
 }
 
@@ -139,7 +143,11 @@ if ( ! function_exists( 'register_deactivation_hook' ) ) {
 			$es_optimizer_test_deactivation_hooks = array();
 		}
 
-		$es_optimizer_test_deactivation_hooks[ $file ] = $callback;
+		if ( ! isset( $es_optimizer_test_deactivation_hooks[ $file ] ) || ! is_array( $es_optimizer_test_deactivation_hooks[ $file ] ) ) {
+			$es_optimizer_test_deactivation_hooks[ $file ] = array();
+		}
+
+		$es_optimizer_test_deactivation_hooks[ $file ][] = $callback;
 	}
 }
 
@@ -283,7 +291,7 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 			$normalized_value = preg_replace( '/[\r\n\t ]+/', ' ', $value );
 
 			if ( null === $normalized_value ) {
-				throw new RuntimeException( 'Failed to normalize stripped tag whitespace.' );
+				throw new RuntimeException( 'Failed to normalize stripped tag whitespace: ' . preg_last_error_msg() );
 			}
 
 			$value = $normalized_value;
