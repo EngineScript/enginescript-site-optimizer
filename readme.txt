@@ -2,7 +2,7 @@
 Contributors: enginescript
 Tags: optimization, performance, cleanup
 Requires at least: 6.8
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 2.1.0
 Requires PHP: 8.2
 License: GPLv3 or later
