@@ -8,27 +8,27 @@ Requires PHP: 8.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Optimizes WordPress by removing unnecessary features and scripts to improve performance.
+Configure optional WordPress features and resource hints.
 
 == Description ==
 
-EngineScript Site Optimizer removes unnecessary WordPress features and scripts to optimize your site's performance.
-It helps reduce page load times and improves overall site speed by disabling unused functionality.
+EngineScript Site Optimizer lets you disable selected WordPress features and configure resource hints.
+Choose the options that suit your site and check their effects on your theme and plugins.
 
 Key features:
 * Disable WordPress emojis
 * Remove jQuery Migrate
 * Disable classic theme styles
-* Remove unnecessary header meta (version, RSD, WLW, shortlinks, recent comments style)
+* Remove selected header output (version, RSD, shortlinks, recent comments style)
 * DNS prefetch and preconnect management
-* Disable Jetpack ads and promotions
+* Disable Jetpack promotional messages and Blaze promotions
 * Disable post via email
 
 == Installation ==
 
 1. Upload the plugin files to the `/wp-content/plugins/enginescript-site-optimizer` directory.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Use the Settings page to configure the optimization options.
+3. Configure the plugin under Settings > Site Optimizer.
 
 == Frequently Asked Questions ==
 
@@ -44,6 +44,22 @@ No, the plugin has a simple interface where you can toggle features on and off.
 == Changelog ==
 
 = Unreleased =
+* Clarify settings help and Jetpack promotion labels without changing feature behavior or validation rules.
+* Refresh the translation template from all production PHP, including uninstall messages, and declare the bundled language directory.
+* Limit domain-list work and retain previous values for oversize submissions; skip oversize saved lists without changing their stored text.
+* Report rejected-line totals with at most three safe samples and avoid duplicate plugin warnings during repeated validation.
+* Build exact resource-hint membership once per callback, preserving foreign entries without unsafe value conversions.
+* Explain domain-list byte and line limits and show associated guidance for oversize saved lists.
+* Reject unsupported preconnect ports and skip legacy custom-port hints while preserving their saved text until an explicit save.
+* Correct admin and embed emoji hooks, safely match equivalent DNS hint hosts, and apply reversible filters using the current site's settings.
+* Use the core settings notice display, escape plain-text section and field titles, and associate textarea instructions with their controls.
+* Retire the obsolete Windows Live Writer manifest setting; ignore its old key on reads and omit it on a normal save.
+* Clarify HTTPS port requirements, hostname-only DNS prefetch behavior, and invalid-list save behavior in settings help.
+* Read current-site options through WordPress caching; missing settings remain virtual until a changed save.
+* Preserve previous domain lists for malformed submissions and validate original URL text before normalization.
+* Use localized rejection reasons and line numbers without submitted URLs or credentials.
+* Clean the plugin option across multisite networks on uninstall, verify deletion, restore site context, and stop file removal on failure. Pause site/settings changes during removal; large installations may need an operator-run uninstall with sufficient resources.
+* Restore optimizer package, analyzer and contributor-guidance targets without changing locked dependency versions.
 * **CODE QUALITY**: Replaced PHP-native IP validation with WordPress native IP validation for resource hint host checks
 
 = 2.1.0 - 2026-06-10 =

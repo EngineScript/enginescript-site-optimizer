@@ -6,9 +6,14 @@ parameters:
     paths:
         - enginescript-site-optimizer.php
         - includes/
+        - uninstall.php
 
     excludePaths:
         - .github
 
     bootstrapFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors: []

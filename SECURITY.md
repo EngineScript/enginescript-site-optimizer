@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We release security updates for the latest major version of EngineScript. Please ensure you are running the latest version to receive security patches.
+We release security updates for the latest major version of EngineScript Site Optimizer. Please ensure you are running the latest version to receive security patches.
 
 | Version    | Supported          |
 |------------|--------------------|
@@ -14,20 +14,20 @@ We release security updates for the latest major version of EngineScript. Please
 If you discover a security vulnerability in EngineScript Site Optimizer, please follow these steps:
 
 1. **Do not open a public issue.**
-2. Email us at <security@enginescript.com> with details of the vulnerability.
+2. Email us at [peter@visistruct.com](mailto:peter@visistruct.com) with details of the vulnerability.
 3. Include:
    - A clear description of the issue
    - Steps to reproduce (if applicable)
-   - Any relevant logs or screenshots
+   - Relevant logs or screenshots with credentials, personal data, and private paths removed
    - Your contact information for follow-up
 
 We will acknowledge your report within 5 business days and work with you to resolve the issue promptly.
 
 ## Security Best Practices
 
-- Keep your WordPress installation and dependencies up to date. If a managed deployment process requires approval, prioritize security updates and apply them promptly after approval.
+- Keep WordPress, EngineScript Site Optimizer, and their dependencies up to date.
 - Use strong, unique passwords for all accounts.
-- Restrict SSH and admin access to trusted IPs.
+- Restrict access to plugin settings and protect credentials, database backups, and debug logs.
 - Regularly back up your data.
 - Review and apply security updates as soon as they are available.
 

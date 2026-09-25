@@ -15,7 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.6.0
  */
 function es_optimizer_init_plugin(): void {
-	es_optimizer_clear_options_cache();
 	es_optimizer_init_admin();
 	es_optimizer_init_frontend_optimizations();
 	es_optimizer_init_plugin_links();
@@ -24,29 +23,31 @@ function es_optimizer_init_plugin(): void {
 /**
  * Plugin activation hook.
  *
+ * Missing settings remain virtual until a changed save. WordPress supplies the
+ * boolean argument; the public callback intentionally has no side effects.
+ *
  * @since 1.6.0
  * @param bool $network_wide Whether the plugin is being network activated.
+ * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
+ * @phpstan-ignore void.pure (Retain the registered lifecycle callback without creating settings.)
  */
 function es_optimizer_activate_plugin( bool $network_wide = false ): void {
 	unset( $network_wide );
-
-	if ( false === get_option( 'es_optimizer_options' ) ) {
-		add_option( 'es_optimizer_options', es_optimizer_get_default_options() );
-	}
-
-	es_optimizer_clear_options_cache();
 }
 
 /**
  * Plugin deactivation hook.
  *
+ * Keep each site's saved settings for a later activation. WordPress supplies
+ * the boolean argument; the public callback intentionally has no side effects.
+ *
  * @since 1.6.0
  * @param bool $network_wide Whether the plugin is being network deactivated.
+ * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
+ * @phpstan-ignore void.pure (Retain the registered lifecycle callback without deleting settings.)
  */
 function es_optimizer_deactivate_plugin( bool $network_wide = false ): void {
 	unset( $network_wide );
-
-	es_optimizer_clear_options_cache();
 }
 
 /**
@@ -60,6 +61,7 @@ function es_optimizer_init_admin(): void {
 	}
 
 	add_action( 'admin_init', 'es_optimizer_init_settings' );
+	add_action( 'admin_init', 'es_optimizer_disable_admin_emojis' );
 	add_action( 'admin_menu', 'es_optimizer_add_settings_page' );
 }
 
@@ -76,6 +78,8 @@ function es_optimizer_init_frontend_optimizations(): void {
 	add_action( 'init', 'es_optimizer_remove_recent_comments_style' );
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints', 10, 2 );
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_dns_prefetch_resource_hints', 10, 2 );
+	add_filter( 'tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce' );
+	add_filter( 'wp_resource_hints', 'es_optimizer_disable_emojis_remove_dns_prefetch', 10, 2 );
 	add_action( 'init', 'es_optimizer_disable_jetpack_ads' );
 	add_action( 'init', 'es_optimizer_disable_post_via_email' );
 }
@@ -91,6 +95,5 @@ function es_optimizer_init_plugin_links(): void {
 }
 
 add_action( 'plugins_loaded', 'es_optimizer_init_plugin' );
-add_action( 'update_option_es_optimizer_options', 'es_optimizer_clear_options_cache', 10, 0 );
 register_activation_hook( ES_SITE_OPTIMIZER_FILE, 'es_optimizer_activate_plugin' );
 register_deactivation_hook( ES_SITE_OPTIMIZER_FILE, 'es_optimizer_deactivate_plugin' );

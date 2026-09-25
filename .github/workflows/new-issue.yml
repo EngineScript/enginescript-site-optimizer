@@ -1,35 +1,46 @@
-# This workflow automatically posts a guidance comment on new issues.
-# It provides instructions to help users submit detailed information about their
-# WordPress environment and the issue they are experiencing with EngineScript Site Optimizer.
-# This helps maintainers diagnose and fix issues more efficiently.
+# This workflow automatically posts a guidance comment on new pull requests.
+# It welcomes contributors and provides a brief message to acknowledge their
+# contribution to EngineScript Site Exporter.
+# The workflow is triggered whenever a new pull request is opened.
 
-name: Issue Guidance
+name: New Pull Request Guidance
 
 on:
-  issues:
+  # pull_request_target is used only so the workflow can post this static
+  # guidance comment on forked PRs. Do not add checkout, build, or script steps
+  # here because this event has access to repository-scoped credentials.
+  pull_request_target:
     types: [opened]
 
-permissions:
-  contents: read
-  issues: write
+permissions: read-all
 
 env:
-  PLUGIN_SLUG: enginescript-site-optimizer
+  PLUGIN_SLUG: enginescript-site-exporter
 
 jobs:
   guide:
     runs-on: ubuntu-latest
+    # Explicitly define permissions required by the job
+    permissions:
+      pull-requests: write
     steps:
-      - name: Post guidance comment
+      - name: Post guidance comment on new PR
         uses: peter-evans/create-or-update-comment@v5
         with:
-          issue-number: ${{ github.event.issue.number }}
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Thanks for opening an issue. Please provide a detailed description of the problem you are seeing. If you have error messages or logs, include them as well.
+            Thanks for contributing to EngineScript Site Exporter!
 
-            To help us diagnose the issue, please include:
-            - WordPress version
-            - PHP version
-            - List of other plugins you are using
-            - Steps to reproduce the issue
-            - What you expected to happen vs. what actually happened
+            **Before we review:**
+            - [ ] Have you tested your changes with WordPress 6.8+?
+            - [ ] Are your changes compatible with PHP 8.2+?
+            - [ ] Have you followed WordPress coding standards?
+            - [ ] Did you update the CHANGELOG.md if needed?
+
+            **Security Reminder**
+            This plugin creates site export archives, so please ensure:
+            - All user input is properly sanitized
+            - All output is properly escaped
+            - No security vulnerabilities are introduced
+
+            We'll review your PR soon.

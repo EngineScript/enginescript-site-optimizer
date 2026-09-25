@@ -33,68 +33,86 @@ jobs:
   plugin-check:
     name: WP Plugin Check (PHP 8.3)
     runs-on: ubuntu-latest
-
+    timeout-minutes: 45
+    
     strategy:
       fail-fast: false
-
+    
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
         with:
           # Always fetch the latest commit, disable any caching
           fetch-depth: 0
           clean: true
-
+      
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           extensions: mysqli, curl, zip, intl, gd, mbstring, fileinfo, xml
           coverage: none
           tools: composer:v2
-
+      
       - name: Clear any existing composer cache
+        id: clear_any_existing_composer_cache
         run: |
           composer clear-cache || true
           rm -rf vendor/ composer.lock || true
-
+      
       - name: Install Composer dependencies (no cache)
+        id: install_composer_dependencies_no_cache
         run: |
           composer install --prefer-dist --no-progress --no-cache
 
       - name: Clean up potential artifact directories
+        id: clean_up_potential_artifact_directories
         run: |
-          echo "Removing artifact directories to prevent conflicts..."
+          echo "🧹 Removing any artifact directories to prevent conflicts..."
           rm -rf .reports 2>/dev/null || true
           rm -rf build 2>/dev/null || true
-          echo "Cleanup complete."
+          echo "✅ Cleanup complete"
 
       - name: Prepare Plugin Check build directory
+        id: prepare_plugin_check_build_directory
         run: |
+          # Stdlib-only automation fixtures run on this runner, not the workstation.
+          python3 .github/scripts/test-automation.py
           rm -rf plugin-check-build 2>/dev/null || true
 
-          PLUGIN_SLUG="enginescript-site-optimizer"
+          PLUGIN_SLUG="enginescript-site-exporter"
           BUILD_DIR="plugin-check-build/${PLUGIN_SLUG}"
 
           mkdir -p "$BUILD_DIR"
 
-          cp enginescript-site-optimizer.php "$BUILD_DIR/"
-          cp -r includes "$BUILD_DIR/"
+          cp enginescript-site-exporter.php "$BUILD_DIR/"
           cp readme.txt "$BUILD_DIR/"
           cp README.md "$BUILD_DIR/"
           cp CHANGELOG.md "$BUILD_DIR/"
           cp LICENSE "$BUILD_DIR/"
-          if [ -d languages ]; then
-            cp -r languages "$BUILD_DIR/"
-          fi
+          cp -r includes "$BUILD_DIR/"
+          cp -r css "$BUILD_DIR/"
+          cp -r js "$BUILD_DIR/"
+          cp -r languages "$BUILD_DIR/"
+          # Inspect a release-shaped ZIP without publishing or changing the PCP input.
+          PACKAGE_ZIP="$RUNNER_TEMP/${PLUGIN_SLUG}-candidate.zip"
+          rm -f "$PACKAGE_ZIP"
+          (cd plugin-check-build && zip -qr "$PACKAGE_ZIP" "$PLUGIN_SLUG")
+          python3 .github/scripts/check-plugin-package.py "$BUILD_DIR" --zip "$PACKAGE_ZIP"
 
       - name: WordPress Plugin Check
-        uses: WordPress/plugin-check-action@v1.1.7
+        id: wordpress_plugin_check
+        uses: WordPress/plugin-check-action@v1.1.9
         with:
+          # Comment only on trusted, same-repository human PRs. An empty token
+          # skips the action's optional comment, not checks or annotations.
+          repo-token: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' && github.event.pull_request.user.login != 'dependabot[bot]' && github.token || '' }}
           # Production-style plugin directory. Excludes repo-only files such as
           # .github, GEMINI.md, and other development artifacts.
-          build-dir: './plugin-check-build/enginescript-site-optimizer'
-
+          build-dir: './plugin-check-build/enginescript-site-exporter'
+          
           # Configure which categories to check
           categories: |
             accessibility
@@ -102,47 +120,101 @@ jobs:
             performance
             plugin_repo
             security
-
+          
           # Whether to include experimental checks
           include-experimental: false
-
+          
           # Don't ignore warnings or errors
           ignore-warnings: false
           ignore-errors: false
-
+          
           # WordPress version to use
           wp-version: 'latest'
-
+      
       - name: Handle plugin check completion
+        id: handle_plugin_check_completion
         if: ${{ always() }}
         run: |
-          echo "Plugin Check completed for PHP 8.3."
+          echo "Plugin Check job status: ${{ job.status }}"
+      
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            clear_any_existing_composer_cache=${{ steps.clear_any_existing_composer_cache.outcome }}
+            install_composer_dependencies_no_cache=${{ steps.install_composer_dependencies_no_cache.outcome }}
+            clean_up_potential_artifact_directories=${{ steps.clean_up_potential_artifact_directories.outcome }}
+            prepare_plugin_check_build_directory=${{ steps.prepare_plugin_check_build_directory.outcome }}
+            wordpress_plugin_check=${{ steps.wordpress_plugin_check.outcome }}
+            handle_plugin_check_completion=${{ steps.handle_plugin_check_completion.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-plugin-check
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Create issue on plugin check failure
-        if: ${{ failure() }}
+        id: create_issue_on_plugin_check_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.clear_any_existing_composer_cache.outcome == 'failure' && 'clear_any_existing_composer_cache' || steps.install_composer_dependencies_no_cache.outcome == 'failure' && 'install_composer_dependencies_no_cache' || steps.clean_up_potential_artifact_directories.outcome == 'failure' && 'clean_up_potential_artifact_directories' || steps.prepare_plugin_check_build_directory.outcome == 'failure' && 'prepare_plugin_check_build_directory' || steps.wordpress_plugin_check.outcome == 'failure' && 'wordpress_plugin_check' || steps.handle_plugin_check_completion.outcome == 'failure' && 'handle_plugin_check_completion' || 'unknown_or_canceled' }}
+          PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           filename: .github/ISSUE_TEMPLATE/plugin-check-failure.md
           update_existing: false
-
+          
       - name: Mark job as failed after issue creation
+        id: mark_job_as_failed_after_issue_creation
         if: ${{ failure() }}
         run: |
-          echo "::error::WordPress Plugin Check failed. Created issue for tracking."
+          echo "::error::Plugin Check job failed; see the failed step and reporting outcome."
           exit 1
 
   phpcs:
     name: PHPCS (PHP 8.3)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
 
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -151,25 +223,73 @@ jobs:
           tools: composer:v2
 
       - name: Install Composer dependencies
+        id: install_composer_dependencies
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: highest
           composer-options: "--prefer-dist --no-progress"
 
       - name: Verify PHPCS standards
+        id: verify_phpcs_standards
         run: |
           # Verify the project-local PHPCS installation and registered standards.
           vendor/bin/phpcs -i
 
       - name: Run PHPCS
+        id: run_phpcs
         run: |
           vendor/bin/phpcs --standard=phpcs.xml
 
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            install_composer_dependencies=${{ steps.install_composer_dependencies.outcome }}
+            verify_phpcs_standards=${{ steps.verify_phpcs_standards.outcome }}
+            run_phpcs=${{ steps.run_phpcs.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-phpcs
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Create issue on PHPCS failure
-        if: ${{ failure() }}
+        id: create_issue_on_phpcs_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.verify_phpcs_standards.outcome == 'failure' && 'verify_phpcs_standards' || steps.run_phpcs.outcome == 'failure' && 'run_phpcs' || 'unknown_or_canceled' }}
           PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -180,11 +300,14 @@ jobs:
   vip-phpcs:
     name: WP VIP CS (PHP 8.3)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
 
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -193,30 +316,36 @@ jobs:
           tools: composer:v2
 
       - name: Install Composer dependencies
+        id: install_composer_dependencies
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: highest
           composer-options: "--prefer-dist --no-progress"
 
       - name: Install WordPress VIP Coding Standards
+        id: install_wordpress_vip_coding_standards
         run: |
           # Install PHPCS and WordPress VIP Coding Standards
           composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
-          composer global require --dev squizlabs/php_codesniffer:"^3.13.5"
-          composer global require --dev wp-coding-standards/wpcs:"^3.3"
+          composer global require --dev squizlabs/php_codesniffer:"^3.13.6"
+          composer global require --dev wp-coding-standards/wpcs:"^3.4.1"
           composer global require --dev automattic/vipwpcs:"^3.0.1"
           composer global require --dev dealerdirect/phpcodesniffer-composer-installer:"^1.2"
-
+          
           # Add composer bin to PATH
-          echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
-
+          VIP_BIN_DIR="$(composer global config bin-dir --absolute)"
+          echo "$VIP_BIN_DIR" >> "$GITHUB_PATH"
+          echo "VIP_PHPCS=$VIP_BIN_DIR/phpcs" >> "$GITHUB_ENV"
+          export PATH="$VIP_BIN_DIR:$PATH"
+          
           # Verify installation and show available standards
-          phpcs -i
-
+          "$VIP_BIN_DIR/phpcs" -i
+          
           # Verify VIP standards are available
-          phpcs -i | grep -i vip || echo "VIP standards not found, checking installation..."
+          "$VIP_BIN_DIR/phpcs" -i | grep -F WordPress-VIP-Go
 
       - name: Create VIP-specific PHPCS configuration
+        id: create_vip_specific_phpcs_configuration
         run: |
           cat > phpcs-vip.xml << 'EOF'
           <?xml version="1.0"?>
@@ -241,10 +370,10 @@ jobs:
               <rule ref="WordPress-VIP-Go">
                   <!-- Allow short array syntax [] instead of array() -->
                   <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
-
+                  
                   <!-- Allow longer lines for readability in some cases -->
                   <exclude name="Generic.Files.LineLength.TooLong"/>
-
+                  
                   <!-- Exclude JS-related sniffs to avoid deprecation warnings -->
                   <exclude name="WordPressVIPMinimum.JS"/>
               </rule>
@@ -262,7 +391,7 @@ jobs:
               <rule ref="WordPress.WP.I18n">
                   <properties>
                       <property name="text_domain" type="array">
-                          <element value="enginescript-site-optimizer"/>
+                          <element value="enginescript-site-exporter"/>
                       </property>
                   </properties>
               </rule>
@@ -272,10 +401,10 @@ jobs:
 
               <!-- Show progress -->
               <arg value="p"/>
-
+              
               <!-- Show sniff codes in all reports -->
               <arg value="s"/>
-
+              
               <!-- Use colors in output -->
               <arg name="colors"/>
 
@@ -285,38 +414,85 @@ jobs:
           EOF
 
       - name: Run WordPress VIP PHPCS
+        id: run_wordpress_vip_phpcs
         run: |
-          echo "Running WordPress VIP Go coding standards scan..."
-          echo "This scan focuses on VIP-specific requirements, including:"
-          echo "   - File system operation restrictions"
-          echo "   - Performance and caching best practices"
-          echo "   - Security vulnerabilities specific to the VIP platform"
-          echo "   - User experience guidelines for enterprise WordPress"
-          echo "   - Uncached function usage patterns"
+          echo "🚀 Running WordPress VIP Go Coding Standards scan..."
+          echo "📋 This scan focuses on VIP-specific requirements including:"
+          echo "   • File system operation restrictions"
+          echo "   • Performance and caching best practices"  
+          echo "   • Security vulnerabilities specific to VIP platform"
+          echo "   • User experience guidelines for enterprise WordPress"
+          echo "   • Uncached function usage patterns"
           echo ""
-          echo "Using standards: WordPress-VIP-Go, WordPressVIPMinimum"
-          echo "Scanning PHP files only (excluding JS/CSS to avoid deprecation warnings)"
+          echo "📦 Using standards: WordPress-VIP-Go, WordPressVIPMinimum"
+          echo "🎯 Scanning PHP files only (excluding JS/CSS to avoid deprecation warnings)"
           echo ""
-
+          
           # Run VIP-specific PHPCS scan using our custom configuration
           # Only scan PHP files to avoid JS/CSS deprecation warnings
-          phpcs --standard=phpcs-vip.xml --extensions=php . || {
+          "$VIP_PHPCS" --standard=phpcs-vip.xml --extensions=php . || {
             echo ""
-            echo "WordPress VIP coding standards issues found."
-            echo "Note: These are VIP-specific recommendations for enterprise WordPress platforms."
-            echo "Many of these may not apply to standard WordPress installations."
-            echo "For more information: https://docs.wpvip.com/technical-references/code-quality-and-best-practices/"
+            echo "⚠️ WordPress VIP coding standards issues found."
+            echo "💡 Note: These are VIP-specific recommendations for enterprise WordPress platforms."
+            echo "🔧 Many of these may not apply to standard WordPress installations."
+            echo "📖 For more info: https://docs.wpvip.com/technical-references/code-quality-and-best-practices/"
             echo ""
             exit 1
           }
+          
+          echo "✅ WordPress VIP coding standards check completed successfully!"
 
-          echo "WordPress VIP coding standards check completed successfully."
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            install_composer_dependencies=${{ steps.install_composer_dependencies.outcome }}
+            install_wordpress_vip_coding_standards=${{ steps.install_wordpress_vip_coding_standards.outcome }}
+            create_vip_specific_phpcs_configuration=${{ steps.create_vip_specific_phpcs_configuration.outcome }}
+            run_wordpress_vip_phpcs=${{ steps.run_wordpress_vip_phpcs.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-vip-phpcs
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Create issue on VIP PHPCS failure
-        if: ${{ failure() }}
+        id: create_issue_on_vip_phpcs_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.install_wordpress_vip_coding_standards.outcome == 'failure' && 'install_wordpress_vip_coding_standards' || steps.create_vip_specific_phpcs_configuration.outcome == 'failure' && 'create_vip_specific_phpcs_configuration' || steps.run_wordpress_vip_phpcs.outcome == 'failure' && 'run_wordpress_vip_phpcs' || 'unknown_or_canceled' }}
           PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -327,8 +503,10 @@ jobs:
   phpmd:
     name: PHPMD (PHP 8.3)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
         with:
           # Always fetch the latest commit, disable any caching
@@ -336,6 +514,7 @@ jobs:
           clean: true
 
       - name: Verify latest commit
+        id: verify_latest_commit
         run: |
           echo "=== Git Information ==="
           echo "Current commit: $(git rev-parse HEAD)"
@@ -344,6 +523,7 @@ jobs:
           echo "=== End Git Information ==="
 
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -352,31 +532,82 @@ jobs:
           tools: composer:v2
 
       - name: Clear any existing composer cache
+        id: clear_any_existing_composer_cache
         run: |
           composer clear-cache || true
           rm -rf vendor/ composer.lock || true
 
       - name: Install Composer dependencies (no cache)
+        id: install_composer_dependencies_no_cache
         run: |
           composer install --prefer-dist --no-progress --no-cache
-
+          
       - name: Verify phpmd.xml content
+        id: verify_phpmd_xml_content
         run: |
           echo "=== Current phpmd.xml content ==="
           cat phpmd.xml
           echo "=== End phpmd.xml content ==="
 
       - name: Run PHPMD
+        id: run_phpmd
         run: |
           # Use WordPress-specific PHPMD configuration (WordPress snake_case compatible)
           echo "Using WordPress-specific PHPMD configuration (WordPress snake_case compatible)..."
           vendor/bin/phpmd . text phpmd.xml --exclude vendor
 
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            verify_latest_commit=${{ steps.verify_latest_commit.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            clear_any_existing_composer_cache=${{ steps.clear_any_existing_composer_cache.outcome }}
+            install_composer_dependencies_no_cache=${{ steps.install_composer_dependencies_no_cache.outcome }}
+            verify_phpmd_xml_content=${{ steps.verify_phpmd_xml_content.outcome }}
+            run_phpmd=${{ steps.run_phpmd.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-phpmd
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Create issue on PHPMD failure
-        if: ${{ failure() }}
+        id: create_issue_on_phpmd_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.verify_latest_commit.outcome == 'failure' && 'verify_latest_commit' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.clear_any_existing_composer_cache.outcome == 'failure' && 'clear_any_existing_composer_cache' || steps.install_composer_dependencies_no_cache.outcome == 'failure' && 'install_composer_dependencies_no_cache' || steps.verify_phpmd_xml_content.outcome == 'failure' && 'verify_phpmd_xml_content' || steps.run_phpmd.outcome == 'failure' && 'run_phpmd' || 'unknown_or_canceled' }}
           PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -387,11 +618,14 @@ jobs:
   psalm-analysis:
     name: Psalm Static Analysis (PHP 8.3)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
 
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -400,23 +634,71 @@ jobs:
           tools: composer:v2
 
       - name: Install Composer dependencies
+        id: install_composer_dependencies
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: highest
           composer-options: "--prefer-dist --no-progress"
 
       - name: Verify Psalm installation
+        id: verify_psalm_installation
         run: vendor/bin/psalm --version
 
       - name: Run Psalm
+        id: run_psalm
         run: |
           vendor/bin/psalm --config=psalm.xml --show-info=true
 
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            install_composer_dependencies=${{ steps.install_composer_dependencies.outcome }}
+            verify_psalm_installation=${{ steps.verify_psalm_installation.outcome }}
+            run_psalm=${{ steps.run_psalm.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-psalm-analysis
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Create issue on Psalm failure
-        if: ${{ failure() }}
+        id: create_issue_on_psalm_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.verify_psalm_installation.outcome == 'failure' && 'verify_psalm_installation' || steps.run_psalm.outcome == 'failure' && 'run_psalm' || 'unknown_or_canceled' }}
           PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -427,11 +709,14 @@ jobs:
   security-check:
     name: Security Scan (PHP 8.3)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
 
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -440,15 +725,18 @@ jobs:
           tools: composer:v2
 
       - name: Install Composer dependencies
+        id: install_composer_dependencies
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: highest
           composer-options: "--prefer-dist --no-progress"
 
       - name: Security Check for known vulnerabilities in dependencies
+        id: security_check_for_known_vulnerabilities_in_dependencies
         uses: symfonycorp/security-checker-action@v5
 
       - name: WordPress Security Scan
+        id: wordpress_security_scan
         run: |
           echo "Performing WordPress plugin security analysis..."
 
@@ -522,11 +810,56 @@ jobs:
 
           echo "WordPress security scan completed."
 
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            install_composer_dependencies=${{ steps.install_composer_dependencies.outcome }}
+            security_check_for_known_vulnerabilities_in_dependencies=${{ steps.security_check_for_known_vulnerabilities_in_dependencies.outcome }}
+            wordpress_security_scan=${{ steps.wordpress_security_scan.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-security-check
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Create issue on security vulnerability
-        if: ${{ failure() }}
+        id: create_issue_on_security_vulnerability
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.security_check_for_known_vulnerabilities_in_dependencies.outcome == 'failure' && 'security_check_for_known_vulnerabilities_in_dependencies' || steps.wordpress_security_scan.outcome == 'failure' && 'wordpress_security_scan' || 'unknown_or_canceled' }}
           PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -537,8 +870,10 @@ jobs:
   phpstan-wordpress:
     name: PHPStan for WP (PHP 8.3)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
         with:
           # Always fetch the latest commit, disable any caching
@@ -546,6 +881,7 @@ jobs:
           clean: true
 
       - name: Setup PHP 8.3
+        id: setup_php_8_3
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -554,31 +890,81 @@ jobs:
           tools: composer:v2
 
       - name: Clear any existing composer cache
+        id: clear_any_existing_composer_cache
         run: |
           composer clear-cache || true
           rm -rf vendor/ composer.lock || true
 
       - name: Install Composer dependencies (no cache)
+        id: install_composer_dependencies_no_cache
         run: |
           composer install --prefer-dist --no-progress --no-cache
-
+          
       - name: Verify phpstan.neon content
+        id: verify_phpstan_neon_content
         run: |
           echo "=== Current phpstan.neon content ==="
           cat phpstan.neon
           echo "=== End phpstan.neon content ==="
 
       - name: PHPStan for WordPress Analysis
+        id: phpstan_for_wordpress_analysis
         run: |
           echo "Running PHPStan analysis with WordPress stubs..."
-          vendor/bin/phpstan analyze --no-progress --error-format=table
-          echo "PHPStan analysis completed successfully."
+          vendor/bin/phpstan analyse --no-progress --error-format=table
+          echo "✅ PHPStan analysis completed successfully!"
+
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            clear_any_existing_composer_cache=${{ steps.clear_any_existing_composer_cache.outcome }}
+            install_composer_dependencies_no_cache=${{ steps.install_composer_dependencies_no_cache.outcome }}
+            verify_phpstan_neon_content=${{ steps.verify_phpstan_neon_content.outcome }}
+            phpstan_for_wordpress_analysis=${{ steps.phpstan_for_wordpress_analysis.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-phpstan-wordpress
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Create issue on PHPStan failure
-        if: ${{ failure() }}
+        id: create_issue_on_phpstan_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.clear_any_existing_composer_cache.outcome == 'failure' && 'clear_any_existing_composer_cache' || steps.install_composer_dependencies_no_cache.outcome == 'failure' && 'install_composer_dependencies_no_cache' || steps.verify_phpstan_neon_content.outcome == 'failure' && 'verify_phpstan_neon_content' || steps.phpstan_for_wordpress_analysis.outcome == 'failure' && 'phpstan_for_wordpress_analysis' || 'unknown_or_canceled' }}
           PHP_VERSION: '8.3'
           RUN_ID: ${{ github.run_id }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -589,6 +975,7 @@ jobs:
   wp-version-test:
     name: Test WordPress ${{ matrix.wp-version }} with PHP ${{ matrix.php-version }} (${{ matrix.dependency-versions }} deps)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     strategy:
       matrix:
         php-version: ['8.2', '8.3', '8.4', '8.5']
@@ -612,9 +999,11 @@ jobs:
 
     steps:
       - name: Checkout code
+        id: checkout_code
         uses: actions/checkout@v7
 
       - name: Setup PHP ${{ matrix.php-version }}
+        id: setup_php
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
@@ -623,6 +1012,7 @@ jobs:
           tools: composer:v2
 
       - name: Use isolated Composer auth
+        id: use_isolated_composer_auth
         run: |
           # Avoid inheriting a masked or malformed GitHub OAuth token from Composer auth.
           composer_home="${RUNNER_TEMP}/composer-home"
@@ -637,6 +1027,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: PHP syntax lint
+        id: php_syntax_lint
         run: |
           find . \
             -path './vendor' -prune -o \
@@ -646,15 +1037,19 @@ jobs:
             -name '*.php' -print0 | xargs -0 -n1 php -l
 
       - name: Install Subversion
+        id: install_subversion
+        timeout-minutes: 15
         run: sudo apt-get update && sudo apt-get install -y subversion
 
       - name: Install Composer dependencies
+        id: install_composer_dependencies
         uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependency-versions }}
           composer-options: "--prefer-dist --no-progress"
 
       - name: Pin PHPUnit for WordPress test suite
+        id: pin_phpunit_for_wordpress_test_suite
         run: |
           # The WordPress test library still calls PHPUnit APIs removed in PHPUnit 10+.
           # Keep this generated integration-test job on PHPUnit 9.6 while the rest
@@ -666,138 +1061,167 @@ jobs:
           fi
 
       - name: Verify PHPUnit dependency versions
+        id: verify_phpunit_dependency_versions
         run: |
           composer show phpunit/phpunit
           composer show yoast/phpunit-polyfills
           vendor/bin/phpunit --version | grep -E '^PHPUnit 9\.6\.'
 
       - name: Prepare Database
+        id: prepare_database
         run: |
           mysql -u root --password=root --host=127.0.0.1 --port=3306 -e "DROP DATABASE IF EXISTS wordpress_test;"
           mysqladmin -u root --password=root --host=127.0.0.1 --port=3306 --force create wordpress_test
 
       - name: Create tests directory structure
+        id: create_tests_directory_structure
         run: |
           mkdir -p tests/bin
           mkdir -p tests/bootstrap
 
       - name: Create WP tests install script
+        id: create_wp_tests_install_script
         run: |
           cat > tests/bin/install-wp-tests.sh << 'EOF'
           #!/usr/bin/env bash
-
+          set -euo pipefail
+          set +x
+          umask 077
+          
           if [ $# -lt 3 ]; then
             echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
             exit 1
           fi
-
+          
           DB_NAME=$1
           DB_USER=$2
           DB_PASS=$3
           DB_HOST=${4-localhost}
           WP_VERSION=${5-latest}
           SKIP_DB_CREATE=${6-false}
-
+          
           WP_TESTS_DIR=${WP_TESTS_DIR-/tmp/wordpress-tests-lib}
           WP_CORE_DIR=${WP_CORE_DIR-/tmp/wordpress/}
+          
+          # Only the isolated GitHub service database is in scope.
+          [[ $DB_NAME == wordpress_test && $DB_HOST == 127.0.0.1:3306 ]]
+          [[ $SKIP_DB_CREATE == true || $SKIP_DB_CREATE == false ]]
 
           download() {
-              if [ $(which curl) ]; then
-                  curl -fsSL "$1" > "$2";
-              elif [ $(which wget) ]; then
-                  wget -nv -O "$2" "$1"
-              fi
+              curl --fail --silent --show-error --location \
+                  --proto '=https' --proto-redir '=https' \
+                  --connect-timeout 20 --max-time 180 --retry 3 \
+                  "$1" --output "$2"
+              test -s "$2"
           }
 
-          if [[ $WP_VERSION =~ [0-9]+\.[0-9]+(\.[0-9]+)? ]]; then
-              WP_TESTS_TAG="tags/$WP_VERSION"
-          elif [[ $WP_VERSION == 'nightly' || $WP_VERSION == 'trunk' ]]; then
-              WP_TESTS_TAG="trunk"
-          else
+          if [[ $WP_VERSION == latest ]]; then
               download https://api.wordpress.org/core/version-check/1.7/ /tmp/wp-latest.json
-              LATEST_VERSION=$(grep -o '"version":"[^"]*' /tmp/wp-latest.json | head -n 1 | sed 's/"version":"//')
-              if [[ -z "$LATEST_VERSION" ]]; then
-                  echo "Latest WordPress version could not be found"
-                  exit 1
-              fi
-              WP_TESTS_TAG="tags/$LATEST_VERSION"
+              WP_VERSION=$(php -r '
+                  $data = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR);
+                  $versions = [];
+                  foreach ($data["offers"] ?? [] as $offer) {
+                      if (($offer["response"] ?? null) !== "upgrade") {
+                          continue;
+                      }
+                      $version = $offer["current"] ?? null;
+                      if (!is_string($version) || !preg_match("/\A[0-9]+\.[0-9]+(?:\.[0-9]+)?\z/", $version)) {
+                          throw new RuntimeException("Invalid stable WordPress offer.");
+                      }
+                      $versions[$version] = true;
+                  }
+                  if (count($versions) !== 1) {
+                      throw new RuntimeException("Expected exactly one stable WordPress release.");
+                  }
+                  echo array_key_first($versions);
+              ' /tmp/wp-latest.json)
           fi
 
-          set -ex
+          if [[ $WP_VERSION =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+              WP_TESTS_TAG="tags/$WP_VERSION"
+          elif [[ $WP_VERSION == nightly || $WP_VERSION == trunk ]]; then
+              WP_TESTS_TAG=trunk
+          else
+              echo "Invalid WordPress version selector" >&2
+              exit 1
+          fi
+          WP_SOURCE_URL="https://develop.svn.wordpress.org/$WP_TESTS_TAG"
+          WP_REVISION=$(svn info --non-interactive --show-item revision "$WP_SOURCE_URL")
+          [[ $WP_REVISION =~ ^[0-9]+$ ]]
 
           install_wp() {
-              if [ -d $WP_CORE_DIR ]; then
-                  return;
-              fi
-
-              mkdir -p $WP_CORE_DIR
-
-              if [[ $WP_VERSION == 'nightly' || $WP_VERSION == 'trunk' ]]; then
-                  mkdir -p /tmp/wordpress-nightly
-                  download https://wordpress.org/nightly-builds/wordpress-latest.zip  /tmp/wordpress-nightly/wordpress-nightly.zip
-                  unzip -q /tmp/wordpress-nightly/wordpress-nightly.zip -d /tmp/wordpress-nightly/
-                  mv /tmp/wordpress-nightly/wordpress/* $WP_CORE_DIR
+              # Do not silently reuse a partial install.
+              [[ ! -e $WP_CORE_DIR && ! -L $WP_CORE_DIR ]]
+              if [[ $WP_TESTS_TAG == trunk ]]; then
+                  # Nightly core and test fixtures use one immutable SVN snapshot.
+                  svn export --non-interactive --quiet -r "$WP_REVISION" \
+                      "$WP_SOURCE_URL/src@$WP_REVISION" "$WP_CORE_DIR"
               else
-                  if [ $WP_VERSION == 'latest' ]; then
-                      local ARCHIVE_NAME='latest'
-                  else
-                      local ARCHIVE_NAME="wordpress-$WP_VERSION"
-                  fi
-                  download https://wordpress.org/${ARCHIVE_NAME}.tar.gz  /tmp/wordpress.tar.gz
-                  tar --strip-components=1 -zxmf /tmp/wordpress.tar.gz -C $WP_CORE_DIR
+                  mkdir -p "$WP_CORE_DIR"
+                  download "https://wordpress.org/wordpress-$WP_VERSION.tar.gz" /tmp/wordpress.tar.gz
+                  tar --strip-components=1 -zxf /tmp/wordpress.tar.gz -C "$WP_CORE_DIR"
               fi
 
-              download https://raw.github.com/markoheijnen/wp-mysqli/master/db.php $WP_CORE_DIR/wp-content/db.php
+              # setup-php supplies native mysqli; never fetch a mutable third-party db.php.
+              php -r 'exit(extension_loaded("mysqli") ? 0 : 1);'
+              test ! -e "$WP_CORE_DIR/wp-content/db.php"
+              CORE_VERSION=$(php -r 'require $argv[1]; echo $wp_version;' "$WP_CORE_DIR/wp-includes/version.php")
+              SOURCE_VERSION=$(svn cat --non-interactive -r "$WP_REVISION" \
+                  "$WP_SOURCE_URL/src/wp-includes/version.php@$WP_REVISION" |
+                  php -r '$source = stream_get_contents(STDIN); if (!preg_match("/\\\$wp_version\s*=\s*\x27([^\x27]+)\x27/", $source, $match)) { exit(1); } echo $match[1];')
+              [[ ${CORE_VERSION%-src} == "${SOURCE_VERSION%-src}" ]]
+              if [[ $WP_TESTS_TAG != trunk ]]; then
+                  [[ ${CORE_VERSION%-src} == "$WP_VERSION" ]]
+              fi
+              mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+              printf 'core=%s\nsource=%s\nrevision=%s\n' "$CORE_VERSION" "$WP_TESTS_TAG" "$WP_REVISION" \
+                  > "$RUNNER_TEMP/sse-diagnostics/wordpress.txt"
           }
 
           install_test_suite() {
-              if [[ $(uname -s) == 'Darwin' ]]; then
-                  local ioption='-i.bak'
-              else
-                  local ioption='-i'
-              fi
+              [[ ! -e $WP_TESTS_DIR && ! -L $WP_TESTS_DIR ]]
+              mkdir -p "$WP_TESTS_DIR"
+              svn co --non-interactive --quiet -r "$WP_REVISION" \
+                  "$WP_SOURCE_URL/tests/phpunit/includes@$WP_REVISION" "$WP_TESTS_DIR/includes"
+              svn co --non-interactive --quiet -r "$WP_REVISION" \
+                  "$WP_SOURCE_URL/tests/phpunit/data@$WP_REVISION" "$WP_TESTS_DIR/data"
 
-              if [ ! -d $WP_TESTS_DIR ]; then
-                  mkdir -p $WP_TESTS_DIR
-                  svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
-                  svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
-              fi
-
-              if [ ! -f wp-tests-config.php ]; then
-                  download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
-                  WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
-                  sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
-                  sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR"/wp-tests-config.php
-                  sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR"/wp-tests-config.php
-                  sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
-                  sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
+              if [ ! -f "$WP_TESTS_DIR/wp-tests-config.php" ]; then
+                  svn cat --non-interactive -r "$WP_REVISION" \
+                      "$WP_SOURCE_URL/wp-tests-config-sample.php@$WP_REVISION" \
+                      > "$WP_TESTS_DIR/wp-tests-config.php"
+                  export WP_TESTS_DIR WP_CORE_DIR DB_NAME DB_USER DB_PASS DB_HOST
+                  # Quote PHP literals safely; do not interpolate credentials through sed.
+                  php -r '
+                      $path = getenv("WP_TESTS_DIR") . "/wp-tests-config.php";
+                      $config = file_get_contents($path);
+                      $replacements = [
+                          "dirname( __FILE__ ) . \x27/src/\x27" => rtrim(getenv("WP_CORE_DIR"), "/") . "/",
+                          "\x27youremptytestdbnamehere\x27" => getenv("DB_NAME"),
+                          "\x27yourusernamehere\x27" => getenv("DB_USER"),
+                          "\x27yourpasswordhere\x27" => getenv("DB_PASS"),
+                          "\x27localhost\x27" => getenv("DB_HOST"),
+                      ];
+                      foreach ($replacements as $needle => $value) {
+                          if (substr_count($config, $needle) !== 1) {
+                              throw new RuntimeException("Unexpected WordPress test config template.");
+                          }
+                          $config = str_replace($needle, var_export($value, true), $config);
+                      }
+                      if (file_put_contents($path, $config) !== strlen($config)) {
+                          throw new RuntimeException("Cannot write WordPress test config.");
+                      }
+                  '
               fi
           }
 
           install_db() {
-              if [ ${SKIP_DB_CREATE} = "true" ]; then
-                  return 0
+              if [[ $SKIP_DB_CREATE == true ]]; then
+                  return
               fi
-
-              local PARTS=(${DB_HOST//\:/ })
-              local DB_HOSTNAME=${PARTS[0]};
-              local DB_SOCK_OR_PORT=${PARTS[1]};
-              local EXTRA=""
-
-              if ! [ -z $DB_HOSTNAME ] ; then
-                  if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
-                      EXTRA=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
-                  elif ! [ -z $DB_SOCK_OR_PORT ] ; then
-                      EXTRA=" --socket=$DB_SOCK_OR_PORT"
-                  elif ! [ -z $DB_HOSTNAME ] ; then
-                      EXTRA=" --host=$DB_HOSTNAME --protocol=tcp"
-                  fi
-              fi
-
-              # First, ensure database doesn't exist (ignore errors)
-              mysql --user="$DB_USER" --password="$DB_PASS"$EXTRA -e "DROP DATABASE IF EXISTS $DB_NAME" || true
-              # Now create fresh database with force flag
-              mysqladmin create $DB_NAME --user="$DB_USER" --password="$DB_PASS"$EXTRA --force
+              # Fallback is limited to this job's disposable service and never drops a DB.
+              MYSQL_PWD="$DB_PASS" mysql --user="$DB_USER" --host=127.0.0.1 --port=3306 \
+                  -e 'CREATE DATABASE wordpress_test'
           }
 
           install_wp
@@ -807,6 +1231,7 @@ jobs:
           chmod +x tests/bin/install-wp-tests.sh
 
       - name: Create Bootstrap File
+        id: create_bootstrap_file
         run: |
           mkdir -p tests
           cat > tests/bootstrap.php << 'EOF'
@@ -814,180 +1239,293 @@ jobs:
           /**
            * PHPUnit bootstrap file for plugin tests.
            *
-           * @package EngineScript_Site_Optimizer
+           * @package EngineScript_Site_Exporter
            */
-
+          
+          define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills' );
           require_once '/tmp/wordpress-tests-lib/includes/functions.php';
-
-          function _manually_load_optimizer_plugin() {
-              require dirname( dirname( __FILE__ ) ) . '/enginescript-site-optimizer.php';
+          
+          function _manually_load_plugin() {
+              add_filter('widgets_init', function() {
+                  return;
+              }, 0);
+              
+              require dirname( dirname( __FILE__ ) ) . '/enginescript-site-exporter.php';
           }
-
-          tests_add_filter( 'muplugins_loaded', '_manually_load_optimizer_plugin' );
-
+          
+          tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
+          
           require '/tmp/wordpress-tests-lib/includes/bootstrap.php';
           EOF
 
       - name: Create Test File
+        id: create_test_file
         run: |
-          mkdir -p tests/integration
-          cat > tests/integration/EngineScriptSiteOptimizerWpTest.php << 'EOF'
+          cat > tests/EngineScriptSiteExporterTest.php << 'EOF'
           <?php
           /**
-           * Class EngineScriptSiteOptimizerWpTest
+           * Class EngineScriptSiteExporterTest
            *
-           * @package EngineScript_Site_Optimizer
+           * @package EngineScript_Site_Exporter
            */
+          
+          class EngineScriptSiteExporterTest extends WP_UnitTestCase {
+              public function tear_down() {
+                  sse_clear_current_export_lease();
+                  wp_set_current_user(0);
+                  parent::tear_down();
+              }
 
-          class EngineScriptSiteOptimizerWpTest extends WP_UnitTestCase {
+              public function test_export_capability_boundary() {
+                  wp_set_current_user(0);
+                  $this->assertFalse(sse_current_user_can_export_site());
+                  $subscriber = self::factory()->user->create(['role' => 'subscriber']);
+                  wp_set_current_user($subscriber);
+                  $this->assertFalse(sse_current_user_can_export_site());
+                  $admin = self::factory()->user->create(['role' => 'administrator']);
+                  wp_set_current_user($admin);
+                  $this->assertSame(!is_multisite(), sse_current_user_can_export_site());
+              }
+
+              public function test_lease_ownership_and_conflict() {
+                  $lease = sse_acquire_export_lease();
+                  $this->assertIsArray($lease);
+                  try {
+                      $conflict = sse_acquire_export_lease();
+                      $this->assertWPError($conflict);
+                      $this->assertSame('export_lease_conflict', $conflict->get_error_code());
+                      $wrong = $lease;
+                      $wrong['owner'] = wp_generate_uuid4();
+                      $this->assertFalse(sse_release_export_lease($wrong));
+                      $this->assertSame($lease, sse_get_stored_export_lease());
+                      sse_set_current_export_lease($lease);
+                      $this->assertTrue(sse_renew_current_export_lease(true));
+                  } finally {
+                      sse_release_export_lease(sse_get_current_export_lease() ?? $lease);
+                  }
+                  $this->assertNull(sse_get_stored_export_lease());
+              }
+
+              public function test_stale_owner_cannot_release_replacement() {
+                  $old = sse_acquire_export_lease();
+                  $this->assertIsArray($old);
+                  $this->assertTrue(sse_release_export_lease($old));
+                  $new = sse_acquire_export_lease();
+                  $this->assertIsArray($new);
+                  try {
+                      $this->assertFalse(sse_release_export_lease($old));
+                      $this->assertSame($new, sse_get_stored_export_lease());
+                  } finally {
+                      sse_release_export_lease($new);
+                  }
+              }
+
+              public function test_logs_expire_without_new_append() {
+                  update_option('sse_error_logs', 'malformed', false);
+                  sse_prune_expired_stored_logs();
+                  $this->assertSame([], get_option('sse_error_logs'));
+                  sse_store_log_in_database('test record', 'error');
+                  $logs = get_option('sse_error_logs');
+                  $this->assertCount(1, $logs);
+                  $logs[0]['time'] = time() - 8 * DAY_IN_SECONDS;
+                  update_option('sse_error_logs', $logs, false);
+                  $this->assertSame(1, sse_prune_expired_stored_logs());
+                  $this->assertSame([], get_option('sse_error_logs'));
+              }
+
+              public function test_cleanup_schedule_is_idempotent() {
+                  $path = '/tmp/sse-test-' . wp_generate_uuid4() . '/fixture.zip';
+                  try {
+                      sse_schedule_export_cleanup($path);
+                      $first = wp_next_scheduled('sse_delete_export_file', [$path]);
+                      $this->assertIsInt($first);
+                      sse_schedule_export_cleanup($path);
+                      $this->assertSame($first, wp_next_scheduled('sse_delete_export_file', [$path]));
+                      $this->assertSame(1, wp_clear_scheduled_hook('sse_delete_export_file', [$path]));
+                      $this->assertFalse(wp_next_scheduled('sse_delete_export_file', [$path]));
+                  } finally {
+                      wp_clear_scheduled_hook('sse_delete_export_file', [$path]);
+                  }
+              }
+
+              public function test_stored_logs_are_bounded_and_redacted() {
+                  delete_option('sse_error_logs');
+                  for ($index = 0; $index < 25; ++$index) {
+                      sse_store_log_in_database('record ' . $index . ' ' . ABSPATH . 'private.sql', 'ERROR!');
+                  }
+                  $logs = get_option('sse_error_logs');
+                  $this->assertCount(20, $logs);
+                  $this->assertStringStartsWith('record 5 ', $logs[0]['message']);
+                  foreach ($logs as $log) {
+                      $this->assertSame('error', $log['level']);
+                      $this->assertStringNotContainsString(ABSPATH, $log['message']);
+                      $this->assertStringNotContainsString('private.sql', $log['message']);
+                  }
+                  $this->assertLessThanOrEqual(1000, strlen(sse_sanitize_stored_log_message(str_repeat('x', 2000))));
+              }
+
+              public function test_private_directory_contract_rejects_legacy_and_traversal() {
+                  $valid = sse_generate_private_export_directory_name();
+                  $this->assertTrue(sse_validate_export_directory_name_format($valid));
+                  foreach (['', '.', '..', '../' . $valid, $valid . '/child', $valid . '\\child', 'legacy-export'] as $invalid) {
+                      $error = sse_validate_export_directory_name_format($invalid);
+                      $this->assertWPError($error);
+                      $this->assertSame('invalid_export_directory', $error->get_error_code());
+                  }
+              }
+
+              public function test_direct_filesystem_global_boundary() {
+                  require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
+                  require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
+                  $existed = array_key_exists('wp_filesystem', $GLOBALS);
+                  $previous = $GLOBALS['wp_filesystem'] ?? null;
+                  try {
+                      foreach ([null, false, 'invalid', new stdClass()] as $invalid) {
+                          $GLOBALS['wp_filesystem'] = $invalid;
+                          $this->assertNull(sse_get_direct_global_filesystem());
+                      }
+                      $direct = new WP_Filesystem_Direct(null);
+                      $GLOBALS['wp_filesystem'] = $direct;
+                      $this->assertSame($direct, sse_get_direct_global_filesystem());
+                  } finally {
+                      if ($existed) {
+                          $GLOBALS['wp_filesystem'] = $previous;
+                      } else {
+                          unset($GLOBALS['wp_filesystem']);
+                      }
+                  }
+              }
+
+              public function test_filepath_rejects_symlink_escape() {
+                  $root = sys_get_temp_dir() . '/sse-test-' . wp_generate_uuid4();
+                  $this->assertTrue(mkdir($root, 0700));
+                  $this->assertTrue(mkdir($root . '/allowed', 0700));
+                  $outside = $root . '/outside.zip';
+                  $link = $root . '/allowed/escape.zip';
+                  try {
+                      $this->assertSame(7, file_put_contents($outside, 'fixture'));
+                      $this->assertTrue(symlink($outside, $link));
+                      $this->assertTrue(sse_validate_filepath($outside, $root));
+                      $this->assertFalse(sse_validate_filepath($link, $root . '/allowed'));
+                      $this->assertSame('fixture', file_get_contents($outside));
+                  } finally {
+                      if (is_link($link)) {
+                          unlink($link);
+                      }
+                      if (is_file($outside)) {
+                          unlink($outside);
+                      }
+                      rmdir($root . '/allowed');
+                      rmdir($root);
+                  }
+              }
+
               public function test_plugin_loaded() {
-                  $this->assertTrue(function_exists('es_optimizer_init_plugin'), 'Plugin was not loaded correctly');
-                  $this->assertTrue(function_exists('es_optimizer_get_default_options'));
+                  $this->assertTrue(function_exists('sse_admin_menu'), 'Plugin was not loaded correctly');
+              }
+
+              public function test_cleanup_uses_directory_entry_fields() {
+                  $root = sys_get_temp_dir() . '/sse-test-' . wp_generate_uuid4();
+                  $zip = $root . '/site_enginescript_site_export_20260513_123456.zip';
+                  $had_filesystem = array_key_exists('wp_filesystem', $GLOBALS);
+                  $previous_filesystem = $GLOBALS['wp_filesystem'] ?? null;
+                  $this->assertTrue(mkdir($root, 0700));
+                  try {
+                      $this->assertSame(7, file_put_contents($zip, 'fixture'));
+                      $this->assertSame(7, file_put_contents($root . '/123', 'fixture'));
+                      $this->assertSame(7, file_put_contents($root . '/unrelated.txt', 'fixture'));
+                      $this->assertTrue(mkdir($root . '/nested.zip', 0700));
+                      $this->assertSame([$zip], sse_get_export_files_from_private_directory($root));
+                      $this->assertSame([], sse_get_export_files_from_private_directory($root . '/missing'));
+                      // This helper independently accepts broad arrays; retain its guards.
+                      $this->assertSame([], sse_get_export_files_from_directory_entry('fallback', ['name' => null, 'type' => null], $root, ''));
+                  } finally {
+                      foreach ([$zip, $root . '/123', $root . '/unrelated.txt'] as $file) {
+                          if (is_file($file)) {
+                              unlink($file);
+                          }
+                      }
+                      if (is_dir($root . '/nested.zip')) {
+                          rmdir($root . '/nested.zip');
+                      }
+                      rmdir($root);
+                      if ($had_filesystem) {
+                          $GLOBALS['wp_filesystem'] = $previous_filesystem;
+                      } else {
+                          unset($GLOBALS['wp_filesystem']);
+                      }
+                  }
               }
 
               public function test_plugin_hooks_registered() {
-                  es_optimizer_init_frontend_optimizations();
-
-                  $this->assertSame(10, has_action('plugins_loaded', 'es_optimizer_init_plugin'));
-                  $this->assertSame(10, has_action('init', 'es_optimizer_disable_emojis'));
-                  $this->assertSame(10, has_action('wp_default_scripts', 'es_optimizer_remove_jquery_migrate'));
-                  $this->assertSame(100, has_action('wp_enqueue_scripts', 'es_optimizer_disable_classic_theme_styles'));
-                  $this->assertSame(10, has_action('init', 'es_optimizer_remove_header_items'));
-                  $this->assertSame(10, has_action('init', 'es_optimizer_remove_recent_comments_style'));
-                  $this->assertSame(10, has_filter('wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints'));
-                  $this->assertSame(10, has_filter('wp_resource_hints', 'es_optimizer_add_dns_prefetch_resource_hints'));
-                  $this->assertSame(10, has_action('init', 'es_optimizer_disable_jetpack_ads'));
-                  $this->assertSame(10, has_action('init', 'es_optimizer_disable_post_via_email'));
+                  $this->assertSame(10, has_action('admin_menu', 'sse_admin_menu'));
+                  $this->assertSame(10, has_action('network_admin_menu', 'sse_network_admin_menu'));
+                  $this->assertSame(10, has_action('sse_recover_expired_export', 'sse_recover_expired_export_handler'));
+                  $this->assertSame(10, has_action('sse_export_housekeeping', 'sse_export_housekeeping_handler'));
+                  $this->assertSame(10, has_action('admin_enqueue_scripts', 'sse_enqueue_admin_assets'));
+                  $this->assertSame(10, has_action('admin_post_sse_export_site', 'sse_handle_export'));
+                  $this->assertSame(10, has_action('admin_post_sse_secure_download', 'sse_handle_secure_download'));
+                  $this->assertSame(10, has_action('admin_post_sse_delete_export', 'sse_handle_export_deletion'));
+                  $this->assertSame(10, has_action('sse_delete_export_file', 'sse_delete_export_file_handler'));
+                  $this->assertSame(10, has_action('sse_bulk_cleanup_exports', 'sse_bulk_cleanup_exports_handler'));
               }
 
               public function test_plugin_constants_defined() {
-                  $this->assertTrue(defined('ES_SITE_OPTIMIZER_VERSION'));
-                  $this->assertNotEmpty(ES_SITE_OPTIMIZER_VERSION);
+                  $this->assertTrue(defined('ES_SITE_EXPORTER_VERSION'));
+                  $this->assertTrue(defined('SSE_ALLOWED_EXTENSIONS'));
+                  $this->assertTrue(defined('SSE_EXPORT_DIR_NAME'));
+                  $this->assertTrue(defined('SSE_FILTER_MAX_FILE_SIZE'));
+
+                  $this->assertNotEmpty(ES_SITE_EXPORTER_VERSION);
+                  $this->assertSame(['zip'], SSE_ALLOWED_EXTENSIONS);
+                  $this->assertSame('enginescript-site-exporter-exports', SSE_EXPORT_DIR_NAME);
+                  $this->assertSame('sse_max_file_size_for_export', SSE_FILTER_MAX_FILE_SIZE);
               }
 
-              public function test_activation_creates_default_options() {
-                  delete_option('es_optimizer_options');
-                  es_optimizer_activate_plugin();
-
-                  $options = get_option('es_optimizer_options');
-
-                  $this->assertIsArray($options);
-                  $this->assertArrayHasKey('disable_emojis', $options);
-                  $this->assertArrayHasKey('preconnect_domains', $options);
-                  $this->assertArrayHasKey('dns_prefetch_domains', $options);
+              public function test_security_helper_allows_only_zip_extension() {
+                  $this->assertTrue(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.zip'));
+                  $this->assertFalse(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.php'));
+                  $this->assertFalse(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.sql'));
+                  $this->assertFalse(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.tar.gz'));
               }
 
-              public function test_default_options_match_optimizer_scope() {
-                  $defaults = es_optimizer_get_default_options();
-
-                  $expected_keys = [
-                      'disable_emojis',
-                      'remove_jquery_migrate',
-                      'disable_classic_theme_styles',
-                      'remove_wp_version',
-                      'remove_rsd_link',
-                      'remove_wlw_manifest',
-                      'remove_shortlink',
-                      'remove_recent_comments_style',
-                      'enable_preconnect',
-                      'preconnect_domains',
-                      'enable_dns_prefetch',
-                      'dns_prefetch_domains',
-                      'disable_jetpack_ads',
-                      'disable_post_via_email',
-                  ];
-
-                  foreach ($expected_keys as $key) {
-                      $this->assertArrayHasKey($key, $defaults);
-                  }
-
-                  $this->assertSame(0, $defaults['disable_emojis']);
-                  $this->assertSame(0, $defaults['enable_preconnect']);
-                  $this->assertStringContainsString('https://fonts.googleapis.com', $defaults['preconnect_domains']);
+              public function test_export_filename_format_validation() {
+                  $this->assertTrue(sse_validate_filename_format('site_enginescript_site_export_20260513_123456.zip'));
+                  $this->assertInstanceOf(WP_Error::class, sse_validate_filename_format('../site_enginescript_site_export_20260513_123456.zip'));
+                  $this->assertInstanceOf(WP_Error::class, sse_validate_filename_format('site_enginescript_site_export_20260513_123456.php'));
+                  $this->assertInstanceOf(WP_Error::class, sse_validate_filename_format('site_export.zip'));
               }
 
-              public function test_domain_validation_accepts_clean_https_domains() {
-                  $result = es_optimizer_validate_single_domain('https://fonts.gstatic.com');
-
-                  $this->assertTrue($result['valid']);
-                  $this->assertSame('https://fonts.gstatic.com', $result['domain']);
-              }
-
-              public function test_domain_validation_rejects_unsafe_or_unclean_domains() {
-                  $domains = [
-                      'http://example.com',
-                      'https://example.com/path/file.css',
-                      'https://example.com?cache=bust',
-                      'https://localhost',
-                      'https://cdn.localhost',
-                      'https://cache.internal',
-                      'https://cdn',
-                      'https://8.8.8.8',
-                      'https://192.168.1.1',
-                      'https://127.000.000.001',
-                      'https://-example.com',
-                      'https://example.com:0',
-                  ];
-
-                  foreach ($domains as $domain) {
-                      $result = es_optimizer_validate_single_domain($domain);
-                      $this->assertFalse($result['valid'], "{$domain} should be rejected");
+              public function test_filepath_validation_rejects_traversal() {
+                  $base_dir = sys_get_temp_dir() . '/sse-test-' . wp_generate_uuid4();
+                  $this->assertTrue(mkdir($base_dir, 0700));
+                  $file = $base_dir . '/site_enginescript_site_export_20260513_123456.zip';
+                  try {
+                      $this->assertSame(7, file_put_contents($file, 'fixture'));
+                      $this->assertTrue(sse_validate_filepath($file, $base_dir));
+                      $this->assertFalse(sse_validate_filepath($base_dir . '/../' . basename($file), $base_dir));
+                  } finally {
+                      if (is_file($file)) {
+                          unlink($file);
+                      }
+                      rmdir($base_dir);
                   }
               }
-
-              public function test_domain_list_keeps_only_clean_https_domains() {
-                  $input = " https://fonts.googleapis.com \nhttps://example.com/path\nhttps://cdn.example.com\n";
-
-                  $this->assertSame(
-                      "https://fonts.googleapis.com\nhttps://cdn.example.com",
-                      es_optimizer_validate_domain_list($input, 'preconnect')
-                  );
-              }
-
-              public function test_get_validated_domains_reads_sanitized_options() {
-                  $options = es_optimizer_get_default_options();
-                  $options['preconnect_domains'] = "https://fonts.googleapis.com\nnot-a-url\nhttps://fonts.googleapis.com\nhttps://cdn.example.com";
-
-                  update_option('es_optimizer_options', $options);
-                  es_optimizer_clear_options_cache();
-
-                  $this->assertSame(
-                      ['https://fonts.googleapis.com', 'https://cdn.example.com'],
-                      es_optimizer_get_validated_domains('preconnect_domains')
-                  );
-              }
-
-              public function test_resource_hints_use_wordpress_filter_contract() {
-                  $options = es_optimizer_get_default_options();
-                  $options['enable_preconnect'] = 1;
-                  $options['preconnect_domains'] = "https://fonts.gstatic.com\nhttps://cdn.example.com";
-                  $options['enable_dns_prefetch'] = 1;
-                  $options['dns_prefetch_domains'] = 'https://static.example.com';
-
-                  update_option('es_optimizer_options', $options);
-                  es_optimizer_clear_options_cache();
-
-                  $preconnect_hints = es_optimizer_add_preconnect_resource_hints([], 'preconnect');
-                  $dns_prefetch_hints = es_optimizer_add_dns_prefetch_resource_hints([], 'dns-prefetch');
-
-                  $this->assertContains(['href' => 'https://fonts.gstatic.com', 'crossorigin' => 'anonymous'], $preconnect_hints);
-                  $this->assertContains(['href' => 'https://cdn.example.com'], $preconnect_hints);
-                  $this->assertContains('https://static.example.com', $dns_prefetch_hints);
-              }
-
+              
               public function test_wordpress_version_compatibility() {
                   global $wp_version;
                   $this->assertNotEmpty($wp_version, 'WordPress version should be available');
-
+                  
                   // Test that we're running on a supported WordPress version
                   $min_wp_version = '6.8';
-                  $this->assertTrue(version_compare($wp_version, $min_wp_version, '>='),
+                  $this->assertTrue(version_compare(preg_replace('/-src$/', '', $wp_version), $min_wp_version, '>='),
                       "WordPress version {$wp_version} should be >= {$min_wp_version}");
               }
           }
           EOF
 
       - name: Create PHPUnit Config
+        id: create_phpunit_config
         run: |
           cat > phpunit.xml << 'EOF'
           <?xml version="1.0"?>
@@ -995,42 +1533,139 @@ jobs:
               bootstrap="tests/bootstrap.php"
               backupGlobals="false"
               colors="true"
+              failOnEmptyTestSuite="true"
+              failOnRisky="true"
+              failOnWarning="true"
           >
               <testsuites>
-                  <testsuite name="EngineScript Site Optimizer">
-                      <file>./tests/integration/EngineScriptSiteOptimizerWpTest.php</file>
+                  <testsuite name="EngineScript Site Exporter">
+                      <directory suffix="Test.php">./tests/</directory>
                   </testsuite>
               </testsuites>
           </phpunit>
           EOF
 
       - name: Setup WP Tests
+        id: setup_wp_tests
+        timeout-minutes: 15
         run: |
-          bash tests/bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 ${{ matrix.wp-version }}
+          bash tests/bin/install-wp-tests.sh wordpress_test root root 127.0.0.1:3306 ${{ matrix.wp-version }} true
 
       - name: Run plugin test
-        run: vendor/bin/phpunit --config phpunit.xml
+        id: run_plugin_test
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          vendor/bin/phpunit --config phpunit.xml --log-junit "$RUNNER_TEMP/sse-diagnostics/junit.xml"
+          # Prove that the real generated config rejects an empty filtered suite.
+          if vendor/bin/phpunit --config phpunit.xml --do-not-cache-result \
+            --filter '__sse_intentionally_no_matching_test__' \
+            > "$RUNNER_TEMP/sse-empty-suite.txt" 2>&1; then
+            echo '::error::An empty test suite incorrectly succeeded.'
+            exit 1
+          else
+            status=$?
+            [[ $status == 1 ]]
+            grep -q 'No tests executed' "$RUNNER_TEMP/sse-empty-suite.txt"
+          fi
+          # This control must fail due to its assertion, not a setup/parse error.
+          cat > "$RUNNER_TEMP/SseIntentionalFailureTest.php" << 'EOF'
+          <?php
+          final class SseIntentionalFailureTest extends PHPUnit\Framework\TestCase {
+              public function test_intentional_failure(): void {
+                  $this->assertTrue(false, 'SSE intentional assertion control');
+              }
+          }
+          EOF
+          if vendor/bin/phpunit --no-configuration --do-not-cache-result \
+            "$RUNNER_TEMP/SseIntentionalFailureTest.php" \
+            > "$RUNNER_TEMP/sse-failing-suite.txt" 2>&1; then
+            echo '::error::An intentionally failing assertion incorrectly succeeded.'
+            exit 1
+          else
+            status=$?
+            [[ $status == 1 ]]
+            grep -q 'SSE intentional assertion control' "$RUNNER_TEMP/sse-failing-suite.txt"
+          fi
+          echo 'Empty-suite and intentional-assertion controls failed as expected.'
+
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php=${{ steps.setup_php.outcome }}
+            use_isolated_composer_auth=${{ steps.use_isolated_composer_auth.outcome }}
+            php_syntax_lint=${{ steps.php_syntax_lint.outcome }}
+            install_subversion=${{ steps.install_subversion.outcome }}
+            install_composer_dependencies=${{ steps.install_composer_dependencies.outcome }}
+            pin_phpunit_for_wordpress_test_suite=${{ steps.pin_phpunit_for_wordpress_test_suite.outcome }}
+            verify_phpunit_dependency_versions=${{ steps.verify_phpunit_dependency_versions.outcome }}
+            prepare_database=${{ steps.prepare_database.outcome }}
+            create_tests_directory_structure=${{ steps.create_tests_directory_structure.outcome }}
+            create_wp_tests_install_script=${{ steps.create_wp_tests_install_script.outcome }}
+            create_bootstrap_file=${{ steps.create_bootstrap_file.outcome }}
+            create_test_file=${{ steps.create_test_file.outcome }}
+            create_phpunit_config=${{ steps.create_phpunit_config.outcome }}
+            setup_wp_tests=${{ steps.setup_wp_tests.outcome }}
+            run_plugin_test=${{ steps.run_plugin_test.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: wp-compat-${{ matrix.php-version }}-${{ matrix.wp-version }}-${{ matrix.dependency-versions }}
+          path: |
+            ${{ runner.temp }}/sse-diagnostics/run.txt
+            ${{ runner.temp }}/sse-diagnostics/steps.txt
+            ${{ runner.temp }}/sse-diagnostics/php.txt
+            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
+            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
+            ${{ runner.temp }}/sse-diagnostics/junit.xml
+          retention-days: 7
+          if-no-files-found: warn
 
       - name: Report test status
+        id: report_test_status
         if: ${{ always() }}
         run: |
           if [ ${{ job.status }} == 'success' ]; then
-            echo "Tests passed on PHP ${{ matrix.php-version }} with WordPress ${{ matrix.wp-version }}."
+            echo "✅ Tests passed successfully on PHP ${{ matrix.php-version }} with WordPress ${{ matrix.wp-version }}"
           else
-            echo "Tests failed on PHP ${{ matrix.php-version }} with WordPress ${{ matrix.wp-version }}."
+            echo "❌ Tests failed on PHP ${{ matrix.php-version }} with WordPress ${{ matrix.wp-version }}"
           fi
 
       - name: Ensure repository files available after failure
+        id: ensure_repository_files_available_after_failure
         if: ${{ failure() }}
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Create issue on test failure
-        if: ${{ failure() }}
+        id: create_issue_on_test_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php.outcome == 'failure' && 'setup_php' || steps.use_isolated_composer_auth.outcome == 'failure' && 'use_isolated_composer_auth' || steps.php_syntax_lint.outcome == 'failure' && 'php_syntax_lint' || steps.install_subversion.outcome == 'failure' && 'install_subversion' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.pin_phpunit_for_wordpress_test_suite.outcome == 'failure' && 'pin_phpunit_for_wordpress_test_suite' || steps.verify_phpunit_dependency_versions.outcome == 'failure' && 'verify_phpunit_dependency_versions' || steps.prepare_database.outcome == 'failure' && 'prepare_database' || steps.create_tests_directory_structure.outcome == 'failure' && 'create_tests_directory_structure' || steps.create_wp_tests_install_script.outcome == 'failure' && 'create_wp_tests_install_script' || steps.create_bootstrap_file.outcome == 'failure' && 'create_bootstrap_file' || steps.create_test_file.outcome == 'failure' && 'create_test_file' || steps.create_phpunit_config.outcome == 'failure' && 'create_phpunit_config' || steps.setup_wp_tests.outcome == 'failure' && 'setup_wp_tests' || steps.run_plugin_test.outcome == 'failure' && 'run_plugin_test' || steps.report_test_status.outcome == 'failure' && 'report_test_status' || steps.ensure_repository_files_available_after_failure.outcome == 'failure' && 'ensure_repository_files_available_after_failure' || 'unknown_or_canceled' }}
           PHP_VERSION: ${{ matrix.php-version }}
           WP_VERSION: ${{ matrix.wp-version }}
           DEPENDENCY_VERSIONS: ${{ matrix.dependency-versions }}

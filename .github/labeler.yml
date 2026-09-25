@@ -1,13 +1,10 @@
 # Configuration for GitHub Actions Labeler
-# This file defines how automatic labels are applied to pull requests based on the files changed.
-# It helps categorize PRs by type of change (core functionality, frontend, documentation, etc.)
-# and makes it easier to identify what areas of the plugin are being modified.
-# The labels are applied automatically by the issue-management.yml workflow.
+# Labels PRs based on changed file paths
 
 # Core plugin functionality
 core:
   - changed-files:
-    - any-glob-to-any-file: enginescript-site-optimizer.php
+    - any-glob-to-any-file: enginescript-site-exporter.php
     - any-glob-to-any-file: includes/**/*
     - any-glob-to-any-file: assets/js/**/*
 
@@ -36,12 +33,11 @@ documentation:
     - any-glob-to-any-file: '*.md'
     - any-glob-to-any-file: docs/**/*
 
-# Optimization functionality
-optimization:
+# Export functionality
+export:
   - changed-files:
-    - any-glob-to-any-file: '**/optimi*.php'
-    - any-glob-to-any-file: '**/cache*.php'
-    - any-glob-to-any-file: '**/performance*.php'
+    - any-glob-to-any-file: '**/export*.php'
+    - any-glob-to-any-file: '**/zip*.php'
 
 # Database related changes
 database:
@@ -55,7 +51,6 @@ wordpress:
   - changed-files:
     - any-glob-to-any-file: '**/wp-*.php'
     - any-glob-to-any-file: '**/wordpress*.php'
-    - any-glob-to-any-file: '**/admin*.php'
 
 # Translations and localization
 i18n:

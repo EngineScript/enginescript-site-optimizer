@@ -11,15 +11,15 @@
 
 ## Description
 
-A lightweight WordPress plugin designed to optimize your website by removing unnecessary scripts, styles, and header elements that can slow down your site.
+A WordPress plugin for disabling selected features and configuring resource hints. Choose the options that suit your site and check their effects on your theme and plugins.
 
 ## Features
 
-- **Header Cleanup:** Remove WordPress version, WLW manifest links, and shortlinks
+- **Header Cleanup:** Remove the WordPress version, RSD links, and shortlinks
 - **Script Optimization:** Disable WordPress emojis and remove jQuery Migrate
 - **Style Optimization:** Remove inline styles from recent comments widget and disable classic theme styles
 - **Resource Hints:** Manage DNS prefetch and preconnect for external domains to improve load times (HTTPS only)
-- **Jetpack Optimization:** Remove Jetpack advertisements and promotions
+- **Jetpack Promotions:** Disable Jetpack promotional messages and Blaze promotions
 
 ## Installation
 
@@ -28,7 +28,7 @@ A lightweight WordPress plugin designed to optimize your website by removing unn
 1. Download the latest release from the [releases page](https://github.com/EngineScript/enginescript-site-optimizer/releases)
 2. Upload the plugin files to the `/wp-content/plugins/enginescript-site-optimizer` directory
 3. Activate the plugin from the Plugins menu in WordPress
-4. Configure the plugin settings from the Site Optimizer menu
+4. Configure the plugin under **Settings > Site Optimizer**
 
 ### Using Composer
 

@@ -31,14 +31,25 @@ function es_optimizer_disable_emojis(): void {
 
 	remove_action( 'wp_head', 'print_emoji_detection_script', 7 );
 	remove_action( 'wp_print_styles', 'print_emoji_styles' );
-	remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
-	remove_action( 'admin_print_styles', 'print_emoji_styles' );
+	remove_action( 'embed_head', 'print_emoji_detection_script', 10 );
 	remove_filter( 'the_content_feed', 'wp_staticize_emoji' );
 	remove_filter( 'comment_text_rss', 'wp_staticize_emoji' );
 	remove_filter( 'wp_mail', 'wp_staticize_emoji_for_email' );
+}
 
-	add_filter( 'tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce' );
-	add_filter( 'wp_resource_hints', 'es_optimizer_disable_emojis_remove_dns_prefetch', 10, 2 );
+/**
+ * Remove admin emoji output after WordPress has registered its admin callbacks.
+ *
+ * @since Unreleased
+ * @return void
+ */
+function es_optimizer_disable_admin_emojis(): void {
+	if ( ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
+		return;
+	}
+
+	remove_action( 'admin_print_scripts', 'print_emoji_detection_script', 10 );
+	remove_action( 'admin_print_styles', 'print_emoji_styles', 10 );
 }
 
 /**
@@ -49,6 +60,10 @@ function es_optimizer_disable_emojis(): void {
  * @return array<int, string> Plugins without wpemoji.
  */
 function es_optimizer_disable_emojis_tinymce( array $plugins ): array {
+	if ( ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
+		return $plugins;
+	}
+
 	return array_values( array_diff( $plugins, array( 'wpemoji' ) ) );
 }
 
@@ -56,33 +71,69 @@ function es_optimizer_disable_emojis_tinymce( array $plugins ): array {
  * Remove emoji CDN hostname from DNS prefetching hints.
  *
  * @since 1.0.0
- * @param array<int, array<string, mixed>|string> $urls          URLs to print for resource hints.
- * @param string                                  $relation_type The relation type the URLs are printed for.
- * @return array<int, array<string, mixed>|string> Filtered URLs.
+ * @param array<int|string, mixed> $urls          Resource hints, including unknown foreign entries.
+ * @param string                   $relation_type The relation type the URLs are printed for.
+ * @return array<int|string, mixed> Filtered hints with surviving keys, order and values preserved.
  */
 function es_optimizer_disable_emojis_remove_dns_prefetch( array $urls, string $relation_type ): array {
-	if ( 'dns-prefetch' !== $relation_type ) {
+	if ( 'dns-prefetch' !== $relation_type || ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
 		return $urls;
 	}
 
 	$emoji_svg_url = apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2/svg/' );
-	$emoji_host    = wp_parse_url( $emoji_svg_url, PHP_URL_HOST );
 
-	if ( ! is_string( $emoji_host ) || '' === $emoji_host ) {
+	if ( ! is_string( $emoji_svg_url ) ) {
 		return $urls;
 	}
 
-	return array_values(
-		array_filter(
-			$urls,
-			static function ( array|string $url ) use ( $emoji_host ): bool {
-				$href = is_array( $url ) ? (string) ( $url['href'] ?? '' ) : $url;
-				$host = wp_parse_url( $href, PHP_URL_HOST );
+	$emoji_host = es_optimizer_get_resource_hint_host( $emoji_svg_url );
 
-				return $emoji_host !== $host;
-			}
-		)
+	if ( '' === $emoji_host ) {
+		return $urls;
+	}
+
+	return array_filter(
+		$urls,
+		static function ( mixed $url ) use ( $emoji_host ): bool {
+			$href = is_array( $url ) ? ( $url['href'] ?? null ) : $url;
+
+			return ! is_string( $href ) || es_optimizer_get_resource_hint_host( $href ) !== $emoji_host;
+		}
 	);
+}
+
+/**
+ * Extract a comparable hostname from an existing browser resource-hint value.
+ *
+ * Accepts absolute, scheme-relative and bare host forms for matching only.
+ * This does not relax the stricter policy for administrator-supplied origins.
+ *
+ * @since Unreleased
+ * @param string $url Existing URL or hostname to compare.
+ * @return string Lowercase hostname, or an empty string for an unsupported value.
+ */
+function es_optimizer_get_resource_hint_host( string $url ): string {
+	if ( 1 === preg_match( '/[<>\x00-\x20\x7F\\\\]/', $url ) ) {
+		return '';
+	}
+
+	if ( ! str_contains( $url, '://' ) && ! str_starts_with( $url, '//' ) ) {
+		$url = '//' . $url;
+	}
+
+	$parts = wp_parse_url( $url );
+
+	if ( ! is_array( $parts ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+		return '';
+	}
+
+	if ( ! in_array( strtolower( $parts['scheme'] ?? 'https' ), array( 'http', 'https' ), true ) ) {
+		return '';
+	}
+
+	$host = strtolower( $parts['host'] ?? '' );
+
+	return str_contains( $host, '%' ) ? '' : $host;
 }
 
 /**
@@ -133,10 +184,6 @@ function es_optimizer_remove_header_items(): void {
 		remove_action( 'wp_head', 'rsd_link' );
 	}
 
-	if ( es_optimizer_is_option_enabled( 'remove_wlw_manifest' ) ) {
-		remove_action( 'wp_head', 'wlwmanifest_link' );
-	}
-
 	if ( es_optimizer_is_option_enabled( 'remove_shortlink' ) ) {
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10 );
 	}
@@ -148,20 +195,27 @@ function es_optimizer_remove_header_items(): void {
  * @since 1.0.0
  */
 function es_optimizer_remove_recent_comments_style(): void {
-	if ( ! es_optimizer_is_option_enabled( 'remove_recent_comments_style' ) ) {
-		return;
-	}
+	add_filter( 'show_recent_comments_widget_style', 'es_optimizer_filter_recent_comments_style', PHP_INT_MAX );
+}
 
-	add_filter( 'show_recent_comments_widget_style', '__return_false', PHP_INT_MAX );
+/**
+ * Apply the current site's recent-comment style policy when the filter runs.
+ *
+ * @since Unreleased
+ * @param mixed $show_style Incoming value from WordPress or another plugin.
+ * @return mixed False when disabled; otherwise the original value.
+ */
+function es_optimizer_filter_recent_comments_style( mixed $show_style ): mixed {
+	return es_optimizer_is_option_enabled( 'remove_recent_comments_style' ) ? false : $show_style;
 }
 
 /**
  * Add preconnect hints through the native WordPress resource hints API.
  *
  * @since 1.4.1
- * @param array<int, array<string, mixed>|string> $urls          URLs to print for resource hints.
- * @param string                                  $relation_type The relation type the URLs are printed for.
- * @return array<int, array<string, mixed>|string> Resource hints.
+ * @param array<int|string, mixed> $urls          Resource hints, including unknown foreign values.
+ * @param string                   $relation_type The relation type the URLs are printed for.
+ * @return array<int|string, mixed> Original entries plus at most 100 supported plugin origins.
  */
 function es_optimizer_add_preconnect_resource_hints( array $urls, string $relation_type ): array {
 	if ( 'preconnect' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
@@ -172,10 +226,11 @@ function es_optimizer_add_preconnect_resource_hints( array $urls, string $relati
 		return $urls;
 	}
 
-	$font_domains = array( 'fonts.googleapis.com', 'fonts.gstatic.com' );
+	$font_domains   = array( 'fonts.googleapis.com', 'fonts.gstatic.com' );
+	$existing_hrefs = es_optimizer_get_resource_hint_hrefs( $urls );
 
 	foreach ( es_optimizer_get_validated_domains( 'preconnect_domains' ) as $domain ) {
-		if ( es_optimizer_resource_hint_exists( $urls, $domain ) ) {
+		if ( isset( $existing_hrefs[ $domain ] ) ) {
 			continue;
 		}
 
@@ -186,7 +241,8 @@ function es_optimizer_add_preconnect_resource_hints( array $urls, string $relati
 			$hint['crossorigin'] = 'anonymous';
 		}
 
-		$urls[] = $hint;
+		$urls[]                    = $hint;
+		$existing_hrefs[ $domain ] = true;
 	}
 
 	return $urls;
@@ -196,9 +252,9 @@ function es_optimizer_add_preconnect_resource_hints( array $urls, string $relati
  * Add DNS prefetch hints through the native WordPress resource hints API.
  *
  * @since 1.8.0
- * @param array<int, array<string, mixed>|string> $urls          URLs to print for resource hints.
- * @param string                                  $relation_type The relation type the URLs are printed for.
- * @return array<int, array<string, mixed>|string> Resource hints.
+ * @param array<int|string, mixed> $urls          Resource hints, including unknown foreign values.
+ * @param string                   $relation_type The relation type the URLs are printed for.
+ * @return array<int|string, mixed> Original entries plus at most 100 origins for core's host-only DNS output.
  */
 function es_optimizer_add_dns_prefetch_resource_hints( array $urls, string $relation_type ): array {
 	if ( 'dns-prefetch' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
@@ -209,9 +265,12 @@ function es_optimizer_add_dns_prefetch_resource_hints( array $urls, string $rela
 		return $urls;
 	}
 
+	$existing_hrefs = es_optimizer_get_resource_hint_hrefs( $urls );
+
 	foreach ( es_optimizer_get_validated_domains( 'dns_prefetch_domains' ) as $domain ) {
-		if ( ! es_optimizer_resource_hint_exists( $urls, $domain ) ) {
-			$urls[] = $domain;
+		if ( ! isset( $existing_hrefs[ $domain ] ) ) {
+			$urls[]                    = $domain;
+			$existing_hrefs[ $domain ] = true;
 		}
 	}
 
@@ -222,35 +281,58 @@ function es_optimizer_add_dns_prefetch_resource_hints( array $urls, string $rela
  * Determine whether a resource hint already exists.
  *
  * @since 2.0.0
- * @param array<int, array<string, mixed>|string> $urls Resource hints.
- * @param string                                  $href URL to check.
+ * @param array<int|string, mixed> $urls Resource hints, including unknown foreign values.
+ * @param string                   $href URL to check.
  * @return bool True when the hint exists.
  */
 function es_optimizer_resource_hint_exists( array $urls, string $href ): bool {
-	foreach ( $urls as $url ) {
-		$existing_href = is_array( $url ) ? (string) ( $url['href'] ?? '' ) : $url;
-
-		if ( $href === $existing_href ) {
-			return true;
-		}
-	}
-
-	return false;
+	return isset( es_optimizer_get_resource_hint_hrefs( $urls )[ $href ] );
 }
 
 /**
- * Disable Jetpack advertisements.
+ * Index existing string href values without changing or coercing foreign hints.
+ *
+ * Callers build this set once, then add each new href as they append a hint.
+ * The domain-list budget bounds plugin additions; foreign input is not truncated.
+ *
+ * @since Unreleased
+ * @param array<int|string, mixed> $urls Existing resource hints.
+ * @return array<int|string, true> Exact string href membership set.
+ */
+function es_optimizer_get_resource_hint_hrefs( array $urls ): array {
+	$hrefs = array();
+
+	foreach ( $urls as $url ) {
+		$href = is_array( $url ) ? ( $url['href'] ?? null ) : $url;
+
+		if ( is_string( $href ) ) {
+			$hrefs[ $href ] = true;
+		}
+	}
+
+	return $hrefs;
+}
+
+/**
+ * Disable Jetpack promotional messages and Blaze initialization.
  *
  * @since 1.0.0
  */
 function es_optimizer_disable_jetpack_ads(): void {
-	if ( ! es_optimizer_is_option_enabled( 'disable_jetpack_ads' ) ) {
-		return;
-	}
+	add_filter( 'jetpack_just_in_time_msgs', 'es_optimizer_filter_jetpack_ads', PHP_INT_MAX );
+	add_filter( 'jetpack_show_promotions', 'es_optimizer_filter_jetpack_ads', PHP_INT_MAX );
+	add_filter( 'jetpack_blaze_enabled', 'es_optimizer_filter_jetpack_ads', PHP_INT_MAX );
+}
 
-	add_filter( 'jetpack_just_in_time_msgs', '__return_false', PHP_INT_MAX );
-	add_filter( 'jetpack_show_promotions', '__return_false', PHP_INT_MAX );
-	add_filter( 'jetpack_blaze_enabled', '__return_false', PHP_INT_MAX );
+/**
+ * Apply the current site's policy to the three existing Jetpack filters.
+ *
+ * @since Unreleased
+ * @param mixed $show_promotion Incoming value from Jetpack or another plugin.
+ * @return mixed False when disabled; otherwise the original value.
+ */
+function es_optimizer_filter_jetpack_ads( mixed $show_promotion ): mixed {
+	return es_optimizer_is_option_enabled( 'disable_jetpack_ads' ) ? false : $show_promotion;
 }
 
 /**
@@ -259,9 +341,16 @@ function es_optimizer_disable_jetpack_ads(): void {
  * @since 1.0.0
  */
 function es_optimizer_disable_post_via_email(): void {
-	if ( ! es_optimizer_is_option_enabled( 'disable_post_via_email' ) ) {
-		return;
-	}
+	add_filter( 'enable_post_by_email_configuration', 'es_optimizer_filter_post_via_email', PHP_INT_MAX );
+}
 
-	add_filter( 'enable_post_by_email_configuration', '__return_false', PHP_INT_MAX );
+/**
+ * Apply the current site's post-via-email policy when the filter runs.
+ *
+ * @since Unreleased
+ * @param mixed $enabled Incoming value from WordPress or another plugin.
+ * @return mixed False when disabled; otherwise the original value.
+ */
+function es_optimizer_filter_post_via_email( mixed $enabled ): mixed {
+	return es_optimizer_is_option_enabled( 'disable_post_via_email' ) ? false : $enabled;
 }

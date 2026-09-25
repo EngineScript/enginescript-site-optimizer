@@ -2,87 +2,75 @@
 applyTo: '**'
 ---
 
-# EngineScript Site Optimizer - Development Standards
+# AGENTS.md
 
-## Project Context
+## Environment
 
-- **Plugin:** EngineScript Site Optimizer - WordPress performance optimization plugin
-- **Text Domain:** `enginescript-site-optimizer`
-- **Function/Hook Prefix:** `es_optimizer_`
-- **Version Constant:** `ES_SITE_OPTIMIZER_VERSION`
-- **WordPress:** 6.8+ | **PHP:** 8.2+
-- **Work Environment:** GitHub Codespaces (remote). Never suggest local terminal commands.
+- Use `rg` for search.
+- Prefer project-local scripts and lockfile-backed dependencies when they exist. Use global tools as fallback checks when a repo has no local tooling yet.
+- Windows-backed global tools are exposed through WSL shims in `/usr/local/bin`.
+- The `/usr/local/bin/node`, `/usr/local/bin/npm`, and `/usr/local/bin/npx` shims translate existing absolute WSL paths with `wslpath -w` before calling Windows Node. Use normal WSL paths such as `/tmp/file.js` and `/mnt/c/...` through those shims.
 
-## Code Standards
+## Setup Commands
 
-### WordPress & PHP
+- If `composer.json` exists, run `composer install --no-interaction --prefer-dist`.
+- If `package-lock.json` exists, run `npm ci`; if only `package.json` exists, run `npm install`.
+- If Python workflow files or tests need dependencies, prefer the repo's `.venv`, `requirements*.txt`, `pyproject.toml`, `uv.lock`, `poetry.lock`, or `tox.ini`.
+- If a Ruby `Gemfile.lock` exists, run `bundle install` and prefer `bundle exec <tool>`.
+- Do not add a package manifest only to use a global fallback tool. Add manifests when the repo should own reproducible build, test, lint, or CI behavior.
 
-- Follow [WordPress Coding Standards](https://developer.wordpress.org/coding-standards/) for PHP, JS, CSS, HTML, and accessibility
-- Use WordPress APIs and hooks exclusively; avoid raw PHP/SQL and non-WP frameworks
-- Prefix all functions, classes, hooks, and globals with `es_optimizer_`
-- Use `wp_die()` instead of `die()` or `exit()`
-- Use `WP_Error` for error handling; log errors without exposing sensitive data
-- Use PHPDoc with `@param`, `@return`, `@since` tags on all functions
-- Organize code by feature; use descriptive names; remove unused code
-- Validate all function parameters and handle edge cases gracefully
+## Testing Instructions
 
-### Modern PHP
+- Prefer repo scripts first: `composer test`, `composer check-all`, `npm test`, `npm run lint`, `npm run build`, `pytest`, `tox`, `nox`, or `bundle exec rspec`.
+- For PHP fallback checks, use relevant tools from: `parallel-lint`, `phpcs`, `phpcbf`, `php-cs-fixer`, `phpmd`, `pdepend`, `phpmetrics`, `phpstan`, `psalm`, `phpunit`, and `wp`.
+- For JavaScript, HTML, CSS, and Markdown fallback checks, use relevant tools from: `eslint`, `jest`, `vitest`, `prettier`, `stylelint`, `htmlhint`, `html-validate`, `markdownlint-cli2`, `cspell`, `codespell`, `playwright`, `tsc`, `tsx`, `pa11y`, `svgo`, `sass`, `postcss`, `autoprefixer`, `http-server`, `jscpd`, `depcruise`, `nyc`, and `jsdoc`.
+- For Bash fallback checks, use `shellcheck`, `shfmt`, and `bats`.
+- For GitHub Actions and config files, use `actionlint`, `yamllint`, `jq`, `yq`, `gh`, and `check-jsonschema`.
+- For Python workflow support, use relevant tools from: `pytest`, `tox`, `nox`, `ruff`, `mypy`, `pyright`, `bandit`, `black`, `isort`, `coverage`, `radon`, `xenon`, `pip-audit`, `pre-commit`, and `check-jsonschema`.
+- For Ruby fallback checks, use `rubocop`, `standardrb`, `reek`, `flog`, `flay`, `rubycritic`, `brakeman`, and `bundler-audit`. `rubocop --version` and `standardrb --version` can take several seconds through the WSL shim.
+- Rector is not installed globally. Install and run Rector per repo if that repo needs it.
 
-- PHP 8.2+ features are available; keep code aligned with the configured PHP compatibility baseline
-- Use typed function signatures wherever possible
-- Before submitting changes, run `phpcs`, `phpmd`, and `phpstan` (config files present in project root)
+## Code Style
 
-## Security (Critical)
+- Match the existing code style and framework conventions.
+- Prefer existing repo helpers and scripts over inventing new wrappers.
+- Add or update focused tests when behavior changes.
 
-All code must follow OWASP Top 10 and WordPress security best practices. **Auto-identify and fix security vulnerabilities whenever found; never leave them unresolved.**
+## Project Standards
 
-**Input:**
+- This is a WordPress plugin with current minimums of WordPress 6.8 and PHP 8.2. Treat the plugin header, `readme.txt`, `composer.json`, and `phpcs.xml` as the authoritative compatibility surfaces and keep them aligned.
+- Follow the configured WordPress Coding Standards and project PHPCS rules.
+- Prefix plugin functions with `es_optimizer_` and new constants with `ES_SITE_OPTIMIZER_`; preserve the established `ES_SITE_OPTIMIZER_VERSION` constant.
+- Use the `enginescript-site-optimizer` text domain for all translatable strings.
+- Prefer WordPress APIs over raw PHP equivalents when they provide the appropriate behavior.
+- Add PHPDoc, including `@param`, `@return`, and `@since`, consistent with the existing codebase.
 
-- Sanitize with `sanitize_text_field()`, `sanitize_email()`, `absint()`, or `wp_kses()` as appropriate
-- Validate nonces with WordPress nonce helpers or Settings API nonces on form submissions and AJAX handlers
-- Use `$wpdb->prepare()` for every database query
+## WordPress Security
 
-**Output:**
+- Validate and sanitize untrusted input at the trust boundary, and escape output for its specific HTML, attribute, URL, or JavaScript context.
+- Require both nonce verification and an appropriate capability check before state-changing or sensitive operations.
+- Prefer WordPress database APIs; prepare dynamic raw SQL with `$wpdb->prepare()`.
+- Canonicalize and constrain filesystem paths before access, prevent traversal outside approved directories, and use the WordPress Filesystem API where appropriate.
+- Return `WP_Error` where consistent with existing APIs, and do not expose sensitive information in user-facing errors or logs.
 
-- Escape with context-appropriate functions: `esc_html()`, `esc_attr()`, `esc_url()`, `esc_js()`, `esc_textarea()`
-- Use `wp_nonce_field()` or `settings_fields()` for admin forms
+## Internationalization
 
-**Access Control:**
+- Internationalize all user-facing strings with the appropriate WordPress helper and the `enginescript-site-optimizer` text domain.
+- Update `languages/enginescript-site-optimizer.pot` when translatable strings change, following the repository's existing POT-generation workflow.
 
-- Check `current_user_can('manage_options')` before any settings operation
-- Always include `if ( ! defined( 'ABSPATH' ) ) { return; }` at the top of every PHP file
-- Prevent SQL injection, XSS, CSRF, LFI, and path traversal at all times
+## Releases
 
-## Performance
+- Change version numbers only when explicitly instructed.
+- For a release, keep the plugin header, `ES_SITE_OPTIMIZER_VERSION`, README version badge/download link, `readme.txt` stable tag, changelogs, and POT project version synchronized.
+- Move the Unreleased changelog entries into the released version section.
 
-- Cache expensive operations with `wp_cache_*()` and transients
-- Avoid N+1 queries; optimize all database calls
-- Enqueue assets via `wp_enqueue_scripts()` / `wp_enqueue_styles()` with correct dependencies and version strings
-- Conditionally load admin assets only on relevant admin pages; conditionally load frontend assets only when needed
+## Changelog Updates
 
-## Internationalization (i18n)
+- When updating the main plugin codebase, update both `CHANGELOG.md` and the changelog section in `readme.txt` in the same change.
+- Avoid changelog updates for changes limited to `.github/`, `tests/`, `stubs/`, `.private/`, or `languages/`.
 
-- Mark all user-facing strings with `__()`, `_e()`, `esc_html__()`, or `esc_attr__()`
-- Always use text domain `enginescript-site-optimizer`
-- Update `languages/enginescript-site-optimizer.pot` whenever translatable strings are added or changed
+## Repo Hygiene
 
-## Documentation & Versioning
-
-**On every code change:**
-
-- Add an entry to the `Unreleased` section of `CHANGELOG.md`
-- Mirror the same entry in the changelog section of `readme.txt`
-
-**Version releases (only when explicitly instructed):**
-
-- Follow semantic versioning (MAJOR.MINOR.PATCH)
-- Update version in: plugin file header, `ES_SITE_OPTIMIZER_VERSION` constant, `README.md`, `readme.txt`, `CHANGELOG.md`, `GEMINI.md`, `composer.json`, and `languages/enginescript-site-optimizer.pot`
-- Move all `Unreleased` entries to the new version section in both `CHANGELOG.md` and `readme.txt`
-- **Never auto-bump versions** - wait for an explicit instruction to do so
-
-## Workflow
-
-- Edit files in place; never create duplicate files or unnecessary new files
-- Proceed automatically on non-destructive changes; ask before deleting files or data
-- Auto-fix bugs and security issues when identified
-- Keep responses concise and focused on what changed; do not create summary `.md` files
+- Respect uncommitted user changes. Do not revert unrelated edits.
+- Do not commit generated caches, dependency folders, coverage reports, or tool output unless the repo already tracks them.
+- If a global tool reports that project-local configuration is missing, either use a conservative command-line fallback or add config only when it improves repeatable repo workflows.

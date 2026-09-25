@@ -1,6 +1,6 @@
 # This workflow automatically posts a guidance comment on new pull requests.
 # It welcomes contributors and provides a brief message to acknowledge their
-# contribution to EngineScript Site Optimizer.
+# contribution to EngineScript Site Exporter.
 # The workflow is triggered whenever a new pull request is opened.
 
 name: New Pull Request Guidance
@@ -15,7 +15,7 @@ on:
 permissions: read-all
 
 env:
-  PLUGIN_SLUG: enginescript-site-optimizer
+  PLUGIN_SLUG: enginescript-site-exporter
 
 jobs:
   guide:
@@ -29,7 +29,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Thanks for contributing to EngineScript Site Optimizer!
+            Thanks for contributing to EngineScript Site Exporter!
 
             **Before we review:**
             - [ ] Have you tested your changes with WordPress 6.8+?
@@ -38,7 +38,7 @@ jobs:
             - [ ] Did you update the CHANGELOG.md if needed?
 
             **Security Reminder**
-            This plugin optimizes WordPress frontend and admin performance, so please ensure:
+            This plugin creates site export archives, so please ensure:
             - All user input is properly sanitized
             - All output is properly escaped
             - No security vulnerabilities are introduced

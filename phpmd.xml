@@ -5,88 +5,28 @@
          xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
          xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
 
-    <description>WordPress-compatible PHPMD ruleset for code quality and naming conventions</description>
+    <description>Code quality and naming checks with WordPress-compatible thresholds; PHPCS handles formatting.</description>
 
     <!-- WordPress-specific file patterns to exclude -->
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/.private/*</exclude-pattern>
     <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>*/tests/*</exclude-pattern>
-    <exclude-pattern>*/assets/*</exclude-pattern>
     <exclude-pattern>*/stubs/*</exclude-pattern>
 
     <!-- Clean Code Rules (with WordPress exceptions) -->
     <rule ref="rulesets/cleancode.xml">
-        <!-- Exclude ElseExpression - WordPress often requires else for security patterns -->
+        <!-- Allow explicit else branches; review branch behavior independently. -->
         <exclude name="ElseExpression"/>
-        <!-- Exclude MissingImport - WordPress core classes are loaded automatically -->
+        <!-- Global WordPress and PHP classes do not require namespace imports here. -->
         <exclude name="MissingImport"/>
-        <!-- Exclude StaticAccess - Allow for singleton patterns common in WordPress -->
-        <exclude name="StaticAccess"/>
-        <!-- Exclude BooleanArgumentFlag - WordPress hooks often use boolean flags -->
-        <exclude name="BooleanArgumentFlag"/>
     </rule>
 
-    <!-- Code Size Rules (WordPress-adjusted) -->
-    <rule ref="rulesets/codesize.xml">
-        <!-- Exclude TooManyPublicMethods - WordPress plugins need many public hook callbacks -->
-        <exclude name="TooManyPublicMethods"/>
-        <!-- Exclude TooManyMethods - WordPress classes often have many methods for hooks -->
-        <exclude name="TooManyMethods"/>
-        <!-- Exclude ExcessiveClassComplexity - WordPress plugins can be complex -->
-        <exclude name="ExcessiveClassComplexity"/>
-        <!-- Re-added below with WordPress-adjusted thresholds -->
-        <exclude name="CyclomaticComplexity"/>
-        <exclude name="NPathComplexity"/>
-    </rule>
-
-    <!-- WordPress-adjusted complexity limits -->
-    <rule ref="rulesets/codesize.xml/TooManyPublicMethods">
-        <properties>
-            <!-- WordPress plugins often need many public hook callbacks -->
-            <property name="maxmethods" value="20"/>
-        </properties>
-    </rule>
-
-    <rule ref="rulesets/codesize.xml/TooManyMethods">
-        <properties>
-            <!-- WordPress classes often have many methods for different hooks -->
-            <property name="maxmethods" value="25"/>
-        </properties>
-    </rule>
-
-    <rule ref="rulesets/codesize.xml/ExcessiveMethodLength">
-        <properties>
-            <!-- Allow longer methods for WordPress template functions -->
-            <property name="minimum" value="150"/>
-        </properties>
-    </rule>
-
-    <rule ref="rulesets/codesize.xml/ExcessiveClassLength">
-        <properties>
-            <!-- WordPress plugin main classes can be large -->
-            <property name="minimum" value="1500"/>
-        </properties>
-    </rule>
-
-    <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
-        <properties>
-            <!-- WordPress functions often have conditional logic for hooks -->
-            <property name="reportLevel" value="15"/>
-        </properties>
-    </rule>
-
-    <rule ref="rulesets/codesize.xml/NPathComplexity">
-        <properties>
-            <!-- Domain validation and optimization settings flows branch heavily by design -->
-            <property name="minimum" value="600"/>
-        </properties>
-    </rule>
+    <!-- Stock limits apply to the optimizer's procedural functions. -->
+    <rule ref="rulesets/codesize.xml"/>
 
     <!-- Controversial Rules (with WordPress exceptions) -->
     <rule ref="rulesets/controversial.xml">
-        <!-- Exclude Superglobals - WordPress securely uses $_GET, $_POST, etc. -->
-        <exclude name="Superglobals"/>
         <!-- Exclude CamelCaseClassName - WordPress uses Snake_Case_Class_Names -->
         <exclude name="CamelCaseClassName"/>
         <!-- Exclude CamelCaseMethodName - WordPress uses snake_case_method_names -->
@@ -99,15 +39,7 @@
         <exclude name="CamelCasePropertyName"/>
     </rule>
 
-    <!-- Design Rules (with WordPress exceptions) -->
-    <rule ref="rulesets/design.xml">
-        <!-- Exclude ExitExpression - Required for WordPress wp_die(), exit, etc. -->
-        <exclude name="ExitExpression"/>
-        <!-- Exclude EvalExpression - this project relies on PHPCS and security scans for dynamic execution checks -->
-        <exclude name="EvalExpression"/>
-        <!-- Exclude GotoStatement - WordPress core sometimes uses goto -->
-        <exclude name="GotoStatement"/>
-    </rule>
+    <rule ref="rulesets/design.xml"/>
 
     <!-- WORDPRESS-SPECIFIC NAMING RULES -->
     <!-- WordPress uses snake_case naming which conflicts with standard camelCase rules -->
@@ -115,8 +47,8 @@
 
     <rule ref="rulesets/naming.xml/ShortVariable">
         <properties>
-            <!-- WordPress allows short variables like $id, $wp, but avoid single letters -->
-            <property name="minimum" value="2"/>
+            <!-- Keep the stock minimum; optimizer names do not need shorter variables. -->
+            <property name="minimum" value="3"/>
         </properties>
     </rule>
 
@@ -129,12 +61,12 @@
 
     <rule ref="rulesets/naming.xml/ShortMethodName">
         <properties>
-            <!-- WordPress allows short method names like get(), set(), but avoid very short -->
-            <property name="minimum" value="2"/>
+            <!-- Keep the stock minimum for function and method names. -->
+            <property name="minimum" value="3"/>
         </properties>
     </rule>
 
-    <!-- Allow WordPress constructor patterns -->
+    <!-- Detect obsolete constructors named after their class. -->
     <rule ref="rulesets/naming.xml/ConstructorWithNameAsEnclosingClass"/>
 
     <!-- WordPress constant naming (UPPER_CASE_WITH_UNDERSCORES) -->

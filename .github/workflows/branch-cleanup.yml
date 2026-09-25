@@ -13,7 +13,7 @@ permissions:
   pull-requests: read
 
 env:
-  PLUGIN_SLUG: enginescript-site-optimizer
+  PLUGIN_SLUG: enginescript-site-exporter
 
 jobs:
   cleanup:

@@ -5,7 +5,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Limit domain-list work and retain previous values for oversize submissions; skip oversize saved lists without changing their stored text.
+- Report rejected-line totals with at most three safe samples and avoid duplicate plugin warnings during repeated validation.
+- Build exact resource-hint membership once per callback, preserving foreign entries without unsafe value conversions.
+- Reject unsupported preconnect ports and skip legacy custom-port hints while preserving their saved text until an explicit save.
+- Correct admin and embed emoji hooks, safely match equivalent DNS hint hosts, and apply reversible filters using the current site's settings.
+- Use the core settings notice display, escape plain-text section and field titles, and associate textarea instructions with their controls.
+- Read current-site options through WordPress caching and retain virtual defaults until a changed save.
+- Preserve previous domain lists for malformed submissions and validate original URL text before normalization.
+- Omit submitted URLs and credentials from localized rejection messages, with safe line-specific feedback.
+- Remove the plugin option across multisite networks during uninstall, verify physical row deletion, restore site context, and stop file removal when cleanup fails.
+
 ### Changed
+
+- Clarify settings help and Jetpack promotion labels without changing feature behavior or validation rules.
+- Refresh the translation template from all production PHP, including uninstall messages, and declare the bundled language directory.
+- Explain domain-list byte and line limits and show associated guidance for oversize saved lists.
+- Retire the obsolete Windows Live Writer manifest setting; ignore its old key on reads and omit it on a normal save.
+- Clarify HTTPS port requirements, hostname-only DNS prefetch behavior, and invalid-list save behavior in settings help.
+- Restore optimizer package, analyzer and contributor-guidance targets while preserving locked dependency versions.
 
 - **Code Quality**: Replaced PHP-native IP validation with WordPress native IP validation for resource hint host checks
 

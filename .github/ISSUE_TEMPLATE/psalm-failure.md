@@ -8,7 +8,9 @@ assignees: []
 
 ## Psalm Static Analysis Failed
 
-The Psalm static analysis check has failed for the repository.
+The Psalm job failed. Inspect the failure stage before attributing the failure to static analysis.
+
+**Failure stage:** `{{ env.FAILURE_STAGE }}`
 
 **Failure Details:**
 
@@ -17,7 +19,7 @@ The Psalm static analysis check has failed for the repository.
 - **Run ID:** {{ env.RUN_ID }}
 
 **What happened:**
-Psalm has detected potential issues in the code through static analysis.
+The stage above identifies where execution failed. If analysis ran, inspect the Psalm output; otherwise fix the prerequisite.
 
 **What needs to be done:**
 
@@ -28,7 +30,7 @@ Psalm has detected potential issues in the code through static analysis.
    - Incorrect return types
    - Unused code
    - Potential null pointer issues
-3. Test locally with: `composer run psalm`
+3. Re-run the GitHub workflow to validate the fix
 
 **Resources:**
 

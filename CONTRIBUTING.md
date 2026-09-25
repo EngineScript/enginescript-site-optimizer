@@ -273,11 +273,35 @@ This project follows [Semantic Versioning](https://semver.org/):
 - **MINOR**: New features (backward compatible)
 - **PATCH**: Bug fixes (backward compatible)
 
+## Translation Template
+
+Use the literal `enginescript-site-optimizer` text domain for user-facing strings.
+Add translator comments for placeholders, use numbered placeholders when there
+is more than one, and escape translated text for its output context.
+
+After source strings settle, run the same extraction command as the
+[Update Translation File workflow](.github/workflows/update-pot-file.yml) from
+the repository root with WP-CLI's `i18n` command available:
+
+```bash
+wp i18n make-pot . languages/enginescript-site-optimizer.pot \
+  --slug=enginescript-site-optimizer \
+  --domain=enginescript-site-optimizer \
+  --include=enginescript-site-optimizer.php,includes,uninstall.php \
+  --exclude=vendor,node_modules,tests,build,plugin-check-build,.git,.github,.private
+```
+
+Review message text, source references, translator notes, and plural forms in
+the generated diff. Repeating extraction with the same sources and WP-CLI/i18n
+versions should change only `POT-Creation-Date`. A POT is a translation template;
+it does not provide a translated interface. Verify actual locale loading and
+rendered output separately when adding translations.
+
 ## Support Channels
 
 - **Issues**: [GitHub Issues](https://github.com/EngineScript/enginescript-site-optimizer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/EngineScript/enginescript-site-optimizer/discussions)
-- **Security**: Email <security@enginescript.com> for security issues
+- **Security**: Follow the private reporting instructions in [SECURITY.md](SECURITY.md)
 
 ## Resources
 

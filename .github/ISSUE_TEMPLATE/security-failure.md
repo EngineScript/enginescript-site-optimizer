@@ -1,14 +1,16 @@
 ---
-name: "Security Vulnerability Detected"
-about: "Automated issue created when security vulnerabilities are detected"
-title: "Security Vulnerability Detected"
-labels: ["security", "vulnerability", "critical"]
+name: "Security Workflow Failure"
+about: "Automated issue for security workflow failures requiring triage"
+title: "Security Workflow Failure"
+labels: ["security", "needs-review"]
 assignees: []
 ---
 
-## Security Vulnerability Detected
+## Security Workflow Failure
 
-A security vulnerability has been detected in the project dependencies.
+The security job failed. This alone does not establish a vulnerability or its severity.
+
+**Failure stage:** `{{ env.FAILURE_STAGE }}`
 
 **Failure Details:**
 
@@ -17,7 +19,7 @@ A security vulnerability has been detected in the project dependencies.
 - **Run ID:** {{ env.RUN_ID }}
 
 **What happened:**
-The security checker has identified known vulnerabilities in one or more of the project's dependencies.
+Inspect whether dependency setup, the advisory checker, or the source-pattern scan failed. Only the actual checker output can establish a vulnerability.
 
 **What needs to be done:**
 
@@ -30,7 +32,7 @@ The security checker has identified known vulnerabilities in one or more of the 
    - Implementing workarounds
 5. Test the application after updates
 
-**Priority:** This is a security issue and should be addressed immediately.
+**Priority:** Triage the original failure first; assign vulnerability severity only when supported by evidence.
 
 **Resources:**
 

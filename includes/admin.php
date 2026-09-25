@@ -26,10 +26,6 @@ function es_optimizer_init_settings(): void {
 		)
 	);
 
-	if ( false === get_option( 'es_optimizer_options' ) ) {
-		add_option( 'es_optimizer_options', es_optimizer_get_default_options() );
-	}
-
 	es_optimizer_register_settings_sections();
 }
 
@@ -44,7 +40,7 @@ function es_optimizer_register_settings_sections(): void {
 	foreach ( es_optimizer_get_settings_sections() as $section_id => $section_title ) {
 		add_settings_section(
 			$section_id,
-			$section_title,
+			esc_html( $section_title ),
 			'__return_null',
 			$page
 		);
@@ -101,19 +97,19 @@ function es_optimizer_get_performance_settings_fields(): array {
 			$section,
 			'disable_emojis',
 			__( 'Disable WordPress Emojis', 'enginescript-site-optimizer' ),
-			__( 'Remove emoji scripts and styles to improve page load time', 'enginescript-site-optimizer' )
+			__( 'Remove WordPress emoji scripts and styles.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'remove_jquery_migrate',
 			__( 'Remove jQuery Migrate', 'enginescript-site-optimizer' ),
-			__( 'Remove jQuery Migrate script. This may affect compatibility with very old plugins.', 'enginescript-site-optimizer' )
+			__( 'Remove the jQuery Migrate script. This may affect plugins or themes that depend on it.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'disable_classic_theme_styles',
 			__( 'Disable Classic Theme Styles', 'enginescript-site-optimizer' ),
-			__( 'Remove classic theme styles added in WordPress 6.1+', 'enginescript-site-optimizer' )
+			__( 'Remove the classic theme stylesheet added by WordPress.', 'enginescript-site-optimizer' )
 		),
 	);
 }
@@ -132,19 +128,13 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 			$section,
 			'remove_wp_version',
 			__( 'Remove WordPress Version', 'enginescript-site-optimizer' ),
-			__( 'Remove WordPress version from the document head.', 'enginescript-site-optimizer' )
+			__( 'Remove the WordPress version from the document head.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'remove_rsd_link',
 			__( 'Remove RSD Link', 'enginescript-site-optimizer' ),
-			__( 'Remove Really Simple Discovery (RSD) link from the document head.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'remove_wlw_manifest',
-			__( 'Remove WLW Manifest', 'enginescript-site-optimizer' ),
-			__( 'Remove Windows Live Writer manifest link.', 'enginescript-site-optimizer' )
+			__( 'Remove the Really Simple Discovery (RSD) link from the document head.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
@@ -156,7 +146,7 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 			$section,
 			'remove_recent_comments_style',
 			__( 'Remove Recent Comments Style', 'enginescript-site-optimizer' ),
-			__( 'Remove recent comments widget inline CSS.', 'enginescript-site-optimizer' )
+			__( 'Remove inline CSS from the recent comments widget.', 'enginescript-site-optimizer' )
 		),
 	);
 }
@@ -174,14 +164,14 @@ function es_optimizer_get_additional_settings_fields(): array {
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'disable_jetpack_ads',
-			__( 'Disable Jetpack Ads', 'enginescript-site-optimizer' ),
-			__( 'Remove Jetpack advertisements and promotions.', 'enginescript-site-optimizer' )
+			__( 'Disable Jetpack Promotions', 'enginescript-site-optimizer' ),
+			__( 'Disable Jetpack promotional messages and Blaze promotions.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'disable_post_via_email',
 			__( 'Disable Post via Email', 'enginescript-site-optimizer' ),
-			__( 'Disable WordPress post via email functionality for security and performance.', 'enginescript-site-optimizer' )
+			__( 'Disable WordPress post via email.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
@@ -193,20 +183,36 @@ function es_optimizer_get_additional_settings_fields(): array {
 			$section,
 			'preconnect_domains',
 			__( 'Preconnect Domains', 'enginescript-site-optimizer' ),
-			__( 'Use preconnect for domains that host critical, frequently used resources, such as Google Fonts. Enter one HTTPS domain per line. Only bare domains are allowed: no file paths, query parameters, fragments, or credentials.', 'enginescript-site-optimizer' )
+			__( 'Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'enable_dns_prefetch',
 			__( 'Enable DNS Prefetch', 'enginescript-site-optimizer' ),
-			__( 'DNS prefetch for less critical external domains.', 'enginescript-site-optimizer' )
+			__( 'Look up hostnames for less critical external domains.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_textarea_field_definition(
 			$section,
 			'dns_prefetch_domains',
 			__( 'DNS Prefetch Domains', 'enginescript-site-optimizer' ),
-			__( 'DNS prefetch is a lighter-weight alternative to preconnect that performs only the DNS lookup. Enter one HTTPS domain per line. Only bare domains are allowed: no file paths, query parameters, fragments, or credentials.', 'enginescript-site-optimizer' )
+			__( 'DNS prefetch performs only a hostname lookup; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
 		),
+	);
+}
+
+/**
+ * Describe the finite domain-list policy shared by both textarea controls.
+ *
+ * @since Unreleased
+ * @return string Localized plain-text instructions.
+ */
+function es_optimizer_get_domain_list_limits_description(): string {
+	return sprintf(
+		/* translators: 1: Maximum bytes per domain list, 2: Maximum nonblank lines, 3: Maximum bytes per nonblank line. */
+		__( 'Limits: %1$d bytes per list, %2$d nonblank lines, and %3$d bytes per nonblank line. Duplicate and invalid lines count toward the limit. Oversize submissions keep your previous list.', 'enginescript-site-optimizer' ),
+		ES_SITE_OPTIMIZER_MAX_DOMAIN_LIST_BYTES,
+		ES_SITE_OPTIMIZER_MAX_DOMAIN_LINES,
+		ES_SITE_OPTIMIZER_MAX_DOMAIN_LINE_BYTES
 	);
 }
 
@@ -337,7 +343,7 @@ function es_optimizer_register_checkbox_field( string $page, string $section, st
 
 	add_settings_field(
 		$option_name,
-		$title,
+		esc_html( $title ),
 		'es_optimizer_render_checkbox_field',
 		$page,
 		$section,
@@ -363,7 +369,7 @@ function es_optimizer_register_textarea_field( string $page, string $section, st
 
 	add_settings_field(
 		$option_name,
-		$title,
+		esc_html( $title ),
 		'es_optimizer_render_textarea_field',
 		$page,
 		$section,
@@ -402,7 +408,6 @@ function es_optimizer_settings_page(): void {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Site Optimizer Settings', 'enginescript-site-optimizer' ); ?></h1>
 		<p><?php esc_html_e( 'Select which optimizations you want to enable and customize the resource hint domains.', 'enginescript-site-optimizer' ); ?></p>
-		<?php settings_errors( 'es_optimizer_options' ); ?>
 
 		<form method="post" action="options.php">
 			<?php
@@ -462,11 +467,19 @@ function es_optimizer_render_textarea_field( array $args ): void {
 	}
 
 	$field_id       = es_optimizer_get_field_id( $option_name );
+	$description_id = $field_id . '_description';
 	$description    = es_optimizer_get_field_description( $option_name );
-	$textarea_value = $options[ $option_name ] ?? '';
+	$textarea_value = (string) ( $options[ $option_name ] ?? '' );
+	$budget_error   = es_optimizer_get_domain_list_budget_error( $textarea_value );
+
+	if ( '' !== $budget_error ) {
+		$description .= ' ' . $budget_error . ' ' . __( 'This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it.', 'enginescript-site-optimizer' );
+	} elseif ( 'preconnect_domains' === $option_name && es_optimizer_has_unsupported_preconnect_domains( $textarea_value ) ) {
+		$description .= ' ' . __( 'Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared.', 'enginescript-site-optimizer' );
+	}
 	?>
-	<p class="description"><?php echo esc_html( $description ); ?></p>
-	<textarea id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" rows="5" cols="50" class="large-text code"><?php echo esc_textarea( (string) $textarea_value ); ?></textarea>
+	<p id="<?php echo esc_attr( $description_id ); ?>" class="description"><?php echo esc_html( $description ); ?></p>
+	<textarea id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" aria-describedby="<?php echo esc_attr( $description_id ); ?>" rows="5" cols="50" class="large-text code"><?php echo esc_textarea( $textarea_value ); ?></textarea>
 	<?php
 }
 
