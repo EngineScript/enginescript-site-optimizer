@@ -10,7 +10,7 @@
  * Text Domain: enginescript-site-optimizer
  * Requires at least: 6.8
  * Requires PHP: 8.2
- * Tested up to: 7.0
+ * Tested up to: 7.1
  * Security: Follows OWASP security guidelines and WordPress best practices
  *
  * @package EngineScript_Site_Optimizer
