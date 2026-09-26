@@ -13,10 +13,11 @@ permissions:
   pull-requests: read
 
 env:
-  PLUGIN_SLUG: enginescript-site-exporter
+  PLUGIN_SLUG: enginescript-site-optimizer
 
 jobs:
   cleanup:
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:

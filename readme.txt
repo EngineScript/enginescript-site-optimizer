@@ -44,6 +44,7 @@ No, the plugin has a simple interface where you can toggle features on and off.
 == Changelog ==
 
 = Unreleased =
+* Correct optimizer packaging and isolate unit/native CI discovery, retaining the existing quality gates and dependency lanes.
 * Clarify settings help and Jetpack promotion labels without changing feature behavior or validation rules.
 * Refresh the translation template from all production PHP, including uninstall messages, and declare the bundled language directory.
 * Limit domain-list work and retain previous values for oversize submissions; skip oversize saved lists without changing their stored text.

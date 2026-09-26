@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Correct optimizer packaging and isolate unit/native CI discovery, retaining the existing quality gates and dependency lanes.
+
 - Limit domain-list work and retain previous values for oversize submissions; skip oversize saved lists without changing their stored text.
 - Report rejected-line totals with at most three safe samples and avoid duplicate plugin warnings during repeated validation.
 - Build exact resource-hint membership once per callback, preserving foreign entries without unsafe value conversions.

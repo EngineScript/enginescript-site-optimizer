@@ -14,7 +14,7 @@ from pathlib import Path
 
 WORDPRESS_LATEST_VERSION = os.environ.get("WORDPRESS_LATEST_VERSION")
 WORDPRESS_VERSION_CHECK_FILE = Path("wordpress-version-check.json")
-METADATA_PATHS = {Path("enginescript-site-exporter.php"), Path("readme.txt")}
+METADATA_PATHS = {Path("enginescript-site-optimizer.php"), Path("readme.txt")}
 DEFAULT_EXCLUDED_DIRS = {
     ".git",
     "build",

@@ -17,7 +17,7 @@ permissions:
   pull-requests: write
 
 env:
-  PLUGIN_SLUG: enginescript-site-exporter
+  PLUGIN_SLUG: enginescript-site-optimizer
 
 jobs:
   tested-up-to:

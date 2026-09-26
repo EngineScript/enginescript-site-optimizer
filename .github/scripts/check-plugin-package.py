@@ -11,11 +11,11 @@ from pathlib import Path
 from zipfile import ZipFile
 
 
-SLUG = "enginescript-site-exporter"
+SLUG = "enginescript-site-optimizer"
 RELEASE_FILES = {
-    f"{SLUG}.php", "readme.txt", "README.md", "CHANGELOG.md", "LICENSE"
+    f"{SLUG}.php", "uninstall.php", "readme.txt", "README.md", "CHANGELOG.md", "LICENSE"
 }
-RELEASE_DIRS = {"includes", "css", "js", "languages"}
+RELEASE_DIRS = {"includes", "languages"}
 
 
 def expected_contents(root: Path) -> dict[str, bytes]:
@@ -29,7 +29,8 @@ def expected_contents(root: Path) -> dict[str, bytes]:
         {(directory,) for directory in RELEASE_DIRS}
     }
     required = RELEASE_FILES | {
-        "css/admin.css", "js/admin.js", f"languages/{SLUG}.pot"
+        "includes/admin.php", "includes/bootstrap.php", "includes/frontend.php",
+        "includes/options.php", f"languages/{SLUG}.pot"
     }
     if not required <= names or not any(name.startswith("includes/") for name in names):
         raise ValueError("Tracked release sources are incomplete.")

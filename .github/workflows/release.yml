@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PLUGIN_SLUG: enginescript-site-exporter
+  PLUGIN_SLUG: enginescript-site-optimizer
 
 jobs:
   check-and-release:
@@ -130,9 +130,8 @@ jobs:
           rm -rf "$PLUGIN_SLUG"
           mkdir -p "$PLUGIN_SLUG"
           cp "$PLUGIN_FILE" "$PLUGIN_SLUG/"
+          cp uninstall.php "$PLUGIN_SLUG/"
           cp -r includes "$PLUGIN_SLUG/"
-          cp -r css "$PLUGIN_SLUG/"
-          cp -r js "$PLUGIN_SLUG/"
           cp readme.txt "$PLUGIN_SLUG/"
           cp README.md "$PLUGIN_SLUG/"
           cp CHANGELOG.md "$PLUGIN_SLUG/"

@@ -8,7 +8,7 @@ assignees: []
 
 ## PHPUnit Test Failure
 
-The automated PHPUnit test suite has failed in the EngineScript Site Exporter plugin.
+The automated PHPUnit test suite has failed in the EngineScript Site Optimizer plugin.
 
 ### Details
 
@@ -16,60 +16,26 @@ The automated PHPUnit test suite has failed in the EngineScript Site Exporter pl
 - **Test Date:** {{ date | date('YYYY-MM-DD HH:mm:ss') }}
 - **Workflow Run:** [View detailed logs]({{ env.WORKFLOW_URL }})
 
-### Matrix Configuration
+### Test execution
 
-This test suite runs on multiple PHP versions:
-- **PHP 8.2** - PHPUnit 9.6 for WordPress test library compatibility
-- **PHP 8.3** - PHPUnit 9.6 for WordPress test library compatibility
-- **PHP 8.4** - PHPUnit 9.6 for WordPress test library compatibility
-- **PHP 8.5** - PHPUnit 9.6 for WordPress test library compatibility
+The compatibility workflow runs isolated unit tests with the Composer-selected
+PHPUnit 11.5/12 before pinning PHPUnit 9.6 for native WordPress tests. The native
+suite runs in both single-site and multisite modes in each existing matrix cell.
 
-### Next Steps
+### Diagnosis
 
-This issue has been automatically created because one or more PHPUnit test cases failed.
+1. Identify the failed setup, unit, native, or intentional-failure control step.
+2. Inspect the run's PHP, resolved dependency, core revision and JUnit artifacts.
+3. Reproduce on a fresh GitHub runner for the exact candidate commit; do not run
+   plugin suites locally or copy generated runner files into tracked source.
+4. Keep an empty suite, bootstrap failure and failed assertion distinct. All must
+   fail the job; none establishes a plugin regression without further diagnosis.
 
-#### Possible Causes:
+The workflow generates its installer, native bootstrap, optimizer test file and
+PHPUnit configuration. Use that workflow's commands and versions when rerunning.
+Root `composer test` selects only the isolated unit config before generation.
 
-1. **PHP Version Incompatibility**: Code may not be compatible with the PHP version being tested
-2. **Test Coverage Gap**: New features may lack corresponding test cases
-3. **Environment Issues**: Database or service connectivity issues
-4. **Assertion Failures**: Test expectations no longer match implementation
-5. **Dependency Conflicts**: Package versions may have changed
+### References
 
-#### Recommended Actions:
-
-1. **Review Logs**: Check the workflow logs for specific test failure details
-2. **Local Reproduction**: Run tests locally with the same PHP version
-3. **Debug Failures**: Use verbose output to understand assertion failures
-4. **Fix Issues**: Update either the code or tests as needed
-5. **Validate**: Re-run PHPUnit to confirm all tests pass
-
-#### Local Testing Commands:
-
-```bash
-# Install dependencies for the PHP 8.2+ baseline
-composer install
-
-# Run all tests
-composer test
-
-# Run specific test file
-vendor/bin/phpunit tests/EngineScriptSiteExporterTest.php
-
-# Run with verbose output
-vendor/bin/phpunit --verbose
-```
-
-#### PHPUnit Version Notes:
-
-The WordPress compatibility workflow pins PHPUnit 9.6 because the WordPress test library still calls APIs removed in PHPUnit 10+.
-
-```bash
-composer test
-```
-
-### Support
-
-For more information about PHPUnit:
-- [PHPUnit Documentation](https://phpunit.de/documentation.html)
-- [WordPress Testing Documentation](https://developer.wordpress.org/plugins/testing/)
+- [PHPUnit documentation](https://phpunit.de/documentation.html)
+- [WordPress testing documentation](https://make.wordpress.org/core/handbook/testing/automated-testing/phpunit/)

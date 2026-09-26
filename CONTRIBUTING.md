@@ -13,7 +13,6 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 - **PHP**: 8.2 or higher
 - **WordPress**: 6.8 or higher
 - **Composer**: For dependency management
-- **Node.js**: 16+ (if working with build tools)
 - **Git**: For version control
 
 ### Setup
@@ -91,11 +90,19 @@ composer run phpstan
 
 ### PHPUnit
 
-Run tests (when available):
+The [WordPress Compatibility workflow](.github/workflows/wp-compatibility-test.yml)
+runs the isolated unit suite through `composer test` on a fresh runner before
+pinning PHPUnit 9.6 for generated native WordPress tests. Each matrix cell then
+runs single-site and multisite modes. Root `phpunit.xml` discovers only unit
+tests; the generated config selects the native file explicitly, excluding
+dependency directories and the unit bootstrap.
 
-```bash
-composer test
-```
+Run plugin and automation suites in GitHub Actions. Use `composer check-all`
+for local static feedback. The runner generates `tests/bin/install-wp-tests.sh`;
+do not copy ignored integration dependencies or create a local test environment
+to replace remote acceptance. Link the exact commit/run, matrix results and
+diagnostic artifacts when reporting compatibility. Browser, assistive-technology,
+external-plugin and deployment-scale checks need separate recorded results.
 
 ## File Structure
 

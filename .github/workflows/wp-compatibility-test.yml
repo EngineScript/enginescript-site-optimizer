@@ -8,7 +8,7 @@
 # - WordPress security vulnerability scanning using pattern analysis
 # - PHPCS code standards validation for WordPress coding standards
 # - Code quality analysis and automated issue creation for failures
-# The workflow ensures the plugin meets WordPress.org standards and maintains compatibility.
+# Acceptance requires passing results and artifacts for the exact tested source.
 
 name: WordPress Compatibility & Plugin Check
 
@@ -34,10 +34,10 @@ jobs:
     name: WP Plugin Check (PHP 8.3)
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    
+
     strategy:
       fail-fast: false
-    
+
     steps:
       - name: Checkout code
         id: checkout_code
@@ -46,7 +46,7 @@ jobs:
           # Always fetch the latest commit, disable any caching
           fetch-depth: 0
           clean: true
-      
+
       - name: Setup PHP 8.3
         id: setup_php_8_3
         uses: shivammathur/setup-php@v2
@@ -55,13 +55,13 @@ jobs:
           extensions: mysqli, curl, zip, intl, gd, mbstring, fileinfo, xml
           coverage: none
           tools: composer:v2
-      
+
       - name: Clear any existing composer cache
         id: clear_any_existing_composer_cache
         run: |
           composer clear-cache || true
           rm -rf vendor/ composer.lock || true
-      
+
       - name: Install Composer dependencies (no cache)
         id: install_composer_dependencies_no_cache
         run: |
@@ -82,25 +82,30 @@ jobs:
           python3 .github/scripts/test-automation.py
           rm -rf plugin-check-build 2>/dev/null || true
 
-          PLUGIN_SLUG="enginescript-site-exporter"
+          PLUGIN_SLUG="enginescript-site-optimizer"
           BUILD_DIR="plugin-check-build/${PLUGIN_SLUG}"
 
           mkdir -p "$BUILD_DIR"
 
-          cp enginescript-site-exporter.php "$BUILD_DIR/"
+          cp enginescript-site-optimizer.php "$BUILD_DIR/"
+          cp uninstall.php "$BUILD_DIR/"
           cp readme.txt "$BUILD_DIR/"
           cp README.md "$BUILD_DIR/"
           cp CHANGELOG.md "$BUILD_DIR/"
           cp LICENSE "$BUILD_DIR/"
           cp -r includes "$BUILD_DIR/"
-          cp -r css "$BUILD_DIR/"
-          cp -r js "$BUILD_DIR/"
           cp -r languages "$BUILD_DIR/"
           # Inspect a release-shaped ZIP without publishing or changing the PCP input.
           PACKAGE_ZIP="$RUNNER_TEMP/${PLUGIN_SLUG}-candidate.zip"
           rm -f "$PACKAGE_ZIP"
           (cd plugin-check-build && zip -qr "$PACKAGE_ZIP" "$PLUGIN_SLUG")
-          python3 .github/scripts/check-plugin-package.py "$BUILD_DIR" --zip "$PACKAGE_ZIP"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          python3 .github/scripts/check-plugin-package.py "$BUILD_DIR" --zip "$PACKAGE_ZIP" | tee "$RUNNER_TEMP/es-optimizer-diagnostics/package-manifest.txt"
+          if [ "$(stat --format=%s "$PACKAGE_ZIP")" -gt 2097152 ]; then
+            rm -f "$PACKAGE_ZIP"
+            echo '::error::Candidate package exceeds the diagnostic artifact limit.'
+            exit 1
+          fi
 
       - name: WordPress Plugin Check
         id: wordpress_plugin_check
@@ -111,8 +116,8 @@ jobs:
           repo-token: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]' && github.event.pull_request.user.login != 'dependabot[bot]' && github.token || '' }}
           # Production-style plugin directory. Excludes repo-only files such as
           # .github, GEMINI.md, and other development artifacts.
-          build-dir: './plugin-check-build/enginescript-site-exporter'
-          
+          build-dir: './plugin-check-build/enginescript-site-optimizer'
+
           # Configure which categories to check
           categories: |
             accessibility
@@ -120,23 +125,23 @@ jobs:
             performance
             plugin_repo
             security
-          
+
           # Whether to include experimental checks
           include-experimental: false
-          
+
           # Don't ignore warnings or errors
           ignore-warnings: false
           ignore-errors: false
-          
+
           # WordPress version to use
           wp-version: 'latest'
-      
+
       - name: Handle plugin check completion
         id: handle_plugin_check_completion
         if: ${{ always() }}
         run: |
           echo "Plugin Check job status: ${{ job.status }}"
-      
+
       - name: Preserve diagnostic summary
         id: preserve_diagnostics
         if: ${{ always() }}
@@ -152,19 +157,19 @@ jobs:
             wordpress_plugin_check=${{ steps.wordpress_plugin_check.outcome }}
             handle_plugin_check_completion=${{ steps.handle_plugin_check_completion.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -174,12 +179,14 @@ jobs:
         with:
           name: wp-compat-plugin-check
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/package-manifest.txt
+            ${{ runner.temp }}/enginescript-site-optimizer-candidate.zip
           retention-days: 7
           if-no-files-found: warn
 
@@ -196,7 +203,7 @@ jobs:
         with:
           filename: .github/ISSUE_TEMPLATE/plugin-check-failure.md
           update_existing: false
-          
+
       - name: Mark job as failed after issue creation
         id: mark_job_as_failed_after_issue_creation
         if: ${{ failure() }}
@@ -240,6 +247,32 @@ jobs:
         run: |
           vendor/bin/phpcs --standard=phpcs.xml
 
+          # Static scanner controls; never execute these incompatible PHP fixtures.
+          CONTROL_DIR="$RUNNER_TEMP/optimizer-compat-controls"
+          mkdir -p "$CONTROL_DIR" "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '<?php strlen("control");\n' > "$CONTROL_DIR/compatible.php"
+          printf '<?php each(array());\n' > "$CONTROL_DIR/legacy-incompatible.php"
+          printf '<?php json_validate("{}");\n' > "$CONTROL_DIR/modern-incompatible.php"
+          vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.2 "$CONTROL_DIR/compatible.php"
+          if vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.2 --report=json "$CONTROL_DIR/legacy-incompatible.php" > "$CONTROL_DIR/legacy.json"; then
+            echo '::error::The known legacy-incompatible fixture was missed.'
+            exit 1
+          else
+            status=$?
+            [[ $status == 1 || $status == 2 ]]
+          fi
+          php -r '$report = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR); foreach ($report["files"] ?? [] as $file) { foreach ($file["messages"] as $message) { if (str_starts_with($message["source"], "PHPCompatibility.") && str_contains($message["message"], "each")) { exit(0); } } } exit(1);' "$CONTROL_DIR/legacy.json"
+          if vendor/bin/phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 8.2 --report=json "$CONTROL_DIR/modern-incompatible.php" > "$CONTROL_DIR/modern.json"; then
+            echo '::warning::CR-TOOL-001: current stable rules miss PHP 8.3 json_validate at the PHP 8.2 floor. Modern-rule acceptance remains pending.'
+            echo 'modern_rule_coverage=known_gap' > "$RUNNER_TEMP/es-optimizer-diagnostics/compatibility-controls.txt"
+          else
+            status=$?
+            [[ $status == 1 || $status == 2 ]]
+            php -r '$report = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR); foreach ($report["files"] ?? [] as $file) { foreach ($file["messages"] as $message) { if (str_starts_with($message["source"], "PHPCompatibility.") && str_contains($message["message"], "json_validate")) { exit(0); } } } exit(1);' "$CONTROL_DIR/modern.json"
+            echo 'modern_rule_coverage=fixture_detected' > "$RUNNER_TEMP/es-optimizer-diagnostics/compatibility-controls.txt"
+          fi
+          echo 'compatible=passed;legacy_incompatible=rejected' >> "$RUNNER_TEMP/es-optimizer-diagnostics/compatibility-controls.txt"
+
       - name: Preserve diagnostic summary
         id: preserve_diagnostics
         if: ${{ always() }}
@@ -252,19 +285,19 @@ jobs:
             verify_phpcs_standards=${{ steps.verify_phpcs_standards.outcome }}
             run_phpcs=${{ steps.run_phpcs.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -274,12 +307,13 @@ jobs:
         with:
           name: wp-compat-phpcs
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/compatibility-controls.txt
           retention-days: 7
           if-no-files-found: warn
 
@@ -331,16 +365,16 @@ jobs:
           composer global require --dev wp-coding-standards/wpcs:"^3.4.1"
           composer global require --dev automattic/vipwpcs:"^3.0.1"
           composer global require --dev dealerdirect/phpcodesniffer-composer-installer:"^1.2"
-          
+
           # Add composer bin to PATH
           VIP_BIN_DIR="$(composer global config bin-dir --absolute)"
           echo "$VIP_BIN_DIR" >> "$GITHUB_PATH"
           echo "VIP_PHPCS=$VIP_BIN_DIR/phpcs" >> "$GITHUB_ENV"
           export PATH="$VIP_BIN_DIR:$PATH"
-          
+
           # Verify installation and show available standards
           "$VIP_BIN_DIR/phpcs" -i
-          
+
           # Verify VIP standards are available
           "$VIP_BIN_DIR/phpcs" -i | grep -F WordPress-VIP-Go
 
@@ -353,7 +387,9 @@ jobs:
               <description>WordPress VIP Go coding standards for enterprise-level WordPress development</description>
 
               <!-- Files to check -->
-              <file>.</file>
+              <file>enginescript-site-optimizer.php</file>
+              <file>includes</file>
+              <file>uninstall.php</file>
 
               <!-- Exclude patterns -->
               <exclude-pattern>*/vendor/*</exclude-pattern>
@@ -370,10 +406,10 @@ jobs:
               <rule ref="WordPress-VIP-Go">
                   <!-- Allow short array syntax [] instead of array() -->
                   <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
-                  
+
                   <!-- Allow longer lines for readability in some cases -->
                   <exclude name="Generic.Files.LineLength.TooLong"/>
-                  
+
                   <!-- Exclude JS-related sniffs to avoid deprecation warnings -->
                   <exclude name="WordPressVIPMinimum.JS"/>
               </rule>
@@ -391,7 +427,7 @@ jobs:
               <rule ref="WordPress.WP.I18n">
                   <properties>
                       <property name="text_domain" type="array">
-                          <element value="enginescript-site-exporter"/>
+                          <element value="enginescript-site-optimizer"/>
                       </property>
                   </properties>
               </rule>
@@ -401,10 +437,10 @@ jobs:
 
               <!-- Show progress -->
               <arg value="p"/>
-              
+
               <!-- Show sniff codes in all reports -->
               <arg value="s"/>
-              
+
               <!-- Use colors in output -->
               <arg name="colors"/>
 
@@ -419,7 +455,7 @@ jobs:
           echo "🚀 Running WordPress VIP Go Coding Standards scan..."
           echo "📋 This scan focuses on VIP-specific requirements including:"
           echo "   • File system operation restrictions"
-          echo "   • Performance and caching best practices"  
+          echo "   • Performance and caching best practices"
           echo "   • Security vulnerabilities specific to VIP platform"
           echo "   • User experience guidelines for enterprise WordPress"
           echo "   • Uncached function usage patterns"
@@ -427,10 +463,10 @@ jobs:
           echo "📦 Using standards: WordPress-VIP-Go, WordPressVIPMinimum"
           echo "🎯 Scanning PHP files only (excluding JS/CSS to avoid deprecation warnings)"
           echo ""
-          
+
           # Run VIP-specific PHPCS scan using our custom configuration
           # Only scan PHP files to avoid JS/CSS deprecation warnings
-          "$VIP_PHPCS" --standard=phpcs-vip.xml --extensions=php . || {
+          "$VIP_PHPCS" --standard=phpcs-vip.xml --extensions=php || {
             echo ""
             echo "⚠️ WordPress VIP coding standards issues found."
             echo "💡 Note: These are VIP-specific recommendations for enterprise WordPress platforms."
@@ -439,7 +475,7 @@ jobs:
             echo ""
             exit 1
           }
-          
+
           echo "✅ WordPress VIP coding standards check completed successfully!"
 
       - name: Preserve diagnostic summary
@@ -455,19 +491,19 @@ jobs:
             create_vip_specific_phpcs_configuration=${{ steps.create_vip_specific_phpcs_configuration.outcome }}
             run_wordpress_vip_phpcs=${{ steps.run_wordpress_vip_phpcs.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -477,12 +513,12 @@ jobs:
         with:
           name: wp-compat-vip-phpcs
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
           retention-days: 7
           if-no-files-found: warn
 
@@ -541,7 +577,7 @@ jobs:
         id: install_composer_dependencies_no_cache
         run: |
           composer install --prefer-dist --no-progress --no-cache
-          
+
       - name: Verify phpmd.xml content
         id: verify_phpmd_xml_content
         run: |
@@ -554,7 +590,7 @@ jobs:
         run: |
           # Use WordPress-specific PHPMD configuration (WordPress snake_case compatible)
           echo "Using WordPress-specific PHPMD configuration (WordPress snake_case compatible)..."
-          vendor/bin/phpmd . text phpmd.xml --exclude vendor
+          vendor/bin/phpmd enginescript-site-optimizer.php,includes,uninstall.php text phpmd.xml
 
       - name: Preserve diagnostic summary
         id: preserve_diagnostics
@@ -570,19 +606,19 @@ jobs:
             verify_phpmd_xml_content=${{ steps.verify_phpmd_xml_content.outcome }}
             run_phpmd=${{ steps.run_phpmd.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -592,12 +628,12 @@ jobs:
         with:
           name: wp-compat-phpmd
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
           retention-days: 7
           if-no-files-found: warn
 
@@ -661,19 +697,19 @@ jobs:
             verify_psalm_installation=${{ steps.verify_psalm_installation.outcome }}
             run_psalm=${{ steps.run_psalm.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -683,12 +719,12 @@ jobs:
         with:
           name: wp-compat-psalm-analysis
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
           retention-days: 7
           if-no-files-found: warn
 
@@ -743,18 +779,23 @@ jobs:
           # Basic security pattern checks for common WordPress vulnerabilities
           echo "Checking for common security issues..."
           security_findings=0
+          test -f enginescript-site-optimizer.php
+          test -f uninstall.php
+          for source in includes/admin.php includes/bootstrap.php includes/frontend.php includes/options.php; do
+            test -f "$source"
+          done
 
           grep_php() {
-            grep -r "$1" \
-              --include="*.php" \
-              --exclude-dir=.github \
-              --exclude-dir=build \
-              --exclude-dir=coverage \
-              --exclude-dir=plugin-check-build \
-              --exclude-dir=stubs \
-              --exclude-dir=tests \
-              --exclude-dir=vendor \
-              . 2>/dev/null
+            if grep -n "$1" enginescript-site-optimizer.php includes/*.php uninstall.php; then
+              return 0
+            else
+              local scan_status=$?
+              if [ "$scan_status" -gt 1 ]; then
+                echo '::error::Security scan could not read its production inputs.' >&2
+                exit "$scan_status"
+              fi
+              return 1
+            fi
           }
 
           # Check for potential SQL injection patterns
@@ -822,19 +863,19 @@ jobs:
             security_check_for_known_vulnerabilities_in_dependencies=${{ steps.security_check_for_known_vulnerabilities_in_dependencies.outcome }}
             wordpress_security_scan=${{ steps.wordpress_security_scan.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -844,12 +885,12 @@ jobs:
         with:
           name: wp-compat-security-check
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
           retention-days: 7
           if-no-files-found: warn
 
@@ -899,7 +940,7 @@ jobs:
         id: install_composer_dependencies_no_cache
         run: |
           composer install --prefer-dist --no-progress --no-cache
-          
+
       - name: Verify phpstan.neon content
         id: verify_phpstan_neon_content
         run: |
@@ -927,19 +968,19 @@ jobs:
             verify_phpstan_neon_content=${{ steps.verify_phpstan_neon_content.outcome }}
             phpstan_for_wordpress_analysis=${{ steps.phpstan_for_wordpress_analysis.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -949,12 +990,12 @@ jobs:
         with:
           name: wp-compat-phpstan-wordpress
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
           retention-days: 7
           if-no-files-found: warn
 
@@ -1048,6 +1089,38 @@ jobs:
           dependency-versions: ${{ matrix.dependency-versions }}
           composer-options: "--prefer-dist --no-progress"
 
+      - name: Run isolated unit tests
+        id: run_isolated_unit_tests
+        run: |
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/unit-dependencies.txt"
+          composer test -- --log-junit "$RUNNER_TEMP/es-optimizer-diagnostics/unit-junit.xml"
+          if composer test -- --do-not-cache-result --filter '__es_optimizer_intentionally_no_matching_test__' > "$RUNNER_TEMP/optimizer-unit-empty.txt" 2>&1; then
+            echo '::error::An empty unit suite incorrectly succeeded.'
+            exit 1
+          else
+            status=$?
+            [[ $status == 1 ]]
+            grep -q 'No tests executed' "$RUNNER_TEMP/optimizer-unit-empty.txt"
+          fi
+          cat > "$RUNNER_TEMP/OptimizerUnitFailureTest.php" <<'EOF'
+          <?php
+          final class OptimizerUnitFailureTest extends PHPUnit\Framework\TestCase {
+              public function test_intentional_failure(): void {
+                  $this->assertTrue(false, 'Optimizer unit assertion control');
+              }
+          }
+          EOF
+          if vendor/bin/phpunit --no-configuration --do-not-cache-result "$RUNNER_TEMP/OptimizerUnitFailureTest.php" > "$RUNNER_TEMP/optimizer-unit-failure.txt" 2>&1; then
+            echo '::error::An intentionally failing unit assertion succeeded.'
+            exit 1
+          else
+            status=$?
+            [[ $status == 1 ]]
+            grep -q 'Optimizer unit assertion control' "$RUNNER_TEMP/optimizer-unit-failure.txt"
+          fi
+          echo 'Unit nonempty and assertion-failure controls passed.' > "$RUNNER_TEMP/es-optimizer-diagnostics/unit-controls.txt"
+
       - name: Pin PHPUnit for WordPress test suite
         id: pin_phpunit_for_wordpress_test_suite
         run: |
@@ -1087,22 +1160,22 @@ jobs:
           set -euo pipefail
           set +x
           umask 077
-          
+
           if [ $# -lt 3 ]; then
             echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [skip-database-creation]"
             exit 1
           fi
-          
+
           DB_NAME=$1
           DB_USER=$2
           DB_PASS=$3
           DB_HOST=${4-localhost}
           WP_VERSION=${5-latest}
           SKIP_DB_CREATE=${6-false}
-          
+
           WP_TESTS_DIR=${WP_TESTS_DIR-/tmp/wordpress-tests-lib}
           WP_CORE_DIR=${WP_CORE_DIR-/tmp/wordpress/}
-          
+
           # Only the isolated GitHub service database is in scope.
           [[ $DB_NAME == wordpress_test && $DB_HOST == 127.0.0.1:3306 ]]
           [[ $SKIP_DB_CREATE == true || $SKIP_DB_CREATE == false ]]
@@ -1173,9 +1246,9 @@ jobs:
               if [[ $WP_TESTS_TAG != trunk ]]; then
                   [[ ${CORE_VERSION%-src} == "$WP_VERSION" ]]
               fi
-              mkdir -p "$RUNNER_TEMP/sse-diagnostics"
+              mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
               printf 'core=%s\nsource=%s\nrevision=%s\n' "$CORE_VERSION" "$WP_TESTS_TAG" "$WP_REVISION" \
-                  > "$RUNNER_TEMP/sse-diagnostics/wordpress.txt"
+                  > "$RUNNER_TEMP/es-optimizer-diagnostics/wordpress.txt"
           }
 
           install_test_suite() {
@@ -1236,310 +1309,616 @@ jobs:
           mkdir -p tests
           cat > tests/bootstrap.php << 'EOF'
           <?php
-          /**
-           * PHPUnit bootstrap file for plugin tests.
-           *
-           * @package EngineScript_Site_Exporter
-           */
-          
-          define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills' );
-          require_once '/tmp/wordpress-tests-lib/includes/functions.php';
-          
-          function _manually_load_plugin() {
-              add_filter('widgets_init', function() {
-                  return;
-              }, 0);
-              
-              require dirname( dirname( __FILE__ ) ) . '/enginescript-site-exporter.php';
+          /** Native bootstrap generated on the runner; no workstation doubles. */
+          if ('true' !== getenv('GITHUB_ACTIONS')) {
+              throw new RuntimeException('Native tests require the isolated GitHub runner.');
           }
-          
-          tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
-          
+          define('WP_TESTS_PHPUNIT_POLYFILLS_PATH', dirname(__DIR__) . '/vendor/yoast/phpunit-polyfills');
+          require_once '/tmp/wordpress-tests-lib/includes/functions.php';
+          tests_add_filter('muplugins_loaded', static function () {
+              require dirname(__DIR__) . '/enginescript-site-optimizer.php';
+          });
           require '/tmp/wordpress-tests-lib/includes/bootstrap.php';
+          // Load the exact uninstall entry once on the empty disposable installation.
+          // Later helper tests cover DB/cache/failure semantics, not core file deletion.
+          define('WP_UNINSTALL_PLUGIN', 'enginescript-site-optimizer/enginescript-site-optimizer.php');
+          require dirname(__DIR__) . '/uninstall.php';
           EOF
 
       - name: Create Test File
         id: create_test_file
         run: |
-          cat > tests/EngineScriptSiteExporterTest.php << 'EOF'
+          cat > tests/EngineScriptSiteOptimizerTest.php << 'EOF'
           <?php
-          /**
-           * Class EngineScriptSiteExporterTest
-           *
-           * @package EngineScript_Site_Exporter
-           */
-          
-          class EngineScriptSiteExporterTest extends WP_UnitTestCase {
-              public function tear_down() {
-                  sse_clear_current_export_lease();
+          /** Native WordPress regression cases; generated and run only on fresh CI runners. */
+          final class EngineScriptSiteOptimizerTest extends WP_UnitTestCase {
+              /**
+               * Reset native state for each regression.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function set_up() {
+                  parent::set_up();
+                  require_once ABSPATH . 'wp-admin/includes/plugin.php';
+                  require_once ABSPATH . 'wp-admin/includes/template.php';
                   wp_set_current_user(0);
-                  parent::tear_down();
+                  delete_option('es_optimizer_options');
+                  delete_transient('settings_errors');
+                  $GLOBALS['wp_settings_errors'] = array();
+                  es_optimizer_init_settings();
               }
 
-              public function test_export_capability_boundary() {
-                  wp_set_current_user(0);
-                  $this->assertFalse(sse_current_user_can_export_site());
-                  $subscriber = self::factory()->user->create(['role' => 'subscriber']);
+              /** Store a legacy fixture without changing production sanitization. */
+              private function legacy_options(array $options): void {
+                  remove_filter('sanitize_option_es_optimizer_options', 'es_optimizer_validate_options');
+                  try {
+                      update_option('es_optimizer_options', $options);
+                  } finally {
+                      add_filter('sanitize_option_es_optimizer_options', 'es_optimizer_validate_options');
+                  }
+              }
+
+              /** Inspect the physical row separately from core default/notoptions caches. */
+              private function option_rows(): int {
+                  global $wpdb;
+                  return (int) $wpdb->get_var($wpdb->prepare(
+                      'SELECT COUNT(*) FROM %i WHERE option_name = %s', $wpdb->options, 'es_optimizer_options'
+                  ));
+              }
+
+              /**
+               * Require the dedicated multisite invocation.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              private function require_multisite(): void {
+                  if (!is_multisite()) {
+                      $this->markTestSkipped('Executed by the separate multisite invocation in this same matrix cell.');
+                  }
+              }
+
+              /**
+               * Native bootstrap mode and optimizer hooks.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_native_bootstrap_mode_and_optimizer_hooks(): void {
+                  $this->assertSame('1' === getenv('WP_MULTISITE'), is_multisite());
+                  $this->assertSame(get_plugin_data(ES_SITE_OPTIMIZER_FILE, false, false)['Version'], ES_SITE_OPTIMIZER_VERSION);
+                  $this->assertSame(10, has_filter('wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints'));
+                  $this->assertSame(10, has_filter('tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce'));
+                  $this->assertCount(13, es_optimizer_get_settings_fields());
+                  $this->assertCount(11, es_optimizer_get_boolean_option_keys());
+              }
+
+              /**
+               * Virtual defaults activation and deactivation.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_virtual_defaults_activation_and_deactivation(): void {
+                  es_optimizer_activate_plugin(is_multisite());
+                  $this->assertSame(es_optimizer_get_default_options(), es_optimizer_get_options());
+                  $this->assertSame(0, $this->option_rows());
+                  $this->assertFalse(update_option('es_optimizer_options', es_optimizer_get_default_options()));
+                  $this->assertSame(0, $this->option_rows());
+                  $saved = array_merge(es_optimizer_get_default_options(), array('preconnect_domains' => 'https://saved.example.com'));
+                  update_option('es_optimizer_options', $saved);
+                  es_optimizer_deactivate_plugin(is_multisite());
+                  $this->assertSame($saved, get_option('es_optimizer_options'));
+                  $this->assertSame(1, $this->option_rows());
+              }
+
+              /**
+               * Native add update delete without manual refresh.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_native_add_update_delete_without_manual_refresh(): void {
+                  $this->assertSame(0, $this->option_rows());
+                  $saved = array_merge(es_optimizer_get_default_options(), array('preconnect_domains' => 'https://first.example.com'));
+                  $this->assertTrue(add_option('es_optimizer_options', $saved));
+                  $this->assertSame($saved, es_optimizer_get_options());
+                  $saved['preconnect_domains'] = 'https://second.example.com';
+                  $this->assertTrue(update_option('es_optimizer_options', $saved));
+                  $this->assertSame($saved, es_optimizer_get_options());
+                  delete_option('es_optimizer_options');
+                  $this->assertSame(es_optimizer_get_default_options(), es_optimizer_get_options());
+                  $this->assertSame(0, $this->option_rows());
+              }
+
+              /**
+               * Setting registration and rest exclusion.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_setting_registration_and_rest_exclusion(): void {
+                  $setting = get_registered_settings()['es_optimizer_options'];
+                  $this->assertSame('es_optimizer_settings', $setting['group']);
+                  $this->assertSame('es_optimizer_validate_options', $setting['sanitize_callback']);
+                  $this->assertFalse($setting['show_in_rest']);
+                  $controller = new WP_REST_Settings_Controller();
+                  $this->assertArrayNotHasKey('es_optimizer_options', $controller->get_item_schema()['properties']);
+              }
+
+              /**
+               * Native first insert safe notice and blank save.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_native_first_insert_safe_notice_and_blank_save(): void {
+                  $saved = array('preconnect_domains' => "https://user:synthetic-token@example.com\nhttps://ok.example.com");
+                  $this->assertTrue(update_option('es_optimizer_options', $saved));
+                  $this->assertSame('https://ok.example.com', get_option('es_optimizer_options')['preconnect_domains']);
+                  $warnings = get_settings_errors('es_optimizer_options');
+                  $this->assertCount(1, $warnings);
+                  $this->assertStringNotContainsString('synthetic-token', serialize($warnings));
+                  $this->assertStringNotContainsString('user:', serialize($warnings));
+                  update_option('es_optimizer_options', array('preconnect_domains' => ''));
+                  $this->assertSame('', get_option('es_optimizer_options')['preconnect_domains']);
+              }
+
+              /**
+               * Native invalid fields and budgets preserve prior field.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_native_invalid_fields_and_budgets_preserve_prior_field(): void {
+                  foreach (array('preconnect_domains' => 'dns_prefetch_domains', 'dns_prefetch_domains' => 'preconnect_domains') as $field => $other) {
+                      update_option('es_optimizer_options', array($field => 'https://prior.example.com'));
+                      foreach (array(array(), new stdClass(), null, 12, false, str_repeat('x', 32769), str_pad('https://example.com', 513), implode("\n", array_fill(0, 101, 'https://example.com'))) as $invalid) {
+                          update_option('es_optimizer_options', array($field => $invalid, $other => 'https://valid.example.com'));
+                          $this->assertSame('https://prior.example.com', get_option('es_optimizer_options')[$field]);
+                          $this->assertSame('https://valid.example.com', get_option('es_optimizer_options')[$other]);
+                      }
+                  }
+              }
+
+              /**
+               * Raw boundary and canonical origin cases.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_raw_boundary_and_canonical_origin_cases(): void {
+                  foreach (array('https://exa%6dple.com', "https://exa\tmple.com", 'https://example.com\\token', 'https://example.com?synthetic-token', 'https://example.com/path', 'https://127.0.0.1') as $raw) {
+                      $result = es_optimizer_validate_single_domain($raw);
+                      $this->assertFalse($result['valid']);
+                      $this->assertSame('', $result['domain']);
+                      $this->assertStringNotContainsString($raw, $result['error']);
+                  }
+                  $this->assertSame('https://example.com', es_optimizer_validate_single_domain('https://EXAMPLE.COM:443/')['domain']);
+                  $this->assertFalse(es_optimizer_validate_domain_for_context('https://example.com:8443', 'preconnect')['valid']);
+                  $this->assertTrue(es_optimizer_validate_domain_for_context('https://example.com:8443', 'dns_prefetch')['valid']);
+                  $this->assertSame('', es_optimizer_get_domain_list_budget_error(str_pad('https://example.com', 512)));
+                  $this->assertNotSame('', es_optimizer_get_domain_list_budget_error(str_pad('https://example.com', 513)));
+                  $this->assertSame('', es_optimizer_get_domain_list_budget_error(str_repeat(' ', 32768)));
+                  $this->assertNotSame('', es_optimizer_get_domain_list_budget_error(str_repeat(' ', 32769)));
+                  $this->assertSame('', es_optimizer_get_domain_list_budget_error(implode("\r\n", array_fill(0, 100, 'https://example.com'))));
+              }
+
+              /**
+               * Notice storage dedup and foreign success.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_notice_storage_dedup_and_foreign_success(): void {
+                  add_settings_error('foreign', 'saved', 'Other settings saved.', 'success');
+                  $input = implode("\n", array_fill(0, 4, 'https://user:synthetic-token@example.com'));
+                  es_optimizer_validate_domain_list($input, 'preconnect');
+                  es_optimizer_validate_domain_list($input, 'preconnect');
+                  $warnings = get_settings_errors();
+                  $this->assertCount(2, $warnings);
+                  set_transient('settings_errors', $warnings, 30);
+                  $this->assertSame($warnings, get_transient('settings_errors'));
+                  $this->assertStringNotContainsString('synthetic-token', serialize(get_transient('settings_errors')));
+                  $this->assertStringContainsString('4 lines were rejected.', $warnings[1]['message']);
+                  $this->assertStringNotContainsString('Line 4:', $warnings[1]['message']);
+                  ob_start();
+                  settings_errors();
+                  $html = ob_get_clean();
+                  $this->assertSame(1, substr_count($html, 'id="setting-error-preconnect_security"'));
+                  $this->assertStringContainsString('Other settings saved.', $html);
+              }
+
+              /**
+               * Settings page capability and native form contract.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_settings_page_capability_and_native_form_contract(): void {
+                  $subscriber = self::factory()->user->create(array('role' => 'subscriber'));
                   wp_set_current_user($subscriber);
-                  $this->assertFalse(sse_current_user_can_export_site());
-                  $admin = self::factory()->user->create(['role' => 'administrator']);
-                  wp_set_current_user($admin);
-                  $this->assertSame(!is_multisite(), sse_current_user_can_export_site());
-              }
-
-              public function test_lease_ownership_and_conflict() {
-                  $lease = sse_acquire_export_lease();
-                  $this->assertIsArray($lease);
                   try {
-                      $conflict = sse_acquire_export_lease();
-                      $this->assertWPError($conflict);
-                      $this->assertSame('export_lease_conflict', $conflict->get_error_code());
-                      $wrong = $lease;
-                      $wrong['owner'] = wp_generate_uuid4();
-                      $this->assertFalse(sse_release_export_lease($wrong));
-                      $this->assertSame($lease, sse_get_stored_export_lease());
-                      sse_set_current_export_lease($lease);
-                      $this->assertTrue(sse_renew_current_export_lease(true));
+                      es_optimizer_settings_page();
+                      $this->fail('Subscriber rendered settings.');
+                  } catch (WPDieException $error) {
+                      $this->assertStringContainsString('permissions', $error->getMessage());
+                  }
+                  wp_set_current_user(self::factory()->user->create(array('role' => 'administrator')));
+                  ob_start();
+                  es_optimizer_settings_page();
+                  $html = ob_get_clean();
+                  $dom = new DOMDocument();
+                  $previous = libxml_use_internal_errors(true);
+                  try {
+                      $this->assertTrue($dom->loadHTML($html));
                   } finally {
-                      sse_release_export_lease(sse_get_current_export_lease() ?? $lease);
+                      libxml_clear_errors();
+                      libxml_use_internal_errors($previous);
                   }
-                  $this->assertNull(sse_get_stored_export_lease());
+                  $xpath = new DOMXPath($dom);
+                  $this->assertSame(1, $xpath->query('//form[@method="post" and @action="options.php"]')->length);
+                  $this->assertSame('es_optimizer_settings', $xpath->query('//input[@name="option_page"]')->item(0)->getAttribute('value'));
+                  $nonce = $xpath->query('//input[@name="_wpnonce"]')->item(0)->getAttribute('value');
+                  $this->assertNotFalse(wp_verify_nonce($nonce, 'es_optimizer_settings-options'));
+                  $this->assertFalse(wp_verify_nonce($nonce, 'another-group-options'));
+                  foreach (array('preconnect_domains', 'dns_prefetch_domains') as $field) {
+                      $id = 'es_optimizer_field_' . $field;
+                      $this->assertSame(1, $xpath->query('//textarea[@id="' . $id . '" and @aria-describedby="' . $id . '_description"]')->length);
+                      $this->assertSame(1, $xpath->query('//*[@id="' . $id . '_description"]')->length);
+                      $this->assertSame(1, $xpath->query('//label[@for="' . $id . '"]')->length);
+                  }
               }
 
-              public function test_stale_owner_cannot_release_replacement() {
-                  $old = sse_acquire_export_lease();
-                  $this->assertIsArray($old);
-                  $this->assertTrue(sse_release_export_lease($old));
-                  $new = sse_acquire_export_lease();
-                  $this->assertIsArray($new);
+              /**
+               * Core emitted hint html and legacy preservation.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_core_emitted_hint_html_and_legacy_preservation(): void {
+                  $saved = array_merge(es_optimizer_get_default_options(), array(
+                      'enable_preconnect' => 1, 'preconnect_domains' => "https://fonts.gstatic.com\nhttps://custom.example.com:8443\nhttps://ok.example.com:443",
+                      'enable_dns_prefetch' => 1, 'dns_prefetch_domains' => 'https://dns.example.com:8443'
+                  ));
+                  $this->legacy_options($saved);
+                  ob_start();
+                  wp_resource_hints();
+                  $html = ob_get_clean();
+                  $this->assertStringContainsString('https://fonts.gstatic.com', $html);
+                  $this->assertStringContainsString('crossorigin=', $html);
+                  $this->assertStringContainsString('https://ok.example.com', $html);
+                  $this->assertStringContainsString('//dns.example.com', $html);
+                  $this->assertStringNotContainsString('custom.example.com', $html);
+                  $this->assertStringNotContainsString(':8443', $html);
+                  $this->assertSame($saved, get_option('es_optimizer_options'));
+              }
+
+              /**
+               * Mixed foreign hints and repeated callbacks.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_mixed_foreign_hints_and_repeated_callbacks(): void {
+                  update_option('es_optimizer_options', array('enable_preconnect' => 1, 'preconnect_domains' => 'https://example.com'));
+                  $foreign = array('kept' => array('href' => 'https://example.com', 'crossorigin' => 'use-credentials'), null, 10, array('href' => new stdClass()));
+                  $this->assertSame($foreign, es_optimizer_add_preconnect_resource_hints($foreign, 'preconnect'));
+                  $one = es_optimizer_add_preconnect_resource_hints(array(), 'preconnect');
+                  $this->assertSame($one, es_optimizer_add_preconnect_resource_hints($one, 'preconnect'));
+              }
+
+              /**
+               * Oversize legacy read and retired key.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_oversize_legacy_read_and_retired_key(): void {
+                  $saved = array_merge(es_optimizer_get_default_options(), array('enable_preconnect' => 1, 'preconnect_domains' => str_repeat('x', 32769), 'remove_wlw_manifest' => 1));
+                  $this->legacy_options($saved);
+                  $this->assertSame(array(), es_optimizer_add_preconnect_resource_hints(array(), 'preconnect'));
+                  $this->assertArrayNotHasKey('remove_wlw_manifest', es_optimizer_get_options());
+                  $this->assertSame($saved, get_option('es_optimizer_options'));
+                  update_option('es_optimizer_options', array('preconnect_domains' => 'https://fixed.example.com'));
+                  $this->assertArrayNotHasKey('remove_wlw_manifest', get_option('es_optimizer_options'));
+              }
+
+              /**
+               * Native emoji filters off on and admin embed hooks.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_native_emoji_filters_off_on_and_admin_embed_hooks(): void {
+                  $incoming = array('wpemoji', 'foreign');
+                  update_option('es_optimizer_options', array('disable_emojis' => 0));
+                  $this->assertSame($incoming, apply_filters('tiny_mce_plugins', $incoming));
+                  update_option('es_optimizer_options', array('disable_emojis' => 1));
+                  $this->assertSame(array('foreign'), apply_filters('tiny_mce_plugins', $incoming));
+                  $hints = array('s.w.org', '//s.w.org', array('href' => 'https://s.w.org/a'), 'keep.example.com', array('href' => null));
+                  $this->assertSame(array(3 => 'keep.example.com', 4 => array('href' => null)), es_optimizer_disable_emojis_remove_dns_prefetch($hints, 'dns-prefetch'));
+                  add_action('admin_print_scripts', 'print_emoji_detection_script', 10);
+                  add_action('embed_head', 'print_emoji_detection_script', 10);
+                  es_optimizer_disable_admin_emojis();
+                  es_optimizer_disable_emojis();
+                  $this->assertFalse(has_action('admin_print_scripts', 'print_emoji_detection_script'));
+                  $this->assertFalse(has_action('embed_head', 'print_emoji_detection_script'));
+              }
+
+              /**
+               * Jquery header and live external filter contracts.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_jquery_header_and_live_external_filter_contracts(): void {
+                  update_option('es_optimizer_options', array('remove_jquery_migrate' => 1, 'remove_wp_version' => 1, 'remove_rsd_link' => 1, 'remove_shortlink' => 1, 'disable_jetpack_ads' => 0, 'disable_post_via_email' => 0));
+                  $scripts = new WP_Scripts();
+                  $scripts->remove('jquery');
+                  $scripts->add('jquery', false, array('jquery-core', 'jquery-migrate', 'foreign'));
+                  es_optimizer_remove_jquery_migrate($scripts);
+                  $this->assertSame(array('jquery-core', 'foreign'), $scripts->registered['jquery']->deps);
+                  es_optimizer_remove_header_items();
+                  $this->assertFalse(has_action('wp_head', 'wp_generator'));
+                  $this->assertFalse(has_action('wp_head', 'rsd_link'));
+                  $this->assertFalse(has_action('wp_head', 'wp_shortlink_wp_head'));
+                  $this->assertSame('foreign', apply_filters('jetpack_show_promotions', 'foreign'));
+                  $this->assertSame('foreign', apply_filters('enable_post_by_email_configuration', 'foreign'));
+                  update_option('es_optimizer_options', array('disable_jetpack_ads' => 1, 'disable_post_via_email' => 1));
+                  $this->assertFalse(apply_filters('jetpack_show_promotions', 'foreign'));
+                  $this->assertFalse(apply_filters('enable_post_by_email_configuration', 'foreign'));
+              }
+
+              /**
+               * Multisite values and live filters a b a.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_multisite_values_and_live_filters_a_b_a(): void {
+                  $this->require_multisite();
+                  $a = get_current_blog_id();
+                  $b = self::factory()->blog->create();
+                  update_option('es_optimizer_options', array('disable_emojis' => 1, 'preconnect_domains' => 'https://a.example.com'));
+                  switch_to_blog($b);
                   try {
-                      $this->assertFalse(sse_release_export_lease($old));
-                      $this->assertSame($new, sse_get_stored_export_lease());
+                      $this->assertSame(0, $this->option_rows());
+                      $this->assertSame(es_optimizer_get_default_options(), es_optimizer_get_options());
+                      update_option('es_optimizer_options', array('disable_emojis' => 0, 'preconnect_domains' => 'https://b.example.com'));
+                      $this->assertSame('https://b.example.com', es_optimizer_get_options()['preconnect_domains']);
+                      $this->assertSame(array('wpemoji', 'foreign'), apply_filters('tiny_mce_plugins', array('wpemoji', 'foreign')));
                   } finally {
-                      sse_release_export_lease($new);
+                      restore_current_blog();
                   }
+                  $this->assertSame($a, get_current_blog_id());
+                  $this->assertSame('https://a.example.com', es_optimizer_get_options()['preconnect_domains']);
+                  $this->assertSame(array('foreign'), apply_filters('tiny_mce_plugins', array('wpemoji', 'foreign')));
               }
 
-              public function test_logs_expire_without_new_append() {
-                  update_option('sse_error_logs', 'malformed', false);
-                  sse_prune_expired_stored_logs();
-                  $this->assertSame([], get_option('sse_error_logs'));
-                  sse_store_log_in_database('test record', 'error');
-                  $logs = get_option('sse_error_logs');
-                  $this->assertCount(1, $logs);
-                  $logs[0]['time'] = time() - 8 * DAY_IN_SECONDS;
-                  update_option('sse_error_logs', $logs, false);
-                  $this->assertSame(1, sse_prune_expired_stored_logs());
-                  $this->assertSame([], get_option('sse_error_logs'));
+              /**
+               * Uninstall fixed key physical absence and idempotence.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_uninstall_fixed_key_physical_absence_and_idempotence(): void {
+                  update_option('es_optimizer_options', array('preconnect_domains' => 'https://saved.example.com'));
+                  update_option('es_optimizer_foreign_fixture', 'retain');
+                  es_optimizer_uninstall_current_site_options();
+                  $this->assertSame(0, $this->option_rows());
+                  $this->assertSame('retain', get_option('es_optimizer_foreign_fixture'));
+                  es_optimizer_uninstall_current_site_options();
+                  $this->assertSame(0, $this->option_rows());
               }
 
-              public function test_cleanup_schedule_is_idempotent() {
-                  $path = '/tmp/sse-test-' . wp_generate_uuid4() . '/fixture.zip';
+              /**
+               * Uninstall stale notoptions cannot prove absence.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_uninstall_stale_notoptions_cannot_prove_absence(): void {
+                  global $wpdb;
+                  update_option('es_optimizer_options', array('preconnect_domains' => 'https://saved.example.com'));
+                  // A hook can restore the physical row after core has marked it absent.
+                  $reinsert = static function () use ($wpdb) {
+                      $wpdb->insert($wpdb->options, array('option_name' => 'es_optimizer_options', 'option_value' => 'fixture', 'autoload' => 'no'));
+                  };
+                  add_action('delete_option_es_optimizer_options', $reinsert);
                   try {
-                      sse_schedule_export_cleanup($path);
-                      $first = wp_next_scheduled('sse_delete_export_file', [$path]);
-                      $this->assertIsInt($first);
-                      sse_schedule_export_cleanup($path);
-                      $this->assertSame($first, wp_next_scheduled('sse_delete_export_file', [$path]));
-                      $this->assertSame(1, wp_clear_scheduled_hook('sse_delete_export_file', [$path]));
-                      $this->assertFalse(wp_next_scheduled('sse_delete_export_file', [$path]));
+                      es_optimizer_uninstall_current_site_options();
+                      $this->fail('Physical row survived but cleanup succeeded.');
+                  } catch (RuntimeException $error) {
+                      $this->assertSame(1, $this->option_rows());
+                      $this->assertTrue(wp_cache_get('notoptions', 'options')['es_optimizer_options']);
                   } finally {
-                      wp_clear_scheduled_hook('sse_delete_export_file', [$path]);
+                      remove_action('delete_option_es_optimizer_options', $reinsert);
+                      wp_cache_delete('notoptions', 'options');
                   }
+                  es_optimizer_uninstall_current_site_options();
+                  $this->assertSame(0, $this->option_rows());
               }
 
-              public function test_stored_logs_are_bounded_and_redacted() {
-                  delete_option('sse_error_logs');
-                  for ($index = 0; $index < 25; ++$index) {
-                      sse_store_log_in_database('record ' . $index . ' ' . ABSPATH . 'private.sql', 'ERROR!');
-                  }
-                  $logs = get_option('sse_error_logs');
-                  $this->assertCount(20, $logs);
-                  $this->assertStringStartsWith('record 5 ', $logs[0]['message']);
-                  foreach ($logs as $log) {
-                      $this->assertSame('error', $log['level']);
-                      $this->assertStringNotContainsString(ABSPATH, $log['message']);
-                      $this->assertStringNotContainsString('private.sql', $log['message']);
-                  }
-                  $this->assertLessThanOrEqual(1000, strlen(sse_sanitize_stored_log_message(str_repeat('x', 2000))));
-              }
-
-              public function test_private_directory_contract_rejects_legacy_and_traversal() {
-                  $valid = sse_generate_private_export_directory_name();
-                  $this->assertTrue(sse_validate_export_directory_name_format($valid));
-                  foreach (['', '.', '..', '../' . $valid, $valid . '/child', $valid . '\\child', 'legacy-export'] as $invalid) {
-                      $error = sse_validate_export_directory_name_format($invalid);
-                      $this->assertWPError($error);
-                      $this->assertSame('invalid_export_directory', $error->get_error_code());
-                  }
-              }
-
-              public function test_direct_filesystem_global_boundary() {
-                  require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-base.php';
-                  require_once ABSPATH . 'wp-admin/includes/class-wp-filesystem-direct.php';
-                  $existed = array_key_exists('wp_filesystem', $GLOBALS);
-                  $previous = $GLOBALS['wp_filesystem'] ?? null;
-                  try {
-                      foreach ([null, false, 'invalid', new stdClass()] as $invalid) {
-                          $GLOBALS['wp_filesystem'] = $invalid;
-                          $this->assertNull(sse_get_direct_global_filesystem());
+              /**
+               * Uninstall failed delete detected and suppression restored.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_uninstall_failed_delete_detected_and_suppression_restored(): void {
+                  global $wpdb;
+                  update_option('es_optimizer_options', array('preconnect_domains' => 'https://saved.example.com'));
+                  $was_suppressed = $wpdb->suppress_errors;
+                  $failure = static function ($query) {
+                      if (str_starts_with($query, 'DELETE FROM') && str_contains($query, 'es_optimizer_options')) {
+                          return 'SELECT * FROM optimizer_intentionally_missing_table';
                       }
-                      $direct = new WP_Filesystem_Direct(null);
-                      $GLOBALS['wp_filesystem'] = $direct;
-                      $this->assertSame($direct, sse_get_direct_global_filesystem());
-                  } finally {
-                      if ($existed) {
-                          $GLOBALS['wp_filesystem'] = $previous;
-                      } else {
-                          unset($GLOBALS['wp_filesystem']);
-                      }
-                  }
-              }
-
-              public function test_filepath_rejects_symlink_escape() {
-                  $root = sys_get_temp_dir() . '/sse-test-' . wp_generate_uuid4();
-                  $this->assertTrue(mkdir($root, 0700));
-                  $this->assertTrue(mkdir($root . '/allowed', 0700));
-                  $outside = $root . '/outside.zip';
-                  $link = $root . '/allowed/escape.zip';
+                      return $query;
+                  };
+                  add_filter('query', $failure);
                   try {
-                      $this->assertSame(7, file_put_contents($outside, 'fixture'));
-                      $this->assertTrue(symlink($outside, $link));
-                      $this->assertTrue(sse_validate_filepath($outside, $root));
-                      $this->assertFalse(sse_validate_filepath($link, $root . '/allowed'));
-                      $this->assertSame('fixture', file_get_contents($outside));
+                      es_optimizer_uninstall_options();
+                      $this->fail('Failed DELETE was accepted.');
+                  } catch (RuntimeException $error) {
+                      $this->assertSame(1, $this->option_rows());
+                      $this->assertSame($was_suppressed, $wpdb->suppress_errors);
+                      $this->assertTrue(wp_cache_get('notoptions', 'options')['es_optimizer_options']);
                   } finally {
-                      if (is_link($link)) {
-                          unlink($link);
-                      }
-                      if (is_file($outside)) {
-                          unlink($outside);
-                      }
-                      rmdir($root . '/allowed');
-                      rmdir($root);
+                      remove_filter('query', $failure);
+                      wp_cache_delete('notoptions', 'options');
                   }
+                  es_optimizer_uninstall_options();
+                  $this->assertSame(0, $this->option_rows());
               }
 
-              public function test_plugin_loaded() {
-                  $this->assertTrue(function_exists('sse_admin_menu'), 'Plugin was not loaded correctly');
-              }
-
-              public function test_cleanup_uses_directory_entry_fields() {
-                  $root = sys_get_temp_dir() . '/sse-test-' . wp_generate_uuid4();
-                  $zip = $root . '/site_enginescript_site_export_20260513_123456.zip';
-                  $had_filesystem = array_key_exists('wp_filesystem', $GLOBALS);
-                  $previous_filesystem = $GLOBALS['wp_filesystem'] ?? null;
-                  $this->assertTrue(mkdir($root, 0700));
+              /**
+               * Multisite cleanup restores nested context and other site.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_multisite_cleanup_restores_nested_context_and_other_site(): void {
+                  $this->require_multisite();
+                  $a = get_current_blog_id();
+                  $b = self::factory()->blog->create();
+                  update_option('es_optimizer_options', array('preconnect_domains' => 'https://a.example.com'));
+                  switch_to_blog($b);
                   try {
-                      $this->assertSame(7, file_put_contents($zip, 'fixture'));
-                      $this->assertSame(7, file_put_contents($root . '/123', 'fixture'));
-                      $this->assertSame(7, file_put_contents($root . '/unrelated.txt', 'fixture'));
-                      $this->assertTrue(mkdir($root . '/nested.zip', 0700));
-                      $this->assertSame([$zip], sse_get_export_files_from_private_directory($root));
-                      $this->assertSame([], sse_get_export_files_from_private_directory($root . '/missing'));
-                      // This helper independently accepts broad arrays; retain its guards.
-                      $this->assertSame([], sse_get_export_files_from_directory_entry('fallback', ['name' => null, 'type' => null], $root, ''));
+                      update_option('es_optimizer_options', array('preconnect_domains' => 'https://b.example.com'));
+                      $stack = $GLOBALS['_wp_switched_stack'];
+                      $switched = $GLOBALS['switched'];
+                      es_optimizer_uninstall_network_options();
+                      $this->assertSame($b, get_current_blog_id());
+                      $this->assertSame($stack, $GLOBALS['_wp_switched_stack']);
+                      $this->assertSame($switched, $GLOBALS['switched']);
+                      $this->assertSame(0, $this->option_rows());
                   } finally {
-                      foreach ([$zip, $root . '/123', $root . '/unrelated.txt'] as $file) {
-                          if (is_file($file)) {
-                              unlink($file);
+                      restore_current_blog();
+                  }
+                  $this->assertSame($a, get_current_blog_id());
+                  $this->assertSame(0, $this->option_rows());
+              }
+
+              /**
+               * Multisite cleanup hook failure restores context.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_multisite_cleanup_hook_failure_restores_context(): void {
+                  $this->require_multisite();
+                  $a = get_current_blog_id();
+                  $b = self::factory()->blog->create();
+                  switch_to_blog($b);
+                  update_option('es_optimizer_options', array('preconnect_domains' => 'https://b.example.com'));
+                  restore_current_blog();
+                  $stack = $GLOBALS['_wp_switched_stack'];
+                  $failure = static function () { throw new RuntimeException('Intentional deletion hook failure.'); };
+                  add_action('delete_option_es_optimizer_options', $failure);
+                  try {
+                      es_optimizer_uninstall_site_options($b);
+                      $this->fail('Throwing deletion hook was ignored.');
+                  } catch (RuntimeException $error) {
+                      $this->assertSame('Intentional deletion hook failure.', $error->getMessage());
+                  } finally {
+                      remove_action('delete_option_es_optimizer_options', $failure);
+                  }
+                  $this->assertSame($a, get_current_blog_id());
+                  $this->assertSame($stack, $GLOBALS['_wp_switched_stack']);
+              }
+
+              /**
+               * Site cursor pages are physical and bounded.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_site_cursor_pages_are_physical_and_bounded(): void {
+                  $this->require_multisite();
+                  global $wpdb;
+                  $last = es_optimizer_uninstall_get_site_limit();
+                  // Directory-only fixtures test enumeration, not deployment-scale deletion.
+                  for ($i = 1; $i <= 101; ++$i) {
+                      $this->assertNotFalse($wpdb->insert($wpdb->blogs, array(
+                          'blog_id' => $last + $i, 'site_id' => 1, 'domain' => 'cursor-' . $i . '.example.com', 'path' => '/',
+                          'registered' => '2026-01-01 00:00:00', 'last_updated' => '2026-01-01 00:00:00'
+                      )));
+                  }
+                  $maximum = es_optimizer_uninstall_get_site_limit();
+                  $queries = $wpdb->num_queries;
+                  $page = es_optimizer_uninstall_get_site_ids($last, $maximum);
+                  $this->assertSame(1, $wpdb->num_queries - $queries);
+                  $this->assertCount(100, $page);
+                  $this->assertSame(range($last + 1, $last + 100), $page);
+                  $this->assertSame(array($last + 101), es_optimizer_uninstall_get_site_ids(end($page), $maximum));
+                  $this->assertSame(array(), es_optimizer_uninstall_get_site_ids($maximum, $maximum));
+              }
+
+              /**
+               * Measured hint callback budget.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public function test_measured_hint_callback_budget(): void {
+                  $measurements = array();
+                  foreach (array(1, 10, 100) as $candidates) {
+                      $domains = array();
+                      for ($i = 0; $i < $candidates; ++$i) {
+                          $domains[] = 'https://candidate-' . $i . '.example.com';
+                      }
+                      update_option('es_optimizer_options', array('enable_preconnect' => 1, 'preconnect_domains' => implode("\n", $domains)));
+                      $medians = array();
+                      foreach (array(0, 1000, 10000) as $count) {
+                          $samples = array();
+                          $peak_bytes = 0;
+                          for ($iteration = 0; $iteration < 25; ++$iteration) {
+                              $foreign = array();
+                              for ($i = 0; $i < $count; ++$i) {
+                                  $foreign[] = 'https://foreign-' . $i . '.example.com';
+                              }
+                              memory_reset_peak_usage();
+                              $before_memory = memory_get_usage(true);
+                              $start = hrtime(true);
+                              $result = es_optimizer_add_preconnect_resource_hints($foreign, 'preconnect');
+                              $elapsed = (hrtime(true) - $start) / 1e9;
+                              $extra_peak = memory_get_peak_usage(true) - $before_memory;
+                              $this->assertCount($count + $candidates, $result);
+                              $this->assertSame($foreign, array_slice($result, 0, $count));
+                              $this->assertLessThanOrEqual(32 * 1024 * 1024, $extra_peak);
+                              if ($iteration >= 5) {
+                                  $samples[] = $elapsed;
+                                  $peak_bytes = max($peak_bytes, $extra_peak);
+                              }
+                              unset($foreign, $result);
                           }
+                          sort($samples);
+                          $medians[$count] = ($samples[9] + $samples[10]) / 2;
+                          $measurements[$candidates][$count] = array('median_seconds' => $medians[$count], 'peak_additional_bytes' => $peak_bytes);
                       }
-                      if (is_dir($root . '/nested.zip')) {
-                          rmdir($root . '/nested.zip');
-                      }
-                      rmdir($root);
-                      if ($had_filesystem) {
-                          $GLOBALS['wp_filesystem'] = $previous_filesystem;
-                      } else {
-                          unset($GLOBALS['wp_filesystem']);
-                      }
+                      $this->assertLessThanOrEqual(1.0, $medians[10000]);
+                      $this->assertLessThanOrEqual(max(20 * $medians[1000], 0.1), $medians[10000]);
                   }
-              }
-
-              public function test_plugin_hooks_registered() {
-                  $this->assertSame(10, has_action('admin_menu', 'sse_admin_menu'));
-                  $this->assertSame(10, has_action('network_admin_menu', 'sse_network_admin_menu'));
-                  $this->assertSame(10, has_action('sse_recover_expired_export', 'sse_recover_expired_export_handler'));
-                  $this->assertSame(10, has_action('sse_export_housekeeping', 'sse_export_housekeeping_handler'));
-                  $this->assertSame(10, has_action('admin_enqueue_scripts', 'sse_enqueue_admin_assets'));
-                  $this->assertSame(10, has_action('admin_post_sse_export_site', 'sse_handle_export'));
-                  $this->assertSame(10, has_action('admin_post_sse_secure_download', 'sse_handle_secure_download'));
-                  $this->assertSame(10, has_action('admin_post_sse_delete_export', 'sse_handle_export_deletion'));
-                  $this->assertSame(10, has_action('sse_delete_export_file', 'sse_delete_export_file_handler'));
-                  $this->assertSame(10, has_action('sse_bulk_cleanup_exports', 'sse_bulk_cleanup_exports_handler'));
-              }
-
-              public function test_plugin_constants_defined() {
-                  $this->assertTrue(defined('ES_SITE_EXPORTER_VERSION'));
-                  $this->assertTrue(defined('SSE_ALLOWED_EXTENSIONS'));
-                  $this->assertTrue(defined('SSE_EXPORT_DIR_NAME'));
-                  $this->assertTrue(defined('SSE_FILTER_MAX_FILE_SIZE'));
-
-                  $this->assertNotEmpty(ES_SITE_EXPORTER_VERSION);
-                  $this->assertSame(['zip'], SSE_ALLOWED_EXTENSIONS);
-                  $this->assertSame('enginescript-site-exporter-exports', SSE_EXPORT_DIR_NAME);
-                  $this->assertSame('sse_max_file_size_for_export', SSE_FILTER_MAX_FILE_SIZE);
-              }
-
-              public function test_security_helper_allows_only_zip_extension() {
-                  $this->assertTrue(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.zip'));
-                  $this->assertFalse(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.php'));
-                  $this->assertFalse(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.sql'));
-                  $this->assertFalse(sse_validate_file_extension('site_enginescript_site_export_20260513_123456.tar.gz'));
-              }
-
-              public function test_export_filename_format_validation() {
-                  $this->assertTrue(sse_validate_filename_format('site_enginescript_site_export_20260513_123456.zip'));
-                  $this->assertInstanceOf(WP_Error::class, sse_validate_filename_format('../site_enginescript_site_export_20260513_123456.zip'));
-                  $this->assertInstanceOf(WP_Error::class, sse_validate_filename_format('site_enginescript_site_export_20260513_123456.php'));
-                  $this->assertInstanceOf(WP_Error::class, sse_validate_filename_format('site_export.zip'));
-              }
-
-              public function test_filepath_validation_rejects_traversal() {
-                  $base_dir = sys_get_temp_dir() . '/sse-test-' . wp_generate_uuid4();
-                  $this->assertTrue(mkdir($base_dir, 0700));
-                  $file = $base_dir . '/site_enginescript_site_export_20260513_123456.zip';
-                  try {
-                      $this->assertSame(7, file_put_contents($file, 'fixture'));
-                      $this->assertTrue(sse_validate_filepath($file, $base_dir));
-                      $this->assertFalse(sse_validate_filepath($base_dir . '/../' . basename($file), $base_dir));
-                  } finally {
-                      if (is_file($file)) {
-                          unlink($file);
-                      }
-                      rmdir($base_dir);
-                  }
-              }
-              
-              public function test_wordpress_version_compatibility() {
-                  global $wp_version;
-                  $this->assertNotEmpty($wp_version, 'WordPress version should be available');
-                  
-                  // Test that we're running on a supported WordPress version
-                  $min_wp_version = '6.8';
-                  $this->assertTrue(version_compare(preg_replace('/-src$/', '', $wp_version), $min_wp_version, '>='),
-                      "WordPress version {$wp_version} should be >= {$min_wp_version}");
+                  $file = getenv('RUNNER_TEMP') . '/es-optimizer-diagnostics/hint-timing-' . (is_multisite() ? 'multisite' : 'single') . '.json';
+                  $this->assertNotFalse(file_put_contents($file, wp_json_encode(array('measurements' => $measurements, 'warmups' => 5, 'samples' => 20, 'scope' => 'callback only; not deployment SLA'))));
               }
           }
           EOF
+          php -l tests/EngineScriptSiteOptimizerTest.php
+          php -l tests/bootstrap.php
 
       - name: Create PHPUnit Config
         id: create_phpunit_config
         run: |
           cat > phpunit.xml << 'EOF'
           <?xml version="1.0"?>
-          <phpunit
-              bootstrap="tests/bootstrap.php"
-              backupGlobals="false"
-              colors="true"
-              failOnEmptyTestSuite="true"
-              failOnRisky="true"
-              failOnWarning="true"
-          >
+          <phpunit bootstrap="tests/bootstrap.php" backupGlobals="false" colors="true"
+              failOnEmptyTestSuite="true" failOnRisky="true" failOnWarning="true">
               <testsuites>
-                  <testsuite name="EngineScript Site Exporter">
-                      <directory suffix="Test.php">./tests/</directory>
+                  <testsuite name="EngineScript Site Optimizer native">
+                      <file>tests/EngineScriptSiteOptimizerTest.php</file>
                   </testsuite>
               </testsuites>
           </phpunit>
@@ -1554,39 +1933,40 @@ jobs:
       - name: Run plugin test
         id: run_plugin_test
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          vendor/bin/phpunit --config phpunit.xml --log-junit "$RUNNER_TEMP/sse-diagnostics/junit.xml"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          WP_MULTISITE=0 vendor/bin/phpunit --config phpunit.xml --log-junit "$RUNNER_TEMP/es-optimizer-diagnostics/junit.xml"
+          WP_MULTISITE=1 vendor/bin/phpunit --config phpunit.xml --log-junit "$RUNNER_TEMP/es-optimizer-diagnostics/multisite-junit.xml"
           # Prove that the real generated config rejects an empty filtered suite.
           if vendor/bin/phpunit --config phpunit.xml --do-not-cache-result \
-            --filter '__sse_intentionally_no_matching_test__' \
-            > "$RUNNER_TEMP/sse-empty-suite.txt" 2>&1; then
+            --filter '__es_optimizer_intentionally_no_matching_test__' \
+            > "$RUNNER_TEMP/es-optimizer-empty-suite.txt" 2>&1; then
             echo '::error::An empty test suite incorrectly succeeded.'
             exit 1
           else
             status=$?
             [[ $status == 1 ]]
-            grep -q 'No tests executed' "$RUNNER_TEMP/sse-empty-suite.txt"
+            grep -q 'No tests executed' "$RUNNER_TEMP/es-optimizer-empty-suite.txt"
           fi
           # This control must fail due to its assertion, not a setup/parse error.
-          cat > "$RUNNER_TEMP/SseIntentionalFailureTest.php" << 'EOF'
+          cat > "$RUNNER_TEMP/OptimizerIntentionalFailureTest.php" << 'EOF'
           <?php
-          final class SseIntentionalFailureTest extends PHPUnit\Framework\TestCase {
+          final class OptimizerIntentionalFailureTest extends PHPUnit\Framework\TestCase {
               public function test_intentional_failure(): void {
-                  $this->assertTrue(false, 'SSE intentional assertion control');
+                  $this->assertTrue(false, 'Optimizer intentional assertion control');
               }
           }
           EOF
           if vendor/bin/phpunit --no-configuration --do-not-cache-result \
-            "$RUNNER_TEMP/SseIntentionalFailureTest.php" \
-            > "$RUNNER_TEMP/sse-failing-suite.txt" 2>&1; then
+            "$RUNNER_TEMP/OptimizerIntentionalFailureTest.php" \
+            > "$RUNNER_TEMP/es-optimizer-failing-suite.txt" 2>&1; then
             echo '::error::An intentionally failing assertion incorrectly succeeded.'
             exit 1
           else
             status=$?
             [[ $status == 1 ]]
-            grep -q 'SSE intentional assertion control' "$RUNNER_TEMP/sse-failing-suite.txt"
+            grep -q 'Optimizer intentional assertion control' "$RUNNER_TEMP/es-optimizer-failing-suite.txt"
           fi
-          echo 'Empty-suite and intentional-assertion controls failed as expected.'
+          echo 'Empty-suite and intentional-assertion controls failed as expected.' | tee "$RUNNER_TEMP/es-optimizer-diagnostics/native-controls.txt"
 
       - name: Preserve diagnostic summary
         id: preserve_diagnostics
@@ -1600,6 +1980,7 @@ jobs:
             php_syntax_lint=${{ steps.php_syntax_lint.outcome }}
             install_subversion=${{ steps.install_subversion.outcome }}
             install_composer_dependencies=${{ steps.install_composer_dependencies.outcome }}
+            run_isolated_unit_tests=${{ steps.run_isolated_unit_tests.outcome }}
             pin_phpunit_for_wordpress_test_suite=${{ steps.pin_phpunit_for_wordpress_test_suite.outcome }}
             verify_phpunit_dependency_versions=${{ steps.verify_phpunit_dependency_versions.outcome }}
             prepare_database=${{ steps.prepare_database.outcome }}
@@ -1611,19 +1992,19 @@ jobs:
             setup_wp_tests=${{ steps.setup_wp_tests.outcome }}
             run_plugin_test=${{ steps.run_plugin_test.outcome }}
         run: |
-          mkdir -p "$RUNNER_TEMP/sse-diagnostics"
-          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/sse-diagnostics/steps.txt"
-          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/sse-diagnostics/run.txt"
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
           if command -v php >/dev/null; then
-            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/sse-diagnostics/php.txt"
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
           fi
           if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
-            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/sse-diagnostics/dependencies.txt"
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
           fi
           # Never upload config, authentication data, SQL, exports, or arbitrary logs.
           # Refuse oversized or linked diagnostics instead of uploading them.
-          find "$RUNNER_TEMP/sse-diagnostics" -type l -delete
-          find "$RUNNER_TEMP/sse-diagnostics" -type f -size +2M -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
 
       - name: Upload diagnostic summary
         id: upload_diagnostics
@@ -1633,12 +2014,19 @@ jobs:
         with:
           name: wp-compat-${{ matrix.php-version }}-${{ matrix.wp-version }}-${{ matrix.dependency-versions }}
           path: |
-            ${{ runner.temp }}/sse-diagnostics/run.txt
-            ${{ runner.temp }}/sse-diagnostics/steps.txt
-            ${{ runner.temp }}/sse-diagnostics/php.txt
-            ${{ runner.temp }}/sse-diagnostics/dependencies.txt
-            ${{ runner.temp }}/sse-diagnostics/wordpress.txt
-            ${{ runner.temp }}/sse-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/wordpress.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/unit-junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/multisite-junit.xml
+            ${{ runner.temp }}/es-optimizer-diagnostics/unit-dependencies.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/unit-controls.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/native-controls.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/hint-timing-single.json
+            ${{ runner.temp }}/es-optimizer-diagnostics/hint-timing-multisite.json
           retention-days: 7
           if-no-files-found: warn
 
@@ -1665,7 +2053,7 @@ jobs:
         uses: JasonEtco/create-an-issue@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php.outcome == 'failure' && 'setup_php' || steps.use_isolated_composer_auth.outcome == 'failure' && 'use_isolated_composer_auth' || steps.php_syntax_lint.outcome == 'failure' && 'php_syntax_lint' || steps.install_subversion.outcome == 'failure' && 'install_subversion' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.pin_phpunit_for_wordpress_test_suite.outcome == 'failure' && 'pin_phpunit_for_wordpress_test_suite' || steps.verify_phpunit_dependency_versions.outcome == 'failure' && 'verify_phpunit_dependency_versions' || steps.prepare_database.outcome == 'failure' && 'prepare_database' || steps.create_tests_directory_structure.outcome == 'failure' && 'create_tests_directory_structure' || steps.create_wp_tests_install_script.outcome == 'failure' && 'create_wp_tests_install_script' || steps.create_bootstrap_file.outcome == 'failure' && 'create_bootstrap_file' || steps.create_test_file.outcome == 'failure' && 'create_test_file' || steps.create_phpunit_config.outcome == 'failure' && 'create_phpunit_config' || steps.setup_wp_tests.outcome == 'failure' && 'setup_wp_tests' || steps.run_plugin_test.outcome == 'failure' && 'run_plugin_test' || steps.report_test_status.outcome == 'failure' && 'report_test_status' || steps.ensure_repository_files_available_after_failure.outcome == 'failure' && 'ensure_repository_files_available_after_failure' || 'unknown_or_canceled' }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php.outcome == 'failure' && 'setup_php' || steps.use_isolated_composer_auth.outcome == 'failure' && 'use_isolated_composer_auth' || steps.php_syntax_lint.outcome == 'failure' && 'php_syntax_lint' || steps.install_subversion.outcome == 'failure' && 'install_subversion' || steps.install_composer_dependencies.outcome == 'failure' && 'install_composer_dependencies' || steps.run_isolated_unit_tests.outcome == 'failure' && 'run_isolated_unit_tests' || steps.pin_phpunit_for_wordpress_test_suite.outcome == 'failure' && 'pin_phpunit_for_wordpress_test_suite' || steps.verify_phpunit_dependency_versions.outcome == 'failure' && 'verify_phpunit_dependency_versions' || steps.prepare_database.outcome == 'failure' && 'prepare_database' || steps.create_tests_directory_structure.outcome == 'failure' && 'create_tests_directory_structure' || steps.create_wp_tests_install_script.outcome == 'failure' && 'create_wp_tests_install_script' || steps.create_bootstrap_file.outcome == 'failure' && 'create_bootstrap_file' || steps.create_test_file.outcome == 'failure' && 'create_test_file' || steps.create_phpunit_config.outcome == 'failure' && 'create_phpunit_config' || steps.setup_wp_tests.outcome == 'failure' && 'setup_wp_tests' || steps.run_plugin_test.outcome == 'failure' && 'run_plugin_test' || steps.report_test_status.outcome == 'failure' && 'report_test_status' || steps.ensure_repository_files_available_after_failure.outcome == 'failure' && 'ensure_repository_files_available_after_failure' || 'unknown_or_canceled' }}
           PHP_VERSION: ${{ matrix.php-version }}
           WP_VERSION: ${{ matrix.wp-version }}
           DEPENDENCY_VERSIONS: ${{ matrix.dependency-versions }}

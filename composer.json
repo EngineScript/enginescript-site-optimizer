@@ -37,7 +37,7 @@
     "phpmd": "phpmd enginescript-site-optimizer.php,includes,uninstall.php text phpmd.xml",
     "psalm": "psalm --config=psalm.xml --show-info=true",
     "phpstan": "phpstan analyze --memory-limit=1G",
-    "test": "phpunit --no-configuration --do-not-fail-on-empty-test-suite tests",
+    "test": "phpunit --configuration phpunit.xml",
     "check-all": [
       "@phpcs",
       "@phpmd",

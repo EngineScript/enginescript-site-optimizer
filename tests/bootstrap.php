@@ -1,9 +1,16 @@
 <?php
 /**
- * PHPUnit bootstrap for local test runs.
+ * WordPress doubles for the isolated unit suite on GitHub runners.
+ *
+ * These doubles do not establish native WordPress hook, storage or HTTP behavior.
  *
  * @package EngineScript_Site_Optimizer
  */
+
+if ( 'true' !== getenv( 'GITHUB_ACTIONS' ) ) {
+	fwrite( STDERR, "Run the plugin suites in the WordPress Compatibility workflow.\n" );
+	exit( 1 );
+}
 
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', __DIR__ . '/wordpress/' );
@@ -413,6 +420,23 @@ if ( ! function_exists( '__' ) ) {
 	function __( string $text, string $domain = 'default' ): string {
 		unset( $domain );
 		return $text;
+	}
+}
+
+if ( ! function_exists( '_n' ) ) {
+	/**
+	 * Select an English plural for isolated assertions, without loading a locale.
+	 *
+	 * @since Unreleased
+	 * @param string $single Singular message.
+	 * @param string $plural Plural message.
+	 * @param int    $number Number.
+	 * @param string $domain Text domain.
+	 * @return string Selected English message.
+	 */
+	function _n( string $single, string $plural, int $number, string $domain = 'default' ): string {
+		unset( $domain );
+		return 1 === $number ? $single : $plural;
 	}
 }
 

@@ -7,7 +7,8 @@ name: Issue Management
 on:
   issues:
     types: [opened, reopened]
-  pull_request:
+  # Metadata-only base-branch actions; no checkout/build of PR code.
+  pull_request_target:
     types: [opened, reopened]
 
 permissions:
@@ -16,14 +17,14 @@ permissions:
   issues: write
 
 env:
-  PLUGIN_SLUG: enginescript-site-exporter
+  PLUGIN_SLUG: enginescript-site-optimizer
 
 jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/labeler@v7
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request_target'
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         configuration-path: .github/labeler.yml

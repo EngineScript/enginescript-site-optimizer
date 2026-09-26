@@ -18,9 +18,10 @@ import subprocess
 import tempfile
 import textwrap
 import unittest
+import warnings
 from pathlib import Path
 from unittest.mock import patch
-from zipfile import ZipFile
+from zipfile import ZipFile, ZipInfo
 
 
 def load_helper(filename: str):
@@ -44,18 +45,18 @@ def workflow_step(filename: str, name: str) -> str:
 
 class AutomationTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory(prefix="sse-automation-")
+        self.temporary = tempfile.TemporaryDirectory(prefix="es-optimizer-automation-")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         previous = Path.cwd()
         os.chdir(self.root)
         self.addCleanup(os.chdir, previous)
         subprocess.run(["git", "init", "--quiet"], check=True)
-        self.write("enginescript-site-exporter.php", "<?php\n/**\n * Tested up to: 6.8\n */\n")
+        self.write("enginescript-site-optimizer.php", "<?php\n/**\n * Tested up to: 6.8\n */\n")
         self.write("readme.txt", "=== Fixture ===\nTested up to: 6.8\n\nTested up to: historical prose\n")
         self.write("README.md", "Tested up to: historical prose\n")
         self.write(".private/review.md", "Tested up to: historical prose\n")
-        subprocess.run(["git", "add", "--", "enginescript-site-exporter.php", "readme.txt", "README.md"], check=True)
+        subprocess.run(["git", "add", "--", "enginescript-site-optimizer.php", "readme.txt", "README.md"], check=True)
 
     def write(self, name, content):
         path = self.root / name
@@ -69,7 +70,7 @@ class AutomationTests(unittest.TestCase):
         findings = self.findings()
         self.assertEqual(2, len(findings))
         before = {name: (self.root / name).read_bytes() for name in ("README.md", ".private/review.md")}
-        self.assertEqual(["enginescript-site-exporter.php", "readme.txt"],
+        self.assertEqual(["enginescript-site-optimizer.php", "readme.txt"],
                          metadata.update_tested_up_to_entries(findings, "9.9"))
         self.assertEqual([], metadata.get_failures("9.9", self.findings()))
         for name, content in before.items():
@@ -196,7 +197,7 @@ class AutomationTests(unittest.TestCase):
 
     def test_pot_diff_handles_timestamp_large_change_and_untracked_file(self):
         script = workflow_step("update-pot-file.yml", "Check for changes")
-        filename = "languages/enginescript-site-exporter.pot"
+        filename = "languages/enginescript-site-optimizer.pot"
         baseline = 'msgid ""\nmsgstr ""\n"POT-Creation-Date: old\\n"\n\n'
         self.write(filename, baseline)
         subprocess.run(["git", "add", "--", filename], check=True)
@@ -220,10 +221,11 @@ class AutomationTests(unittest.TestCase):
         self.assertTrue((self.root / filename).is_file())
 
     def test_package_rejects_missing_extra_changed_and_linked_members(self):
-        for name in ("CHANGELOG.md", "LICENSE", "includes/fixture.php", "css/admin.css",
-                     "js/admin.js", "languages/enginescript-site-exporter.pot"):
+        for name in ("CHANGELOG.md", "LICENSE", "uninstall.php", "includes/admin.php",
+                     "includes/bootstrap.php", "includes/frontend.php", "includes/options.php",
+                     "languages/enginescript-site-optimizer.pot"):
             self.write(name, "fixture\n")
-        subprocess.run(["git", "add", "--", "CHANGELOG.md", "LICENSE", "includes", "css", "js", "languages"], check=True)
+        subprocess.run(["git", "add", "--", "CHANGELOG.md", "LICENSE", "uninstall.php", "includes", "languages"], check=True)
         build = self.root / "build" / package.SLUG
         for name, content in package.expected_contents(self.root).items():
             destination = build / name
@@ -235,27 +237,80 @@ class AutomationTests(unittest.TestCase):
                 if path.is_file():
                     zipped.write(path, f"{package.SLUG}/{path.relative_to(build).as_posix()}")
         with contextlib.redirect_stdout(io.StringIO()):
-            self.assertGreater(package.validate_package(self.root, build, archive), 0)
-        asset = build / "js/admin.js"
+            self.assertEqual(11, package.validate_package(self.root, build, archive))
+        asset = build / "uninstall.php"
         for replacement in (None, b"changed", "symlink"):
             asset.unlink()
             if replacement == "symlink":
-                asset.symlink_to(self.root / "js/admin.js")
+                asset.symlink_to(self.root / "uninstall.php")
             elif replacement is not None:
                 asset.write_bytes(replacement)
             with self.assertRaises(ValueError):
                 package.validate_package(self.root, build)
             if asset.is_symlink() or asset.exists():
                 asset.unlink()
-            shutil.copyfile(self.root / "js/admin.js", asset)
-        (build / "secret.txt").write_text("must not ship")
+            shutil.copyfile(self.root / "uninstall.php", asset)
+        (build / ".private").mkdir()
+        (build / ".private/review.md").write_text("must not ship")
         with self.assertRaises(ValueError):
             package.validate_package(self.root, build)
-        (build / "secret.txt").unlink()
+        shutil.rmtree(build / ".private")
         with ZipFile(archive, "a") as zipped:
             zipped.writestr(f"{package.SLUG}/../secret.txt", "must not ship")
         with self.assertRaises(ValueError):
             package.validate_package(self.root, build, archive)
+
+        # Check archive-only failures independently of the valid build directory.
+        expected = package.expected_contents(self.root)
+        for mode in ("missing-uninstall", "modified", "symlink", "wrong-root", "private", "duplicate"):
+            with self.subTest(mode=mode):
+                with ZipFile(archive, "w") as zipped:
+                    for name, content in expected.items():
+                        if name == "uninstall.php" and mode == "missing-uninstall":
+                            continue
+                        prefix = "wrong-plugin" if mode == "wrong-root" else package.SLUG
+                        info = ZipInfo(f"{prefix}/{name}")
+                        if name == "uninstall.php" and mode == "symlink":
+                            info.create_system = 3
+                            info.external_attr = 0o120777 << 16
+                        if name == "uninstall.php" and mode == "modified":
+                            content = b"changed bytes"
+                        zipped.writestr(info, content)
+                    if mode == "private":
+                        zipped.writestr(f"{package.SLUG}/.private/review.md", "must not ship")
+                    if mode == "duplicate":
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", UserWarning)
+                            zipped.writestr(f"{package.SLUG}/uninstall.php", expected["uninstall.php"])
+                with self.assertRaises(ValueError):
+                    package.validate_package(self.root, build, archive)
+
+    def test_security_scan_fails_on_each_blocking_pattern(self):
+        script = workflow_step("wp-compatibility-test.yml", "WordPress Security Scan")
+        for name in ("admin", "bootstrap", "frontend", "options"):
+            self.write(f"includes/{name}.php", "<?php\n")
+        self.write("uninstall.php", "<?php\n")
+        clean = "<?php\nsettings_fields('fixture'); esc_html('safe'); current_user_can('manage_options');\n"
+
+        def scan(source, env=None):
+            self.write(f"{package.SLUG}.php", source)
+            return subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script],
+                                  capture_output=True, text=True, env=env)
+
+        self.assertEqual(0, scan(clean).returncode)
+        for dangerous in ("mysqli_query($db, $sql);", "echo $_GET['value'];",
+                          "include $_GET['file'];", "eval($input);"):
+            with self.subTest(pattern=dangerous):
+                result = scan(clean + dangerous + "\n")
+                self.assertEqual(1, result.returncode)
+                self.assertIn("blocking findings", result.stdout)
+        self.write("bin/grep", "#!/bin/sh\nexit 2\n")
+        (self.root / "bin/grep").chmod(0o755)
+        env = dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}")
+        self.assertEqual(2, scan(clean, env=env).returncode)
+        # No application-shaped input means setup failure, never a clean scan.
+        (self.root / "uninstall.php").unlink()
+        self.assertNotEqual(0, scan(clean).returncode)
 
 
 if __name__ == "__main__":

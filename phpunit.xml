@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <phpunit
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
     bootstrap="tests/bootstrap.php"
     cacheDirectory=".phpunit.cache"
     colors="true"
     testdox="true"
+    failOnEmptyTestSuite="true"
+    failOnRisky="true"
+    failOnWarning="true"
     beStrictAboutTestsThatDoNotTestAnything="true"
     beStrictAboutOutputDuringTests="true"
     beStrictAboutChangesToGlobalState="true"
@@ -14,15 +15,13 @@
         <testsuite name="unit">
             <directory suffix="Test.php">tests/unit</directory>
         </testsuite>
-        <testsuite name="integration">
-            <directory suffix="Test.php">tests/integration</directory>
-        </testsuite>
     </testsuites>
 
     <source>
         <include>
             <file>enginescript-site-optimizer.php</file>
             <directory suffix=".php">includes</directory>
+            <file>uninstall.php</file>
         </include>
     </source>
 

@@ -101,17 +101,24 @@ Yes, hiding the WordPress version can provide a minor security benefit by making
 ### Set Up the Development Environment
 
 1. Clone this repository: `git clone https://github.com/EngineScript/enginescript-site-optimizer.git`
-2. Install dependencies: `composer install`
-3. Set up the test environment: `bin/install-wp-tests.sh wordpress_test root '' localhost latest`
-4. Run tests: `composer test`
+2. Install development tools from the lock: `composer install --no-interaction --prefer-dist`.
+   The development lock was validated with PHP 8.5.6; let Composer check its exact
+   platform requirements. These are separate from the plugin's PHP 8.2 runtime minimum.
+3. Run scoped static checks with `composer check-all`.
+4. Submit changes for the [WordPress Compatibility workflow](.github/workflows/wp-compatibility-test.yml).
+
+Plugin and automation suites run on fresh GitHub runners. The workflow runs the
+unit suite through `composer test` before selecting PHPUnit 9.6 for native
+WordPress tests. It generates its installer, native bootstrap, tests and config
+on the runner; there is no checked-in local WordPress installer. Do not provision
+a local suite as a replacement for the CI evidence.
 
 ### PHP Compatibility
 
-This plugin supports PHP 8.2 and newer. Run the standard Composer test command to verify compatibility locally:
-
-```bash
-composer test
-```
+The declared plugin minimum is PHP 8.2. The workflow covers PHP 8.2–8.5 with
+WordPress 6.8, latest and nightly, plus a lowest-dependency lane. A compatibility
+claim requires a successful run for the exact reviewed commit and resolved
+versions. Static analysis and a Composer installation alone do not establish it.
 
 ## Development & Maintenance
 
@@ -121,12 +128,13 @@ This repository uses GitHub Actions to test the plugin against supported PHP and
 
 ### Automated Testing
 
-The plugin includes a comprehensive PHPUnit test suite that runs automatically on GitHub Actions. Our testing matrix includes:
+The GitHub workflow defines isolated unit and generated native WordPress tests. Its configured matrix includes:
 
 - PHP versions: 8.2, 8.3, 8.4, 8.5
 - WordPress versions: 6.8, latest, nightly
 
-This ensures code quality and compatibility across different PHP versions and WordPress configurations.
+Compatibility acceptance requires a successful run for the exact source commit;
+the configured matrix alone does not establish a passing result.
 
 ## Contributing
 

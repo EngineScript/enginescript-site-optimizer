@@ -19,30 +19,29 @@ The automated compatibility test has failed for the following environment:
 
 ### Next Steps
 
-This issue has been automatically created because the EngineScript Site Exporter plugin failed compatibility testing with this specific WordPress and PHP version combination. This could indicate:
+This issue has been automatically created because the EngineScript Site Optimizer plugin failed compatibility testing with this specific WordPress and PHP version combination. This could indicate:
 
-#### Potential Issues:
+#### Potential Issues
+
 1. **PHP Compatibility**: Code may use features not available in PHP {{ env.PHP_VERSION }}
 2. **WordPress API Changes**: WordPress {{ env.WP_VERSION }} may have deprecated or changed APIs
 3. **Plugin Dependencies**: Required extensions or functions may not be available
 4. **WordPress Plugin Check Violations**: Code may not meet standards for this version combination
 
-#### Recommended Actions:
+#### Recommended Actions
 
-1. **Review Logs**: Check the workflow logs for specific error messages and stack traces
-2. **Local Testing**: Test locally with WordPress {{ env.WP_VERSION }} and PHP {{ env.PHP_VERSION }} to reproduce the issue
-3. **Code Review**: Look for version-specific syntax, deprecated functions, or API changes
-4. **Plugin Check**: Run WordPress Plugin Check locally against this environment
-5. **Update Code**: Make necessary updates to ensure compatibility across supported versions
+1. **Review Logs**: Identify the failed setup or assertion step and the exact tested commit.
+2. **Inspect Artifacts**: Check resolved WordPress/PHP/dependency versions, unit/native JUnit files, and intentional-failure control summaries.
+3. **Code Review**: Look for version-specific syntax, deprecated functions, or API changes.
+4. **Plugin Check**: Inspect the separate Plugin Check job and its verified candidate package.
+5. **Verify the Fix**: Obtain a fresh run for the corrected commit and affected matrix cells before closing the finding.
 
-#### Testing Commands:
-```bash
-# Test with specific versions using Docker
-docker run --rm -v $(pwd):/app wordpress:{{ env.WP_VERSION }}-php{{ env.PHP_VERSION }}-apache
+#### Execution Policy
 
-# Run plugin check locally
-wp plugin check enginescript-site-exporter --format=json --require=./wp-content/plugins/plugin-check/cli.php
-```
+Plugin and automation suites run in the existing GitHub workflow. Its isolated
+unit suite uses the root configuration before the native PHPUnit 9.6 pin; the
+runner then generates the WordPress installer, bootstrap, native tests and config.
+Do not provision a local WordPress or Docker suite as replacement evidence.
 
 Once fixed, please close this issue and reference it in the changelog.
 

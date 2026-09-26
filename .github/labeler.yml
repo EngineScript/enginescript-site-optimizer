@@ -4,16 +4,15 @@
 # Core plugin functionality
 core:
   - changed-files:
-    - any-glob-to-any-file: enginescript-site-exporter.php
+    - any-glob-to-any-file: enginescript-site-optimizer.php
     - any-glob-to-any-file: includes/**/*
-    - any-glob-to-any-file: assets/js/**/*
+    - any-glob-to-any-file: uninstall.php
 
 # Frontend related changes
 frontend:
   - changed-files:
-    - any-glob-to-any-file: assets/css/**/*
-    - any-glob-to-any-file: assets/images/**/*
-    - any-glob-to-any-file: templates/**/*
+    - any-glob-to-any-file: includes/frontend.php
+    - any-glob-to-any-file: includes/admin.php
 
 # Workflows and automation
 automation:
@@ -33,24 +32,17 @@ documentation:
     - any-glob-to-any-file: '*.md'
     - any-glob-to-any-file: docs/**/*
 
-# Export functionality
-export:
-  - changed-files:
-    - any-glob-to-any-file: '**/export*.php'
-    - any-glob-to-any-file: '**/zip*.php'
-
 # Database related changes
 database:
   - changed-files:
-    - any-glob-to-any-file: '**/database*.php'
-    - any-glob-to-any-file: '**/db*.php'
-    - any-glob-to-any-file: '**/sql*.php'
+    - any-glob-to-any-file: includes/options.php
+    - any-glob-to-any-file: uninstall.php
 
 # WordPress integration
 wordpress:
   - changed-files:
-    - any-glob-to-any-file: '**/wp-*.php'
-    - any-glob-to-any-file: '**/wordpress*.php'
+    - any-glob-to-any-file: enginescript-site-optimizer.php
+    - any-glob-to-any-file: includes/bootstrap.php
 
 # Translations and localization
 i18n:
@@ -74,5 +66,7 @@ testing:
   - changed-files:
     - any-glob-to-any-file: tests/**/*
     - any-glob-to-any-file: phpunit.xml
-    - any-glob-to-any-file: .travis.yml
-    - any-glob-to-any-file: .phpcs.xml
+    - any-glob-to-any-file: phpcs.xml
+    - any-glob-to-any-file: phpmd.xml
+    - any-glob-to-any-file: phpstan.neon
+    - any-glob-to-any-file: psalm.xml
