@@ -6,7 +6,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import stat
-import subprocess
+# The sole invocation uses system Git with fixed arguments to list tracked files.
+import subprocess  # nosec B404
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -20,9 +21,11 @@ RELEASE_DIRS = {"includes", "languages"}
 
 def expected_contents(root: Path) -> dict[str, bytes]:
     """Read only tracked regular production/public files, never vendor output."""
-    tracked = subprocess.run(
-        ["git", "ls-files", "-z"], cwd=root, check=True, capture_output=True
-    ).stdout.decode("utf-8").split("\0")
+    # Ubuntu/WSL system Git; package paths and file contents are not command code.
+    result = subprocess.run(  # nosec B603
+        ["/usr/bin/git", "ls-files", "-z"], cwd=root, check=True, capture_output=True
+    )
+    tracked = result.stdout.decode("utf-8").split("\0")
     names = {
         name for name in tracked
         if name in RELEASE_FILES or Path(name).parts[:1] in
@@ -41,6 +44,36 @@ def expected_contents(root: Path) -> dict[str, bytes]:
             raise ValueError(f"Release source is not a regular file: {name}")
         contents[name] = path.read_bytes()
     return contents
+
+
+def validate_archive(archive: Path, expected: dict[str, bytes], allowed_dirs: set[str]) -> None:
+    """Reject duplicate, linked, extra or altered ZIP members before reporting."""
+    with ZipFile(archive) as zipped:
+        members = zipped.infolist()
+        names = [member.filename for member in members]
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate ZIP members.")
+        zip_files = {}
+        for member in members:
+            mode = member.external_attr >> 16
+            if stat.S_ISLNK(mode):
+                raise ValueError("Linked ZIP member.")
+            if member.is_dir():
+                if member.filename not in {
+                    f"{SLUG}/" if directory == "." else f"{SLUG}/{directory}/"
+                    for directory in allowed_dirs
+                }:
+                    raise ValueError("Unexpected ZIP directory.")
+                continue
+            prefix = f"{SLUG}/"
+            if not member.filename.startswith(prefix):
+                raise ValueError("ZIP member outside plugin root.")
+            name = member.filename[len(prefix):]
+            if name not in expected or member.file_size != len(expected[name]):
+                raise ValueError("Unexpected ZIP member or size.")
+            zip_files[name] = zipped.read(member)
+        if zip_files != expected:
+            raise ValueError("ZIP file set or bytes differ from tracked sources.")
 
 
 def validate_package(root: Path, build: Path, archive: Path | None = None) -> int:
@@ -64,32 +97,7 @@ def validate_package(root: Path, build: Path, archive: Path | None = None) -> in
     if actual != expected:
         raise ValueError("Package file set or bytes differ from tracked sources.")
     if archive is not None:
-        with ZipFile(archive) as zipped:
-            members = zipped.infolist()
-            names = [member.filename for member in members]
-            if len(names) != len(set(names)):
-                raise ValueError("Duplicate ZIP members.")
-            zip_files = {}
-            for member in members:
-                mode = member.external_attr >> 16
-                if stat.S_ISLNK(mode):
-                    raise ValueError("Linked ZIP member.")
-                if member.is_dir():
-                    if member.filename not in {
-                        f"{SLUG}/" if directory == "." else f"{SLUG}/{directory}/"
-                        for directory in allowed_dirs
-                    }:
-                        raise ValueError("Unexpected ZIP directory.")
-                    continue
-                prefix = f"{SLUG}/"
-                if not member.filename.startswith(prefix):
-                    raise ValueError("ZIP member outside plugin root.")
-                name = member.filename[len(prefix):]
-                if name not in expected or member.file_size != len(expected[name]):
-                    raise ValueError("Unexpected ZIP member or size.")
-                zip_files[name] = zipped.read(member)
-            if zip_files != expected:
-                raise ValueError("ZIP file set or bytes differ from tracked sources.")
+        validate_archive(archive, expected, allowed_dirs)
         print(f"ZIP SHA-256: {hashlib.sha256(archive.read_bytes()).hexdigest()}")
     for name, content in sorted(expected.items()):
         print(f"{hashlib.sha256(content).hexdigest()}  {name}")

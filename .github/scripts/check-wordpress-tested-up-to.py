@@ -7,7 +7,8 @@ import argparse
 import json
 import os
 import re
-import subprocess
+# Calls below use system Git and fixed arguments, never version data as code.
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -176,9 +177,11 @@ def find_tested_up_to_entries(
 
 
 def get_scanned_files(excluded_dirs: set[str]) -> list[Path]:
-    tracked = subprocess.run(
-        ["git", "ls-files", "-z"], check=True, capture_output=True
-    ).stdout.decode("utf-8").split("\0")
+    # Ubuntu/WSL system Git; fixed arguments do not depend on downloaded metadata.
+    result = subprocess.run(  # nosec B603
+        ["/usr/bin/git", "ls-files", "-z"], check=True, capture_output=True
+    )
+    tracked = result.stdout.decode("utf-8").split("\0")
     if not all(path.as_posix() in tracked for path in METADATA_PATHS):
         raise ValueError("Authoritative metadata files must both be tracked.")
     for path in METADATA_PATHS:

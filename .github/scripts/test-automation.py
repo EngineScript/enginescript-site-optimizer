@@ -3,6 +3,8 @@
 
 These fixtures do not bootstrap WordPress or replace workflow-generated PHP tests.
 All mutation is confined to a temporary fixture repository on the runner.
+Processes use system tools in /usr/bin on the Ubuntu runner/WSL target; PATH
+overrides select only the intentional curl/grep substitutes inside shell steps.
 """
 
 from __future__ import annotations
@@ -14,7 +16,8 @@ import json
 import os
 import re
 import shutil
-import subprocess
+# Each invocation below uses a system executable and reviewed fixture inputs.
+import subprocess  # nosec B404
 import tempfile
 import textwrap
 import unittest
@@ -51,12 +54,17 @@ class AutomationTests(unittest.TestCase):
         previous = Path.cwd()
         os.chdir(self.root)
         self.addCleanup(os.chdir, previous)
-        subprocess.run(["git", "init", "--quiet"], check=True)
+        # Fixed Git arguments in this test's temporary repository.
+        subprocess.run(["/usr/bin/git", "init", "--quiet"], check=True)  # nosec B603
         self.write("enginescript-site-optimizer.php", "<?php\n/**\n * Tested up to: 6.8\n */\n")
         self.write("readme.txt", "=== Fixture ===\nTested up to: 6.8\n\nTested up to: historical prose\n")
         self.write("README.md", "Tested up to: historical prose\n")
         self.write(".private/review.md", "Tested up to: historical prose\n")
-        subprocess.run(["git", "add", "--", "enginescript-site-optimizer.php", "readme.txt", "README.md"], check=True)
+        # Fixed fixture filenames after --, never caller-supplied options.
+        subprocess.run(  # nosec B603
+            ["/usr/bin/git", "add", "--", "enginescript-site-optimizer.php", "readme.txt", "README.md"],
+            check=True,
+        )
 
     def write(self, name, content):
         path = self.root / name
@@ -93,10 +101,14 @@ class AutomationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.findings()
         self.write("readme.txt", "Tested up to: 6.8\n\n")
-        subprocess.run(["git", "rm", "--cached", "--force", "--quiet", "readme.txt"], check=True)
+        # Fixed fixture path; only this temporary repository's index is changed.
+        subprocess.run(  # nosec B603
+            ["/usr/bin/git", "rm", "--cached", "--force", "--quiet", "--", "readme.txt"], check=True
+        )
         with self.assertRaises(ValueError):
             self.findings()
-        subprocess.run(["git", "add", "readme.txt"], check=True)
+        # Restore the same fixed fixture path, after the option delimiter.
+        subprocess.run(["/usr/bin/git", "add", "--", "readme.txt"], check=True)  # nosec B603
         (self.root / "readme.txt").unlink()
         (self.root / "readme.txt").symlink_to("README.md")
         with self.assertRaises(ValueError):
@@ -135,14 +147,18 @@ class AutomationTests(unittest.TestCase):
                "event": "push", "status": "completed", "conclusion": "success"}
 
         def accepts_run(runs):
-            result = subprocess.run(
-                ["jq", "-er", "--arg", "sha", "abc", "--arg", "repo", "fixture/repo",
+            # Program comes from our fixed workflow step; JSON enters as stdin data.
+            result = subprocess.run(  # nosec B603
+                ["/usr/bin/jq", "-er", "--arg", "sha", "abc", "--arg", "repo", "fixture/repo",
                  "--arg", "branch", "main", run_filter],
                 input=json.dumps({"workflow_runs": runs}), text=True, capture_output=True
             )
             return result.returncode == 0
 
-        self.assertTrue(accepts_run([run]))
+        self.write("bin/jq", "#!/bin/sh\nexit 97\n")
+        (self.root / "bin/jq").chmod(0o700)
+        with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
+            self.assertTrue(accepts_run([run]))
         self.assertFalse(accepts_run([]))
         for changes in ({"head_sha": "other"}, {"event": "pull_request"},
                         {"head_branch": "other"}, {"head_repository": {"full_name": "fork/repo"}},
@@ -157,13 +173,15 @@ class AutomationTests(unittest.TestCase):
         jobs = [{"name": name, "status": "completed", "conclusion": "success"} for name in names]
 
         def accepts_jobs(records):
-            return subprocess.run(
-                ["jq", "-e", jobs_filter], input=json.dumps([{"jobs": records}]),
+            # Repository-owned jq program; job records remain separate JSON data.
+            return subprocess.run(  # nosec B603
+                ["/usr/bin/jq", "-e", jobs_filter], input=json.dumps([{"jobs": records}]),
                 text=True, capture_output=True
             ).returncode == 0
 
         self.assertEqual(20, len(jobs))
-        self.assertTrue(accepts_jobs(jobs))
+        with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
+            self.assertTrue(accepts_jobs(jobs))
         for index in range(len(jobs)):
             self.assertFalse(accepts_jobs(jobs[:index] + jobs[index + 1:]))
             for conclusion in ("skipped", "failure", "cancelled"):
@@ -176,17 +194,21 @@ class AutomationTests(unittest.TestCase):
         script = workflow_step("release.yml", "Check if release exists")
         self.write("bin/curl", '#!/bin/sh\nprintf "%s" "$FIXTURE_HTTP_STATUS"\nexit "$FIXTURE_CURL_EXIT"\n')
         (self.root / "bin/curl").chmod(0o700)
+        self.write("bin/bash", "#!/bin/sh\nexit 97\n")
+        (self.root / "bin/bash").chmod(0o700)
         output = self.root / "release-output"
         for status, code, expected in (("200", "0", "true"), ("404", "0", "false"),
                                        ("403", "0", None), ("429", "0", None),
                                        ("500", "0", None), ("000", "28", None)):
             with self.subTest(status=status):
                 output.write_text("")
-                env = dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}",
+                # Dummy token replaces inherited credentials; curl is our local substitute.
+                env = dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}",  # nosec B106
                            GH_TOKEN="fixture-only", GITHUB_OUTPUT=str(output), VERSION="1.2.3",
                            GITHUB_API_URL="https://api.invalid", GITHUB_REPOSITORY="fixture/repo",
                            FIXTURE_HTTP_STATUS=status, FIXTURE_CURL_EXIT=code)
-                result = subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script],
+                # Execute only the repository's fixed release-lookup step, with fixture data.
+                result = subprocess.run(["/usr/bin/bash", "-e", "-o", "pipefail", "-c", script],  # nosec B603
                                         env=env, capture_output=True, text=True)
                 if expected is None:
                     self.assertNotEqual(0, result.returncode)
@@ -200,13 +222,15 @@ class AutomationTests(unittest.TestCase):
         filename = "languages/enginescript-site-optimizer.pot"
         baseline = 'msgid ""\nmsgstr ""\n"POT-Creation-Date: old\\n"\n\n'
         self.write(filename, baseline)
-        subprocess.run(["git", "add", "--", filename], check=True)
+        # filename is the constant POT fixture path above, after --.
+        subprocess.run(["/usr/bin/git", "add", "--", filename], check=True)  # nosec B603
         output = self.root / "step-output"
         env = dict(os.environ, PLUGIN_SLUG=package.SLUG, GITHUB_OUTPUT=str(output))
 
         def check(expected):
             output.write_text("")
-            subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script], env=env,
+            # Only the repository's fixed POT step is code; fixture paths are environment data.
+            subprocess.run(["/usr/bin/bash", "-e", "-o", "pipefail", "-c", script], env=env,  # nosec B603
                            check=True, capture_output=True, text=True)
             self.assertEqual(f"has_changes={expected}\n", output.read_text())
 
@@ -216,16 +240,24 @@ class AutomationTests(unittest.TestCase):
         self.assertEqual(baseline, (self.root / filename).read_text())
         self.write(filename, baseline + "".join(f'msgid "message {i}"\nmsgstr ""\n\n' for i in range(3000)))
         check("true")
-        subprocess.run(["git", "rm", "--cached", "--force", "--quiet", "--", filename], check=True)
+        # Same constant fixture filename and explicit option delimiter.
+        subprocess.run(  # nosec B603
+            ["/usr/bin/git", "rm", "--cached", "--force", "--quiet", "--", filename], check=True
+        )
         check("true")
         self.assertTrue((self.root / filename).is_file())
 
-    def test_package_rejects_missing_extra_changed_and_linked_members(self):
+    def create_package_fixture(self) -> tuple[Path, Path]:
+        """Build a valid directory and ZIP for independent package failure cases."""
         for name in ("CHANGELOG.md", "LICENSE", "uninstall.php", "includes/admin.php",
                      "includes/bootstrap.php", "includes/frontend.php", "includes/options.php",
                      "languages/enginescript-site-optimizer.pot"):
             self.write(name, "fixture\n")
-        subprocess.run(["git", "add", "--", "CHANGELOG.md", "LICENSE", "uninstall.php", "includes", "languages"], check=True)
+        # Only fixed release-fixture filenames/directories follow --.
+        subprocess.run(  # nosec B603
+            ["/usr/bin/git", "add", "--", "CHANGELOG.md", "LICENSE", "uninstall.php", "includes", "languages"],
+            check=True,
+        )
         build = self.root / "build" / package.SLUG
         for name, content in package.expected_contents(self.root).items():
             destination = build / name
@@ -236,6 +268,10 @@ class AutomationTests(unittest.TestCase):
             for path in build.rglob("*"):
                 if path.is_file():
                     zipped.write(path, f"{package.SLUG}/{path.relative_to(build).as_posix()}")
+        return build, archive
+
+    def test_package_rejects_missing_extra_changed_and_linked_members(self):
+        build, archive = self.create_package_fixture()
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(11, package.validate_package(self.root, build, archive))
         asset = build / "uninstall.php"
@@ -254,13 +290,17 @@ class AutomationTests(unittest.TestCase):
         (build / ".private/review.md").write_text("must not ship")
         with self.assertRaises(ValueError):
             package.validate_package(self.root, build)
-        shutil.rmtree(build / ".private")
+
+    def test_package_rejects_archive_traversal(self):
+        build, archive = self.create_package_fixture()
         with ZipFile(archive, "a") as zipped:
             zipped.writestr(f"{package.SLUG}/../secret.txt", "must not ship")
         with self.assertRaises(ValueError):
             package.validate_package(self.root, build, archive)
 
+    def test_package_rejects_invalid_archive_members(self):
         # Check archive-only failures independently of the valid build directory.
+        build, archive = self.create_package_fixture()
         expected = package.expected_contents(self.root)
         for mode in ("missing-uninstall", "modified", "symlink", "wrong-root", "private", "duplicate"):
             with self.subTest(mode=mode):
@@ -285,6 +325,15 @@ class AutomationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     package.validate_package(self.root, build, archive)
 
+    def test_helpers_ignore_git_on_path(self):
+        self.write("bin/git", "#!/bin/sh\nexit 97\n")
+        (self.root / "bin/git").chmod(0o700)
+        with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
+            self.assertEqual(2, len(self.findings()))
+            build, archive = self.create_package_fixture()
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(11, package.validate_package(self.root, build, archive))
+
     def test_security_scan_fails_on_each_blocking_pattern(self):
         script = workflow_step("wp-compatibility-test.yml", "WordPress Security Scan")
         for name in ("admin", "bootstrap", "frontend", "options"):
@@ -294,7 +343,8 @@ class AutomationTests(unittest.TestCase):
 
         def scan(source, env=None):
             self.write(f"{package.SLUG}.php", source)
-            return subprocess.run(["bash", "-e", "-o", "pipefail", "-c", script],
+            # Repository-owned shell step; hostile PHP samples are read as data by grep.
+            return subprocess.run(["/usr/bin/bash", "-e", "-o", "pipefail", "-c", script],  # nosec B603
                                   capture_output=True, text=True, env=env)
 
         self.assertEqual(0, scan(clean).returncode)
