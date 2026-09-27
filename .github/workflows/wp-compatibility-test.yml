@@ -1690,10 +1690,16 @@ jobs:
                   $this->assertFalse(has_action('wp_head', 'rsd_link'));
                   $this->assertFalse(has_action('wp_head', 'wp_shortlink_wp_head'));
                   $this->assertSame('foreign', apply_filters('jetpack_show_promotions', 'foreign'));
-                  $this->assertSame('foreign', apply_filters('enable_post_by_email_configuration', 'foreign'));
+                  $this->assertSame(PHP_INT_MAX, has_filter('enable_post_by_email_configuration', 'es_optimizer_filter_post_via_email'));
+                  $this->assertSame('foreign', es_optimizer_filter_post_via_email('foreign'));
+                  $this->assertFalse(es_optimizer_filter_post_via_email(false));
+                  // Core disables post-by-email on multisite unless POST_BY_EMAIL opts in.
+                  $mail_enabled = !is_multisite() || (defined('POST_BY_EMAIL') && POST_BY_EMAIL);
+                  $this->assertSame($mail_enabled, apply_filters('enable_post_by_email_configuration', true));
                   update_option('es_optimizer_options', array('disable_jetpack_ads' => 1, 'disable_post_via_email' => 1));
                   $this->assertFalse(apply_filters('jetpack_show_promotions', 'foreign'));
-                  $this->assertFalse(apply_filters('enable_post_by_email_configuration', 'foreign'));
+                  $this->assertFalse(es_optimizer_filter_post_via_email(true));
+                  $this->assertFalse(apply_filters('enable_post_by_email_configuration', true));
               }
 
               /**
