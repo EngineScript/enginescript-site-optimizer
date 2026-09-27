@@ -1319,10 +1319,6 @@ jobs:
               require dirname(__DIR__) . '/enginescript-site-optimizer.php';
           });
           require '/tmp/wordpress-tests-lib/includes/bootstrap.php';
-          // Load the exact uninstall entry once on the empty disposable installation.
-          // Later helper tests cover DB/cache/failure semantics, not core file deletion.
-          define('WP_UNINSTALL_PLUGIN', 'enginescript-site-optimizer/enginescript-site-optimizer.php');
-          require dirname(__DIR__) . '/uninstall.php';
           EOF
 
       - name: Create Test File
@@ -1332,6 +1328,21 @@ jobs:
           <?php
           /** Native WordPress regression cases; generated and run only on fresh CI runners. */
           final class EngineScriptSiteOptimizerTest extends WP_UnitTestCase {
+              /**
+               * Load uninstall helpers after PHPUnit publishes WordPress globals.
+               *
+               * @since Unreleased
+               * @return void
+               */
+              public static function set_up_before_class() {
+                  parent::set_up_before_class();
+                  // PHPUnit 9.6 exports bootstrap variables only after the file returns.
+                  // The exact entry runs once on the empty disposable installation.
+                  // Helper tests cover DB/cache/failure semantics, not core file deletion.
+                  define('WP_UNINSTALL_PLUGIN', 'enginescript-site-optimizer/enginescript-site-optimizer.php');
+                  require_once dirname(__DIR__) . '/uninstall.php';
+              }
+
               /**
                * Reset native state for each regression.
                *
@@ -1387,6 +1398,11 @@ jobs:
                */
               public function test_native_bootstrap_mode_and_optimizer_hooks(): void {
                   $this->assertSame('1' === getenv('WP_MULTISITE'), is_multisite());
+                  $this->assertTrue(function_exists('es_optimizer_uninstall_options'));
+                  if (is_multisite()) {
+                      $this->assertSame(array(), $GLOBALS['_wp_switched_stack']);
+                      $this->assertFalse($GLOBALS['switched']);
+                  }
                   $this->assertSame(get_plugin_data(ES_SITE_OPTIMIZER_FILE, false, false)['Version'], ES_SITE_OPTIMIZER_VERSION);
                   $this->assertSame(10, has_filter('wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints'));
                   $this->assertSame(10, has_filter('tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce'));
