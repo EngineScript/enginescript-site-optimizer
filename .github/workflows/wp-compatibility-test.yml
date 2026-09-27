@@ -1526,7 +1526,16 @@ jobs:
                   ob_start();
                   settings_errors();
                   $html = ob_get_clean();
-                  $this->assertSame(1, substr_count($html, 'id="setting-error-preconnect_security"'));
+                  $dom = new DOMDocument();
+                  $previous = libxml_use_internal_errors(true);
+                  try {
+                      $this->assertTrue($dom->loadHTML($html));
+                  } finally {
+                      libxml_clear_errors();
+                      libxml_use_internal_errors($previous);
+                  }
+                  $xpath = new DOMXPath($dom);
+                  $this->assertSame(1, $xpath->query('//*[@id="setting-error-preconnect_security"]')->length);
                   $this->assertStringContainsString('Other settings saved.', $html);
               }
 

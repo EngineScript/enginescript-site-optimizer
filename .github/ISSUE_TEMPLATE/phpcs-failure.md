@@ -28,8 +28,14 @@ If PHPCS reached analysis, inspect its output for violations of the configured s
 1. **WordPress Core**: Core WordPress coding standards
 2. **WordPress Extra**: Extended WordPress coding standards
 3. **WordPress VIP**: WordPress VIP-specific standards
-4. **Security Standards**: Security-focused coding practices
-5. **PSR-12**: PHP-FIG PSR-12 basic coding standard
+4. **WordPress Docs and Security**: Documentation and security-focused rules
+5. **PHPCompatibilityWP**: Rules configured for PHP 8.2 and later
+6. **Modernize and NormalizedArrays**: Selected modernization and array checks
+
+The root `phpcs.xml` is authoritative for exclusions and individual rules,
+including two PSR-2 declaration rules. This is not a full PSR-12 scan. The locked
+stable compatibility rules miss some newer APIs; inspect the workflow's
+compatibility-control diagnostics before drawing a PHP-minimum conclusion.
 
 #### Common Issues
 

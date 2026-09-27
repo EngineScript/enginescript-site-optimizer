@@ -33,12 +33,14 @@ If PHPMD reached analysis, inspect its output for the following areas:
 
 #### WordPress-Specific Configuration
 
-This project uses a WordPress-specific PHPMD configuration (`phpmd.xml`) that suppresses WordPress-standard patterns:
+The root `phpmd.xml` excludes `ElseExpression`, `MissingImport` and five
+CamelCase naming rules for the procedural WordPress code. Code-size, design and
+unused-code rules retain their stock limits. Selected naming thresholds are
+3 characters for short names and 40 for long variables.
 
-- **Superglobals**: WordPress safely uses `$_GET`, `$_POST` with proper sanitization
-- **Exit Expressions**: Required for file downloads and security redirects
-- **Missing Imports**: WordPress core classes like `WP_Error` are auto-loaded
-- **Else Expressions**: Sometimes required for WordPress security patterns
+Three function-level `BooleanArgumentFlag` annotations retain existing public
+signatures. There are no blanket `Superglobals` or `ExitExpression` exclusions;
+inspect the actual rule and source before proposing a suppression.
 
 #### Common Issues
 
@@ -49,7 +51,7 @@ This project uses a WordPress-specific PHPMD configuration (`phpmd.xml`) that su
 - **Too Many Parameters**: Methods with excessive parameter counts
 - **Unused Variables**: Variables that are declared but never used
 - **Superglobals**: Direct access to superglobal variables
-- **CamelCase Violations**: Inconsistent naming conventions
+- **Naming Violations**: Names outside the configured length or constant-name rules
 
 #### Recommended Actions
 
@@ -65,28 +67,8 @@ This project uses a WordPress-specific PHPMD configuration (`phpmd.xml`) that su
 Re-run the existing GitHub job after correcting the reported failure. Keep its
 remote dependency installation, cache policy, and configured rules unchanged.
 
-#### Example Fixes
-
-```php
-// Before: High complexity
-function complex_function($a, $b, $c, $d, $e) {
-    if ($a) {
-        if ($b) {
-            if ($c) {
-                // ...
-            }
-        }
-    }
-}
-
-// After: Reduced complexity
-function simple_function($data) {
-    if (!$this->validate_data($data)) {
-        return false;
-    }
-    return $this->process_data($data);
-}
-```
+Preserve callback signatures and validation behavior when reducing complexity.
+Extract a helper only when its inputs, return contract and callers are clear.
 
 Once fixed, please close this issue and reference it in the changelog.
 

@@ -19,18 +19,20 @@ The security job failed. This alone does not establish a vulnerability or its se
 - **Run ID:** {{ env.RUN_ID }}
 
 **What happened:**
-Inspect whether dependency setup, the advisory checker, or the source-pattern scan failed. Only the actual checker output can establish a vulnerability.
+Inspect whether dependency setup, the advisory checker, or the source-pattern
+scan failed. Check reported advisories against the resolved package version and
+review source-pattern matches in context before classifying a vulnerability.
 
 **What needs to be done:**
 
 1. Review the security check output in the failed workflow run
-2. Identify which dependencies have vulnerabilities
-3. Update vulnerable dependencies to secure versions
-4. If updates are not available, consider:
-   - Finding alternative packages
-   - Applying patches if available
-   - Implementing workarounds
-5. Test the application after updates
+2. Separate setup errors, advisory matches and source-pattern findings
+3. Confirm the affected version, reachable behavior and remediation scope
+4. Propose any dependency change with its manifest/lock diff and validation plan
+5. Re-run the affected checks after an approved fix
+
+Keep suspected vulnerabilities and sensitive logs in the private reporting
+channel described in [SECURITY.md](https://github.com/EngineScript/enginescript-site-optimizer/blob/main/SECURITY.md).
 
 **Priority:** Triage the original failure first; assign vulnerability severity only when supported by evidence.
 

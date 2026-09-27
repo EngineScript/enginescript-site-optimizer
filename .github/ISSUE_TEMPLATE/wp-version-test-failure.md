@@ -26,11 +26,11 @@ Inspect the failed stage and its logs for WordPress {{ env.WP_VERSION }}, PHP {{
 **What needs to be done:**
 
 1. Review the test output in the failed workflow run
-2. Identify compatibility issues with WordPress {{ env.WP_VERSION }}
-3. Fix any deprecated function calls or API usage
-4. Ensure plugin works correctly with this WordPress version
-5. Update plugin compatibility metadata if needed
-6. Re-run this GitHub matrix cell to validate the fix
+2. Identify whether the isolated unit suite, native bootstrap or native assertions failed
+3. Inspect the recorded dependency versions; the unit suite runs before the native PHPUnit 9.6 pin
+4. Verify both single-site and multisite results for the affected cell
+5. Fix the demonstrated issue and re-run this GitHub matrix cell
+6. Change compatibility metadata only when supported by successful exact-commit evidence and an authorized metadata update
 
 **Potential Issues:**
 
@@ -41,7 +41,7 @@ Inspect the failed stage and its logs for WordPress {{ env.WP_VERSION }}, PHP {{
 
 **Resources:**
 
-- [WordPress Backward Compatibility](https://developer.wordpress.org/plugins/plugin-basics/determining-plugin-and-content-directories/)
-- [WordPress Deprecated Functions](https://developer.wordpress.org/reference/functions/)
+- [WordPress Plugin Directory Paths](https://developer.wordpress.org/plugins/plugin-basics/determining-plugin-and-content-directories/)
+- [WordPress Function Reference](https://developer.wordpress.org/reference/functions/)
 
 This issue was automatically created by the CI/CD pipeline.

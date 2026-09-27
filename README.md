@@ -15,10 +15,10 @@ A WordPress plugin for disabling selected features and configuring resource hint
 
 ## Features
 
-- **Header Cleanup:** Remove the WordPress version, RSD links, and shortlinks
+- **Header Cleanup:** Remove generator output, RSD links, and shortlinks from the page head
 - **Script Optimization:** Disable WordPress emojis and remove jQuery Migrate
 - **Style Optimization:** Remove inline styles from recent comments widget and disable classic theme styles
-- **Resource Hints:** Manage DNS prefetch and preconnect for external domains to improve load times (HTTPS only)
+- **Resource Hints:** Configure DNS prefetch and preconnect for HTTPS origins used by your site
 - **Jetpack Promotions:** Disable Jetpack promotional messages and Blaze promotions
 
 ## Installation
@@ -30,12 +30,6 @@ A WordPress plugin for disabling selected features and configuring resource hint
 3. Activate the plugin from the Plugins menu in WordPress
 4. Configure the plugin under **Settings > Site Optimizer**
 
-### Using Composer
-
-```bash
-composer require enginescript/enginescript-site-optimizer
-```
-
 ## Usage
 
 1. Navigate to the Site Optimizer menu in your WordPress admin dashboard (under Settings)
@@ -43,60 +37,89 @@ composer require enginescript/enginescript-site-optimizer
 3. Configure resource hint domains if needed
 4. Save your changes
 
-## Screenshots
+All feature toggles start disabled. On multisite, configure each site's settings
+separately; network activation does not create shared network settings.
 
-1. **Settings Page:** Configure which optimizations to enable
-2. **Header Cleanup Options:** Remove unnecessary elements from WordPress headers
-3. **Performance Options:** Disable emojis and jQuery Migrate
-4. **DNS Prefetch Configuration:** Add domains for DNS prefetching
+### Resource Hint Lists
 
-## Security Features
+Enter one HTTPS origin per line, such as `https://cdn.example.com`. Paths other
+than a trailing slash, query strings, fragments and credentials are rejected.
+Preconnect accepts an omitted port or port 443. DNS prefetch uses only the
+hostname, even if an accepted entry includes a port.
 
-This plugin implements comprehensive security measures following WordPress and OWASP best practices:
+Each list allows 32,768 bytes in total, 100 nonblank lines and 512 bytes per
+nonblank line. These limits apply before trimming or removing duplicate and
+invalid entries. Empty or ASCII-space-only lines are blank.
 
-- **CSRF Protection:** WordPress Settings API nonce protection for settings submissions
-- **Input Validation:** Multi-layer validation and sanitization for all user inputs
-- **Output Escaping:** Context-appropriate escaping for all outputs (HTML, attributes, URLs)
-- **HTTPS Enforcement:** Resource hint domains must use HTTPS
-- **Host Validation:** Blocks IP addresses, private hosts, localhost addresses, and reserved hostnames
-- **Capability Checks:** Proper user permission verification for all admin functions
-- **Direct Access Prevention:** Prevents direct script execution outside WordPress
+Saving a blank list clears it. Within the limits, invalid entries are omitted;
+an entirely invalid list is saved empty. A malformed or oversized submission
+retains the previous list. An oversized saved list produces no plugin hints
+until corrected. Legacy custom-port preconnect entries are skipped without
+rewriting their saved text until you explicitly save the settings.
 
-## WordPress.org Compliance
+Use hints for origins your pages actually need and measure their effect on your
+site. Browsers decide whether to use them; adding a hint does not establish a
+performance improvement.
 
-This plugin is fully compliant with WordPress.org standards:
+## Settings Protection
 
-- **Plugin Check Passed:** Passes all WordPress Plugin Check automated tests
-- **Security Standards:** Follows WordPress and OWASP security guidelines
-- **Coding Standards:** Adheres to WordPress coding conventions and best practices
-- **Internationalization:** Ready for translation with proper i18n implementation
-- **Performance:** Optimized code structure with reduced complexity
+Settings submissions use WordPress Settings API nonce and capability checks.
+The plugin checks domain input types and original URL text, escapes settings
+output for its context, and reports rejected lines without repeating submitted
+URLs or credentials.
+
+Host validation rejects IP literals, localhost and configured reserved hostname
+suffixes. It checks hostname syntax without resolving DNS. An accepted hostname
+can still resolve to a private address in a visitor's environment; the plugin
+does not verify its DNS destination or fetch the origin from the server.
+
+## Quality Checks
+
+The repository configures coding standards, static analysis, dependency checks,
+unit tests, native WordPress tests and WordPress Plugin Check in GitHub Actions.
+Passing results must be checked against the exact commit and resolved tool
+versions. [Plugin Check](https://wordpress.org/plugins/plugin-check/) provides
+automated checks; passing them does not guarantee WordPress.org approval or
+replace manual review.
 
 ## Frequently Asked Questions
 
 ### Will this plugin work with my theme?
 
-EngineScript Site Optimizer is designed to be compatible with most WordPress themes. The optimizations focus on removing unnecessary WordPress elements rather than modifying theme functionality.
+Compatibility depends on which features your theme and plugins use. Enable
+options one at a time and check the affected pages, editor and admin screens.
 
 ### What does "Remove jQuery Migrate" do?
 
-jQuery Migrate is a script that helps maintain backward compatibility with older jQuery code. Modern themes and plugins generally don't need it, so removing it can improve load time without affecting functionality in most cases.
+jQuery Migrate supports older jQuery APIs. Removing it can affect scripts that
+depend on those APIs. Check your theme and plugins before enabling this option.
 
 ### What does "Disable WordPress Emojis" do?
 
-This option removes emoji-related scripts and styles that WordPress adds by default. Most websites don't need these resources, so removing them can reduce HTTP requests and improve page load time.
+This option disables selected WordPress emoji scripts, styles and conversion
+filters. Check emoji rendering in the site, editor, feeds and email if you use
+those features.
 
 ### Will removing the WordPress version improve security?
 
-Yes, hiding the WordPress version can provide a minor security benefit by making it slightly more difficult for potential attackers to identify vulnerability targets based on your WordPress version.
+The option removes WordPress's generator output from the page head. Other
+version indicators can remain. It does not fix vulnerabilities or replace
+WordPress, theme and plugin updates.
+
+### What happens when I deactivate or delete the plugin?
+
+Deactivation retains settings. Deleting the plugin through WordPress runs its
+uninstall cleanup, including separate site settings across multisite networks.
+Pause site creation and settings changes during removal. Large installations
+may need an operator-run uninstall with sufficient time and memory. If cleanup
+fails, resolve the reported problem and retry removal.
 
 ## Development
 
 ### Requirements
 
-- PHP 8.2 or higher
-- WordPress 6.8 or higher
-- Composer (for development and testing)
+- Plugin runtime: PHP 8.2 or higher and WordPress 6.8 or higher
+- Development tools: Composer and a PHP version that satisfies `composer.lock`
 
 ### Set Up the Development Environment
 
@@ -162,3 +185,5 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each release.
 ## Support
 
 For support, please open an issue in the GitHub repository or contact us at [support@enginescript.com](mailto:support@enginescript.com).
+
+Report suspected vulnerabilities privately using [SECURITY.md](SECURITY.md).

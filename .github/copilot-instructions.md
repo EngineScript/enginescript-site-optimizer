@@ -21,6 +21,7 @@ applyTo: '**'
 
 ## Testing Instructions
 
+- Run plugin and automation suites on fresh GitHub runners using the existing workflows. Use local static checks for feedback; do not provision a local WordPress suite as a substitute for exact-commit CI evidence. See `CONTRIBUTING.md` for unit/native discovery and pending manual checks.
 - Prefer repo scripts first: `composer test`, `composer check-all`, `npm test`, `npm run lint`, `npm run build`, `pytest`, `tox`, `nox`, or `bundle exec rspec`.
 - For PHP fallback checks, use relevant tools from: `parallel-lint`, `phpcs`, `phpcbf`, `php-cs-fixer`, `phpmd`, `pdepend`, `phpmetrics`, `phpstan`, `psalm`, `phpunit`, and `wp`.
 - For JavaScript, HTML, CSS, and Markdown fallback checks, use relevant tools from: `eslint`, `jest`, `vitest`, `prettier`, `stylelint`, `htmlhint`, `html-validate`, `markdownlint-cli2`, `cspell`, `codespell`, `playwright`, `tsc`, `tsx`, `pa11y`, `svgo`, `sass`, `postcss`, `autoprefixer`, `http-server`, `jscpd`, `depcruise`, `nyc`, and `jsdoc`.

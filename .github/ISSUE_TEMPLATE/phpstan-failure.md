@@ -26,7 +26,7 @@ If PHPStan ran and reported findings, they could indicate:
 
 - Type safety issues specific to WordPress APIs
 - Potential bugs or inconsistencies in WordPress plugin code
-- WordPress coding standard violations
+- Incorrect return types, argument types or array shapes
 - Incorrect usage of WordPress functions or hooks
 
 ### Next Steps

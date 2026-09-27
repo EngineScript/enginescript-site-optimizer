@@ -4,14 +4,14 @@ Thank you for considering contributing to EngineScript Site Optimizer! This docu
 
 ## Code of Conduct
 
-This project follows the [WordPress Community Code of Conduct](https://make.wordpress.org/handbook/community-code-of-conduct/). By participating, you're expected to uphold this code.
+Please follow the project's [Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
 ## Development Environment
 
 ### Requirements
 
-- **PHP**: 8.2 or higher
-- **WordPress**: 6.8 or higher
+- **Plugin runtime**: PHP 8.2 or higher and WordPress 6.8 or higher
+- **Development PHP**: A version satisfying `composer.lock`; the current lock was validated with PHP 8.5.6
 - **Composer**: For dependency management
 - **Git**: For version control
 
@@ -28,7 +28,7 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 3. Install dependencies:
 
    ```bash
-   composer install
+   composer install --no-interaction --prefer-dist
    ```
 
 4. Create a feature branch:
@@ -109,6 +109,7 @@ external-plugin and deployment-scale checks need separate recorded results.
 ```text
 enginescript-site-optimizer/
 |-- enginescript-site-optimizer.php    # Main plugin file
+|-- uninstall.php                      # Site and multisite settings cleanup
 |-- includes/                          # Plugin source files
 |-- README.md                          # Project documentation
 |-- readme.txt                         # WordPress.org readme
@@ -116,13 +117,20 @@ enginescript-site-optimizer/
 |-- CONTRIBUTING.md                    # This file
 |-- LICENSE                            # GPL license
 |-- composer.json                      # PHP dependencies
+|-- composer.lock                      # Locked development dependencies
 |-- phpcs.xml                          # PHPCS configuration
 |-- phpstan.neon                       # PHPStan configuration
 |-- phpmd.xml                          # PHPMD configuration
+|-- psalm.xml                          # Psalm configuration
+|-- phpunit.xml                        # Isolated unit-suite configuration
+|-- tests/                             # Unit bootstrap and tests
+|-- stubs/                             # Static-analysis bootstrap declarations
 |-- languages/                         # Translation files
 |   `-- enginescript-site-optimizer.pot
-`-- .github/                           # GitHub workflows
-    `-- workflows/
+`-- .github/
+    |-- scripts/                       # Package/metadata checks and automation fixtures
+    |-- ISSUE_TEMPLATE/                # Failure-report templates
+    `-- workflows/                     # Quality gates and generated native tests
 ```
 
 ## Making Changes
@@ -139,7 +147,7 @@ enginescript-site-optimizer/
 
 - **Input Validation**: Validate all user inputs
 - **Output Escaping**: Use `esc_html()`, `esc_attr()`, `esc_url()` as appropriate
-- **Sanitization**: Use `sanitize_text_field()`, `sanitize_textarea_field()`, etc.
+- **Sanitization**: Choose helpers for the input's contract. Validate resource-hint URL text before lossy normalization; use the existing domain helpers.
 - **Nonce Verification**: Protect forms with WordPress nonces
 - **Capability Checks**: Verify user permissions with `current_user_can()`
 
@@ -154,13 +162,13 @@ enginescript-site-optimizer/
 
 ```php
 /**
- * Example function with proper documentation
+ * Return escaped plain text for an HTML text node.
  *
- * @since 1.5.13
+ * @since Unreleased
  * @param string $input User input to process.
- * @return string Sanitized output.
+ * @return string Escaped text, or an empty string without permission.
  */
-function es_optimizer_example_function( $input ) {
+function es_optimizer_example_function( string $input ): string {
     // Security: Validate and sanitize input.
     if ( ! current_user_can( 'manage_options' ) ) {
         return '';
@@ -176,20 +184,21 @@ function es_optimizer_example_function( $input ) {
 
 ### Testing
 
-1. **Manual Testing**:
-   - Test in WordPress 6.8+ and the latest version
-   - Test with PHP 8.2 and 8.3+
-   - Verify admin interface functionality
-   - Check frontend optimizations
+1. **Manual Testing in an approved environment**:
+   - Record the exact source commit, PHP/WordPress versions, theme and relevant plugins
+   - Check settings saves, permission/nonce failures and rendered notices
+   - Check frontend, admin, editor and embed behavior in separate complete requests
+   - Check separate multisite settings and lifecycle behavior, including failure paths
+   - Record browser/accessibility results and any checks still pending
 
 2. **Automated Testing**:
    - Run PHPCS for coding standards
    - Run PHPStan for static analysis
-   - Ensure CI/CD tests pass
+   - Link GitHub results and artifacts for the exact source commit; distinguish setup failures from failed assertions
 
 ### Performance Guidelines
 
-1. **Option Caching**: Use the plugin's `es_optimizer_get_options()` function
+1. **Option Caching**: Use `es_optimizer_get_options()`; WordPress owns the current site's option cache
 2. **Conditional Loading**: Only load assets when needed
 3. **Database Queries**: Minimize and optimize database interactions
 4. **Hook Priority**: Use appropriate hook priorities
@@ -255,22 +264,26 @@ style: fix PHPCS formatting violations
 - [ ] Code follows WordPress coding standards
 - [ ] All functions have proper PHPDoc documentation
 - [ ] Security best practices implemented
-- [ ] PHPCS and PHPStan checks pass
-- [ ] Manual testing completed
+- [ ] Applicable static checks pass and exact-commit GitHub results are linked
+- [ ] Applicable manual checks are recorded, including any pending work
 - [ ] Documentation updated if needed
-- [ ] CHANGELOG.md updated
+- [ ] Main plugin changes are recorded in both `CHANGELOG.md` and the `readme.txt` changelog
+
+Changes limited to `.github/`, `tests/`, `stubs/`, `.private/` or `languages/`
+do not require changelog entries.
 
 ## Version Management
 
 ### Updating Versions
 
-When releasing new versions, update these files:
+Change version numbers only for an explicitly requested release. Keep these
+surfaces synchronized and move the paired Unreleased entries into the release:
 
-- `enginescript-site-optimizer.php` (plugin header)
-- `README.md`
-- `readme.txt`
-- `CHANGELOG.md`
-- `languages/enginescript-site-optimizer.pot`
+- `enginescript-site-optimizer.php` (plugin header and `ES_SITE_OPTIMIZER_VERSION`)
+- `README.md` (version badge and download link)
+- `readme.txt` (stable tag and changelog)
+- `CHANGELOG.md` (release heading and entries)
+- `languages/enginescript-site-optimizer.pot` (project version)
 
 ### Semantic Versioning
 

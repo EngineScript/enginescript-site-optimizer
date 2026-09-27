@@ -51,9 +51,9 @@ function es_optimizer_get_default_options(): array {
 			array(
 				'https://fonts.googleapis.com',
 				'https://fonts.gstatic.com',
-				'https://s.w.org',
+				'https://s.w.org', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Preconnect origin only; no remote asset is loaded.
 				'https://wordpress.com',
-				'https://cdnjs.cloudflare.com',
+				'https://cdnjs.cloudflare.com', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Preconnect origin only; no remote asset is loaded.
 				'https://www.googletagmanager.com',
 			)
 		),

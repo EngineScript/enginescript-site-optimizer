@@ -10,70 +10,32 @@ The VIP coding-standards job failed. Inspect the failure stage and original chec
 
 **Failure stage:** `{{ env.FAILURE_STAGE }}`
 
-**PHP Version:** {{ env.PHP_VERSION }}
-**Run ID:** {{ env.RUN_ID }}
-**Workflow:** [View Failed Run]({{ env.WORKFLOW_URL }})
+### Details
 
-### Issue Description
+- **PHP Version:** {{ env.PHP_VERSION }}
+- **Run ID:** {{ env.RUN_ID }}
+- **Workflow:** [View Failed Run]({{ env.WORKFLOW_URL }})
+- **Standards Used:** Generated WordPress-VIP-Go ruleset
 
-If the VIP scan ran, its output concerns enterprise-level WordPress VIP requirements. Otherwise, resolve the failed prerequisite first.
+### Scope
 
-### VIP Standards Focus Areas
-
-The WordPress VIP Go coding standards check for:
-
-🏢 **Enterprise Platform Requirements:**
-
-- File system operation restrictions (VIP platform limitations)
-- Performance and caching best practices for high-traffic sites
-- Security vulnerabilities specific to enterprise WordPress environments
-- User experience guidelines for enterprise-level WordPress
-
-🚀 **Performance & Caching:**
-
-- Uncached function usage patterns
-- Database query optimization
-- Remote data fetching best practices
-- Resource-heavy operation detection
-
-🔒 **VIP-Specific Security:**
-
-- File operation security in restricted environments
-- Admin bar removal restrictions for VIP support users
-- Cookie and caching constraint validations
-- Restricted function usage for platform stability
-
-### Important Notes
-
-⚠️ **VIP Standards Context:**
-
-- Many VIP standards are specific to the WordPress VIP hosting platform
-- Not all VIP recommendations may apply to standard WordPress installations
-- Some restrictions are platform-specific (e.g., file system limitations)
-- This scan helps ensure compatibility with enterprise WordPress environments
+The workflow generates a VIP ruleset for the six optimizer production PHP files.
+Inspect that ruleset, its documented exclusions and the resolved VIPCS version
+when diagnosing a finding. Passing this configured coding-standards scan does
+not establish acceptance for a particular hosting environment.
 
 ### Next Steps
 
-1. **Review the workflow logs** to identify specific VIP standard violations
-2. **Evaluate applicability** - determine which issues apply to your hosting environment
-3. **Prioritize fixes** based on your deployment target:
-   - **High Priority:** Security and performance issues
-   - **Medium Priority:** General code quality improvements
-   - **Low Priority:** VIP platform-specific restrictions (if not targeting VIP)
-4. **Update code** to address applicable VIP standard violations
-5. **Re-run the workflow** to verify fixes
+1. Resolve setup failures before attributing the failure to a coding rule
+2. Record the specific rule, source location and exact-commit diagnostic artifact
+3. Fix the demonstrated issue while retaining the mandatory VIP gate
+4. Document the rationale and obtain review for any proposed rule exception
+5. Re-run the preserved GitHub job and link its result
 
 ### Resources
 
-- [WordPress VIP Code Quality Standards](https://docs.wpvip.com/technical-references/code-quality-and-best-practices/)
-- [VIP Coding Standards GitHub](https://github.com/Automattic/VIP-Coding-Standards)
-- [WordPress VIP Platform Documentation](https://docs.wpvip.com/)
-- [VIP Go File System Documentation](https://docs.wpvip.com/technical-references/vip-go-files-system/)
+- [VIP Coding Standards source](https://github.com/Automattic/VIP-Coding-Standards)
+- [WordPress VIP documentation](https://docs.wpvip.com/)
 
-### Workflow Information
-
-**Failed Workflow Run:** [View Details]({{ env.WORKFLOW_URL }})
-**PHP Version Tested:** {{ env.PHP_VERSION }}
-**Standards Used:** WordPress-VIP-Go ruleset
-
-This issue was automatically created when the WordPress VIP coding standards check failed. Please review the specific violations in the workflow logs and address them according to your project's deployment requirements.
+This report describes the configured coding-standards job; it does not authorize
+skipping checks based on a different deployment target.

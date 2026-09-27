@@ -1,14 +1,16 @@
 ---
 name: "PHPUnit Test Failure"
-about: "Automated issue created when PHPUnit tests fail"
+about: "Manual report for PHPUnit test failures"
 title: "PHPUnit Test Failure on PHP {{ env.PHP_VERSION }}"
-labels: bug, testing, phpunit, automated
+labels: bug, testing, phpunit
 assignees: []
 ---
 
 ## PHPUnit Test Failure
 
-The automated PHPUnit test suite has failed in the EngineScript Site Optimizer plugin.
+Use this retained template for a manual PHPUnit failure report. The current
+matrix workflow uses `wp-version-test-failure.md`; it does not invoke this file.
+Replace the placeholders with the actual failed step and run details.
 
 ### Details
 

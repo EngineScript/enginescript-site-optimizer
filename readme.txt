@@ -34,16 +34,40 @@ Key features:
 
 = Will this plugin break my site? =
 
-The optimizations are carefully selected to be safe for most sites. You can enable or disable specific optimizations as needed.
+Compatibility depends on the features your theme and plugins use. All feature toggles start disabled. Enable options one at a time and check the affected pages, editor and admin screens.
 
 = Do I need technical knowledge to use this plugin? =
 
 No, the plugin has a simple interface where you can toggle features on and off.
 
+= Are settings shared across multisite? =
+
+Each site has separate settings. Network activation does not create shared network settings.
+
+= What can I enter in a resource hint list? =
+
+Enter one HTTPS origin per line, such as https://cdn.example.com. Paths other than a trailing slash, query strings, fragments and credentials are rejected. Preconnect accepts an omitted port or port 443. DNS prefetch uses only the hostname, even if an accepted entry includes a port.
+
+Each list allows 32,768 bytes in total, 100 nonblank lines and 512 bytes per nonblank line, before trimming or removing duplicates and invalid entries. Empty or ASCII-space-only lines are blank.
+
+Saving a blank list clears it. Within the limits, invalid entries are omitted; an entirely invalid list is saved empty. A malformed or oversized submission retains the previous list. Oversized saved lists produce no plugin hints until corrected. Legacy custom-port preconnect entries are skipped without rewriting their saved text until an explicit save.
+
+Validation rejects IP literals, localhost and configured reserved hostname suffixes. It does not resolve DNS or verify that a hostname resolves to a public address. Use hints for origins your pages need and measure their effect; browsers decide whether to use them.
+
+= What happens when I deactivate or delete the plugin? =
+
+Deactivation retains settings. Deleting the plugin through WordPress runs uninstall cleanup, including separate site settings across multisite networks. Pause site creation and settings changes during removal. Large installations may need an operator-run uninstall with sufficient time and memory. If cleanup fails, resolve the reported problem and retry removal.
+
+= Does hiding the WordPress version fix security issues? =
+
+No. The option removes WordPress's generator output from the page head; other version indicators can remain. Keep WordPress, themes and plugins updated.
+
 
 == Changelog ==
 
 = Unreleased =
+* Document three resource-hint URL false positives for Plugin Check with line-specific exceptions; resource-hint behavior is unchanged.
+* Document per-site settings, domain-list limits and uninstall requirements; align contributor guidance and quality-check claims with the repository.
 * Correct optimizer packaging and isolate unit/native CI discovery, retaining the existing quality gates and dependency lanes.
 * Clarify settings help and Jetpack promotion labels without changing feature behavior or validation rules.
 * Refresh the translation template from all production PHP, including uninstall messages, and declare the bundled language directory.

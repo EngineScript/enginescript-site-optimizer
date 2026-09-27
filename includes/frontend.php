@@ -80,7 +80,7 @@ function es_optimizer_disable_emojis_remove_dns_prefetch( array $urls, string $r
 		return $urls;
 	}
 
-	$emoji_svg_url = apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2/svg/' );
+	$emoji_svg_url = apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2/svg/' ); // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Identify the emoji host to remove its DNS hint; no remote asset is loaded.
 
 	if ( ! is_string( $emoji_svg_url ) ) {
 		return $urls;

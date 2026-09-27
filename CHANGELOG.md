@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Document three resource-hint URL false positives for Plugin Check with line-specific exceptions; resource-hint behavior is unchanged.
 - Correct optimizer packaging and isolate unit/native CI discovery, retaining the existing quality gates and dependency lanes.
 
 - Limit domain-list work and retain previous values for oversize submissions; skip oversize saved lists without changing their stored text.
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Document per-site settings, domain-list limits and uninstall requirements; align contributor guidance and quality-check claims with the repository.
 - Clarify settings help and Jetpack promotion labels without changing feature behavior or validation rules.
 - Refresh the translation template from all production PHP, including uninstall messages, and declare the bundled language directory.
 - Explain domain-list byte and line limits and show associated guidance for oversize saved lists.
