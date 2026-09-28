@@ -40,7 +40,7 @@ function es_optimizer_disable_emojis(): void {
 /**
  * Remove admin emoji output after WordPress has registered its admin callbacks.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @return void
  */
 function es_optimizer_disable_admin_emojis(): void {
@@ -108,7 +108,7 @@ function es_optimizer_disable_emojis_remove_dns_prefetch( array $urls, string $r
  * Accepts absolute, scheme-relative and bare host forms for matching only.
  * This does not relax the stricter policy for administrator-supplied origins.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param string $url Existing URL or hostname to compare.
  * @return string Lowercase hostname, or an empty string for an unsupported value.
  */
@@ -201,7 +201,7 @@ function es_optimizer_remove_recent_comments_style(): void {
 /**
  * Apply the current site's recent-comment style policy when the filter runs.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param mixed $show_style Incoming value from WordPress or another plugin.
  * @return mixed False when disabled; otherwise the original value.
  */
@@ -295,7 +295,7 @@ function es_optimizer_resource_hint_exists( array $urls, string $href ): bool {
  * Callers build this set once, then add each new href as they append a hint.
  * The domain-list budget bounds plugin additions; foreign input is not truncated.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param array<int|string, mixed> $urls Existing resource hints.
  * @return array<int|string, true> Exact string href membership set.
  */
@@ -327,7 +327,7 @@ function es_optimizer_disable_jetpack_ads(): void {
 /**
  * Apply the current site's policy to the three existing Jetpack filters.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param mixed $show_promotion Incoming value from Jetpack or another plugin.
  * @return mixed False when disabled; otherwise the original value.
  */
@@ -347,7 +347,7 @@ function es_optimizer_disable_post_via_email(): void {
 /**
  * Apply the current site's post-via-email policy when the filter runs.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param mixed $enabled Incoming value from WordPress or another plugin.
  * @return mixed False when disabled; otherwise the original value.
  */

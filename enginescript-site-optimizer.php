@@ -3,7 +3,7 @@
  * Plugin Name: EngineScript Site Optimizer
  * Plugin URI: https://github.com/EngineScript/enginescript-site-optimizer
  * Description: Configure optional WordPress features and resource hints.
- * Version: 2.1.0
+ * Version: 2.2.0
  * Author: EngineScript
  * License: GPL-3.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin version.
 if ( ! defined( 'ES_SITE_OPTIMIZER_VERSION' ) ) {
-	define( 'ES_SITE_OPTIMIZER_VERSION', '2.1.0' );
+	define( 'ES_SITE_OPTIMIZER_VERSION', '2.2.0' );
 }
 
 if ( ! defined( 'ES_SITE_OPTIMIZER_FILE' ) ) {

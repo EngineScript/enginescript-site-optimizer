@@ -1331,7 +1331,7 @@ jobs:
               /**
                * Load uninstall helpers after PHPUnit publishes WordPress globals.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public static function set_up_before_class() {
@@ -1346,7 +1346,7 @@ jobs:
               /**
                * Reset native state for each regression.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function set_up() {
@@ -1381,7 +1381,7 @@ jobs:
               /**
                * Require the dedicated multisite invocation.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               private function require_multisite(): void {
@@ -1393,7 +1393,7 @@ jobs:
               /**
                * Native bootstrap mode and optimizer hooks.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_native_bootstrap_mode_and_optimizer_hooks(): void {
@@ -1413,7 +1413,7 @@ jobs:
               /**
                * Virtual defaults activation and deactivation.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_virtual_defaults_activation_and_deactivation(): void {
@@ -1432,7 +1432,7 @@ jobs:
               /**
                * Native add update delete without manual refresh.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_native_add_update_delete_without_manual_refresh(): void {
@@ -1451,7 +1451,7 @@ jobs:
               /**
                * Setting registration and rest exclusion.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_setting_registration_and_rest_exclusion(): void {
@@ -1466,7 +1466,7 @@ jobs:
               /**
                * Native first insert safe notice and blank save.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_native_first_insert_safe_notice_and_blank_save(): void {
@@ -1484,7 +1484,7 @@ jobs:
               /**
                * Native invalid fields and budgets preserve prior field.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_native_invalid_fields_and_budgets_preserve_prior_field(): void {
@@ -1501,7 +1501,7 @@ jobs:
               /**
                * Raw boundary and canonical origin cases.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_raw_boundary_and_canonical_origin_cases(): void {
@@ -1524,7 +1524,7 @@ jobs:
               /**
                * Notice storage dedup and foreign success.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_notice_storage_dedup_and_foreign_success(): void {
@@ -1558,7 +1558,7 @@ jobs:
               /**
                * Settings page capability and native form contract.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_settings_page_capability_and_native_form_contract(): void {
@@ -1599,7 +1599,7 @@ jobs:
               /**
                * Core emitted hint html and legacy preservation.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_core_emitted_hint_html_and_legacy_preservation(): void {
@@ -1623,7 +1623,7 @@ jobs:
               /**
                * Mixed foreign hints and repeated callbacks.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_mixed_foreign_hints_and_repeated_callbacks(): void {
@@ -1637,7 +1637,7 @@ jobs:
               /**
                * Oversize legacy read and retired key.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_oversize_legacy_read_and_retired_key(): void {
@@ -1653,7 +1653,7 @@ jobs:
               /**
                * Native emoji filters off on and admin embed hooks.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_native_emoji_filters_off_on_and_admin_embed_hooks(): void {
@@ -1675,7 +1675,7 @@ jobs:
               /**
                * Jquery header and live external filter contracts.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_jquery_header_and_live_external_filter_contracts(): void {
@@ -1705,7 +1705,7 @@ jobs:
               /**
                * Multisite values and live filters a b a.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_multisite_values_and_live_filters_a_b_a(): void {
@@ -1731,7 +1731,7 @@ jobs:
               /**
                * Uninstall fixed key physical absence and idempotence.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_uninstall_fixed_key_physical_absence_and_idempotence(): void {
@@ -1747,7 +1747,7 @@ jobs:
               /**
                * Uninstall stale notoptions cannot prove absence.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_uninstall_stale_notoptions_cannot_prove_absence(): void {
@@ -1775,7 +1775,7 @@ jobs:
               /**
                * Uninstall failed delete detected and suppression restored.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_uninstall_failed_delete_detected_and_suppression_restored(): void {
@@ -1807,7 +1807,7 @@ jobs:
               /**
                * Multisite cleanup restores nested context and other site.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_multisite_cleanup_restores_nested_context_and_other_site(): void {
@@ -1835,7 +1835,7 @@ jobs:
               /**
                * Multisite cleanup hook failure restores context.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_multisite_cleanup_hook_failure_restores_context(): void {
@@ -1863,7 +1863,7 @@ jobs:
               /**
                * Site cursor pages are physical and bounded.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_site_cursor_pages_are_physical_and_bounded(): void {
@@ -1890,7 +1890,7 @@ jobs:
               /**
                * Measured hint callback budget.
                *
-               * @since Unreleased
+               * @since 2.2.0
                * @return void
                */
               public function test_measured_hint_callback_budget(): void {

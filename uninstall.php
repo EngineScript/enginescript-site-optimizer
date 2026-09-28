@@ -18,7 +18,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 /**
  * Validate a site ID returned by a checked database read.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param mixed $site_id Database site ID.
  * @return int Positive site ID.
  * @throws RuntimeException If the database value is not a positive integer.
@@ -40,7 +40,7 @@ function es_optimizer_uninstall_validate_site_id( mixed $site_id ): int {
 /**
  * Read the highest existing site ID without the site-query cache.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @return int Highest site ID, or zero for an empty directory.
  * @throws RuntimeException If the query fails or returns an unexpected result.
  */
@@ -66,7 +66,7 @@ function es_optimizer_uninstall_get_site_limit(): int {
 /**
  * Read a bounded, strictly ordered page of site IDs.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param int $last_id    Last successfully processed site ID.
  * @param int $maximum_id Highest site ID at the start of this uninstall.
  * @return array<int, int> At most 100 ascending site IDs.
@@ -113,7 +113,7 @@ function es_optimizer_uninstall_get_site_ids( int $last_id, int $maximum_id ): a
 /**
  * Delete and physically verify the current site's fixed option.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @return void
  * @throws RuntimeException If the site changes, verification fails or the row remains.
  */
@@ -141,7 +141,7 @@ function es_optimizer_uninstall_current_site_options(): void {
 /**
  * Restore only the site-switch frames acquired by this uninstall operation.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param array{site_id: int, stack: array<int, int>, switched: bool} $context Original site context.
  * @return void
  * @throws RuntimeException If context cannot be restored without additional switching.
@@ -174,7 +174,7 @@ function es_optimizer_uninstall_restore_context( array $context ): void {
 /**
  * Clean one site and restore context even when a switch or deletion hook throws.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param int $site_id Site to clean.
  * @return void
  * @throws RuntimeException If switching or context restoration fails.
@@ -210,7 +210,7 @@ function es_optimizer_uninstall_site_options( int $site_id ): void {
 /**
  * Clean every site's option across all networks using an ID cursor.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @return void
  * @throws RuntimeException If cleanup fails or the directory grows during removal.
  */
@@ -239,7 +239,7 @@ function es_optimizer_uninstall_network_options(): void {
 /**
  * Run native deletion with private database diagnostics and checked reads.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @return void
  */
 function es_optimizer_uninstall_options(): void {

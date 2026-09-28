@@ -244,7 +244,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Raw bytes must not be normalized into a different accepted origin.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_encoded_and_control_input_is_rejected_without_disclosure(): void {
@@ -259,7 +259,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Preconnect has a stricter port policy than the shared origin validator.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_context_port_policy(): void {
@@ -271,7 +271,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Exact budgets pass; one byte or nonblank line over the limit fails.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_raw_budget_boundaries_before_normalization(): void {
@@ -287,7 +287,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Malformed and oversize submissions preserve only the affected prior field.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_malformed_missing_and_oversize_fields_preserve_prior_values(): void {
@@ -308,7 +308,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Warning samples contain reasons and counts without rejected URL secrets.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_safe_bounded_warning_preserves_foreign_notices(): void {
@@ -329,7 +329,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Old unsupported or oversized rows are not rewritten by hint reads.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_legacy_rows_are_retained_but_not_emitted(): void {
@@ -346,7 +346,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Mixed foreign hints remain untouched and repeated calls do not duplicate.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @return void
 	 */
 	public function test_foreign_hint_shapes_and_exact_membership(): void {

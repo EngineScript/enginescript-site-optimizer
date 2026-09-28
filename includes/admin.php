@@ -203,7 +203,7 @@ function es_optimizer_get_additional_settings_fields(): array {
 /**
  * Describe the finite domain-list policy shared by both textarea controls.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @return string Localized plain-text instructions.
  */
 function es_optimizer_get_domain_list_limits_description(): string {

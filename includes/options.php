@@ -12,21 +12,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Maximum raw bytes in one submitted or stored domain list.
  *
- * @since Unreleased
+ * @since 2.2.0
  */
 const ES_SITE_OPTIMIZER_MAX_DOMAIN_LIST_BYTES = 32768;
 
 /**
  * Maximum nonblank lines before domain validation or deduplication.
  *
- * @since Unreleased
+ * @since 2.2.0
  */
 const ES_SITE_OPTIMIZER_MAX_DOMAIN_LINES = 100;
 
 /**
  * Maximum raw bytes in each nonblank domain line.
  *
- * @since Unreleased
+ * @since 2.2.0
  */
 const ES_SITE_OPTIMIZER_MAX_DOMAIN_LINE_BYTES = 512;
 
@@ -274,7 +274,7 @@ function es_optimizer_validate_domain_list( string $domains_input, string $conte
  * Empty and ASCII-space-only lines are blank. Duplicates and invalid nonblank
  * lines count before deduplication. No caller may partially use an oversized list.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param string $domains_input Original submitted or stored domain text.
  * @return string Safe localized reason, or an empty string when within budget.
  */
@@ -327,7 +327,7 @@ function es_optimizer_get_domain_list_budget_error( string $domains_input ): str
 /**
  * Validate one raw origin and apply the policy of its resource-hint context.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param string $domain  Original origin text.
  * @param string $context Either 'preconnect' or 'dns_prefetch'.
  * @return array{valid: bool, domain: string, error: string} Validation result.
@@ -394,7 +394,7 @@ function es_optimizer_show_rejection_notice( array $rejected_domains, string $co
  * Read the existing collection only. The native getter can consume the saved
  * redirect transient, which must remain owned by the normal Settings wrapper.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @global mixed $wp_settings_errors Settings API notices registered in this request.
  * @param string $code    Fixed plugin warning code.
  * @param string $message Escaped message containing only safe diagnostic text.
@@ -471,7 +471,7 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 /**
  * Check original domain text before parsing or normalization can remove bytes.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param string $domain Original domain input.
  * @return bool Whether the input contains a forbidden character.
  */
@@ -559,7 +559,7 @@ function es_optimizer_get_domain_validation_error( string $error ): array {
  *
  * The shared validator removes explicit port 443, so any remaining port is custom.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param string $domain  Canonical HTTPS origin from the single-domain validator.
  * @param string $context Either 'preconnect' or 'dns_prefetch'.
  * @return bool Whether the origin is supported in this context.
@@ -571,7 +571,7 @@ function es_optimizer_is_domain_allowed_for_context( string $domain, string $con
 /**
  * Detect saved custom-port origins without modifying their stored or displayed text.
  *
- * @since Unreleased
+ * @since 2.2.0
  * @param string $domains_input Saved preconnect list.
  * @return bool Whether a valid origin has a port unsupported by preconnect.
  */

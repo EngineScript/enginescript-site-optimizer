@@ -5,11 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [2.2.0] - 2026-09-27
+
 ### Fixed
 
+- Correct native CI notice assertions, multisite bootstrap timing and post-by-email filter expectations.
+- Use system executable paths in automation helpers and add regression checks for executable substitution through PATH.
 - Document three resource-hint URL false positives for Plugin Check with line-specific exceptions; resource-hint behavior is unchanged.
 - Correct optimizer packaging and isolate unit/native CI discovery, retaining the existing quality gates and dependency lanes.
-
 - Limit domain-list work and retain previous values for oversize submissions; skip oversize saved lists without changing their stored text.
 - Report rejected-line totals with at most three safe samples and avoid duplicate plugin warnings during repeated validation.
 - Build exact resource-hint membership once per callback, preserving foreign entries without unsafe value conversions.
@@ -23,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Split package validation and automation tests into focused functions while retaining all invalid-package cases.
+- Align the WordPress Tested up to metadata at 7.1.
 - Document per-site settings, domain-list limits and uninstall requirements; align contributor guidance and quality-check claims with the repository.
 - Clarify settings help and Jetpack promotion labels without changing feature behavior or validation rules.
 - Refresh the translation template from all production PHP, including uninstall messages, and declare the bundled language directory.
@@ -30,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retire the obsolete Windows Live Writer manifest setting; ignore its old key on reads and omit it on a normal save.
 - Clarify HTTPS port requirements, hostname-only DNS prefetch behavior, and invalid-list save behavior in settings help.
 - Restore optimizer package, analyzer and contributor-guidance targets while preserving locked dependency versions.
-
 - **Code Quality**: Replaced PHP-native IP validation with WordPress native IP validation for resource hint host checks
 
 ## [2.1.0] - 2026-06-10

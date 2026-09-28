@@ -3,7 +3,7 @@ Contributors: enginescript
 Tags: optimization, performance, cleanup
 Requires at least: 6.8
 Tested up to: 7.1
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 Requires PHP: 8.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -65,7 +65,11 @@ No. The option removes WordPress's generator output from the page head; other ve
 
 == Changelog ==
 
-= Unreleased =
+= 2.2.0 - 2026-09-27 =
+* Correct native CI notice assertions, multisite bootstrap timing and post-by-email filter expectations.
+* Use system executable paths in automation helpers and add regression checks for executable substitution through PATH.
+* Split package validation and automation tests into focused functions while retaining all invalid-package cases.
+* Align the WordPress Tested up to metadata at 7.1.
 * Document three resource-hint URL false positives for Plugin Check with line-specific exceptions; resource-hint behavior is unchanged.
 * Document per-site settings, domain-list limits and uninstall requirements; align contributor guidance and quality-check claims with the repository.
 * Correct optimizer packaging and isolate unit/native CI discovery, retaining the existing quality gates and dependency lanes.
@@ -261,6 +265,9 @@ No. The option removes WordPress's generator output from the page head; other ve
 * Improved documentation and code comments
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+Improves per-site settings, validation and multisite uninstall. Domain lists now have size limits; preconnect accepts HTTPS port 443 or no port. Oversized saved lists and legacy custom-port hints are skipped until corrected. Removes the obsolete Windows Live Writer setting.
 
 = 1.5.9 =
 REQUIREMENTS UPDATE: Updated minimum WordPress version to 6.5+. Added translation support and enhanced compliance.

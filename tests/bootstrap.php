@@ -427,7 +427,7 @@ if ( ! function_exists( '_n' ) ) {
 	/**
 	 * Select an English plural for isolated assertions, without loading a locale.
 	 *
-	 * @since Unreleased
+	 * @since 2.2.0
 	 * @param string $single Singular message.
 	 * @param string $plural Plural message.
 	 * @param int    $number Number.
