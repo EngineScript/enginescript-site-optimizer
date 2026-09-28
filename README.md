@@ -42,6 +42,10 @@ separately; network activation does not create shared network settings.
 
 ### Resource Hint Lists
 
+Preconnect and DNS Prefetch lists start empty. Optional domain suggestions appear
+as selectable text below each field. Copy only the domains your site uses, enable
+the setting and save. Existing saved lists are preserved.
+
 Enter one HTTPS origin per line, such as `https://cdn.example.com`. Paths other
 than a trailing slash, query strings, fragments and credentials are rejected.
 Preconnect accepts an omitted port or port 443. DNS prefetch uses only the

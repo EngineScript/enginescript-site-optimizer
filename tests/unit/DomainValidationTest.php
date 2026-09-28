@@ -190,6 +190,26 @@ final class DomainValidationTest extends TestCase {
 	}
 
 	/**
+	 * Enabling hints without choosing domains preserves only incoming hints.
+	 *
+	 * @since Unreleased
+	 * @return void
+	 */
+	public function test_resource_hint_lists_require_explicit_domains(): void {
+		$defaults = es_optimizer_get_options();
+		$this->assertSame( '', $defaults['preconnect_domains'] );
+		$this->assertSame( '', $defaults['dns_prefetch_domains'] );
+
+		update_option( 'es_optimizer_options', array( 'enable_preconnect' => 1, 'enable_dns_prefetch' => 1 ) );
+		$existing = array( 'https://existing.example.com' );
+
+		$this->assertSame( array(), es_optimizer_add_preconnect_resource_hints( array(), 'preconnect' ) );
+		$this->assertSame( array(), es_optimizer_add_dns_prefetch_resource_hints( array(), 'dns-prefetch' ) );
+		$this->assertSame( $existing, es_optimizer_add_preconnect_resource_hints( $existing, 'preconnect' ) );
+		$this->assertSame( $existing, es_optimizer_add_dns_prefetch_resource_hints( $existing, 'dns-prefetch' ) );
+	}
+
+	/**
 	 * Resource hints use the native WordPress wp_resource_hints filter contract.
 	 */
 	public function test_resource_hints_use_wordpress_filter_contract(): void {

@@ -1419,10 +1419,15 @@ jobs:
               public function test_virtual_defaults_activation_and_deactivation(): void {
                   es_optimizer_activate_plugin(is_multisite());
                   $this->assertSame(es_optimizer_get_default_options(), es_optimizer_get_options());
+                  $this->assertSame('', es_optimizer_get_options()['preconnect_domains']);
+                  $this->assertSame('', es_optimizer_get_options()['dns_prefetch_domains']);
                   $this->assertSame(0, $this->option_rows());
                   $this->assertFalse(update_option('es_optimizer_options', es_optimizer_get_default_options()));
                   $this->assertSame(0, $this->option_rows());
-                  $saved = array_merge(es_optimizer_get_default_options(), array('preconnect_domains' => 'https://saved.example.com'));
+                  $saved = array_merge(es_optimizer_get_default_options(), array(
+                      'preconnect_domains' => 'https://fonts.googleapis.com',
+                      'dns_prefetch_domains' => 'https://adservice.google.com'
+                  ));
                   update_option('es_optimizer_options', $saved);
                   es_optimizer_deactivate_plugin(is_multisite());
                   $this->assertSame($saved, get_option('es_optimizer_options'));
@@ -1588,12 +1593,37 @@ jobs:
                   $nonce = $xpath->query('//input[@name="_wpnonce"]')->item(0)->getAttribute('value');
                   $this->assertNotFalse(wp_verify_nonce($nonce, 'es_optimizer_settings-options'));
                   $this->assertFalse(wp_verify_nonce($nonce, 'another-group-options'));
-                  foreach (array('preconnect_domains', 'dns_prefetch_domains') as $field) {
+                  $suggestions = array(
+                      'preconnect_domains' => "https://fonts.googleapis.com\nhttps://fonts.gstatic.com\nhttps://s.w.org\nhttps://wordpress.com\nhttps://cdnjs.cloudflare.com\nhttps://www.googletagmanager.com",
+                      'dns_prefetch_domains' => 'https://adservice.google.com'
+                  );
+                  foreach ($suggestions as $field => $suggested_domains) {
                       $id = 'es_optimizer_field_' . $field;
-                      $this->assertSame(1, $xpath->query('//textarea[@id="' . $id . '" and @aria-describedby="' . $id . '_description"]')->length);
-                      $this->assertSame(1, $xpath->query('//*[@id="' . $id . '_description"]')->length);
+                      $textarea = $xpath->query('//textarea[@id="' . $id . '" and @aria-describedby="' . $id . '_description"]');
+                      $this->assertSame(1, $textarea->length);
+                      $this->assertSame('', $textarea->item(0)->textContent);
+                      $description = $xpath->query('//textarea[@id="' . $id . '"]/following-sibling::div[1][@id="' . $id . '_description"]');
+                      $this->assertSame(1, $description->length);
+                      $this->assertStringContainsString('Optional suggestions:', $description->item(0)->textContent);
+                      $examples = $xpath->query('.//pre', $description->item(0));
+                      $this->assertSame(1, $examples->length);
+                      $this->assertSame($suggested_domains, $examples->item(0)->textContent);
                       $this->assertSame(1, $xpath->query('//label[@for="' . $id . '"]')->length);
                   }
+                  $this->assertSame(0, $this->option_rows());
+                  $saved = array_merge(es_optimizer_get_default_options(), array(
+                      'preconnect_domains' => 'https://saved.example.com',
+                      'dns_prefetch_domains' => 'https://dns.example.com'
+                  ));
+                  update_option('es_optimizer_options', $saved);
+                  foreach (array('preconnect_domains', 'dns_prefetch_domains') as $field) {
+                      ob_start();
+                      es_optimizer_render_textarea_field(array('label_for' => 'es_optimizer_field_' . $field));
+                      $field_html = ob_get_clean();
+                      $this->assertTrue($dom->loadHTML($field_html));
+                      $this->assertSame($saved[$field], $dom->getElementsByTagName('textarea')->item(0)->textContent);
+                  }
+                  $this->assertSame($saved, get_option('es_optimizer_options'));
               }
 
               /**

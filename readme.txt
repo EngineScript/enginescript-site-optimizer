@@ -46,6 +46,8 @@ Each site has separate settings. Network activation does not create shared netwo
 
 = What can I enter in a resource hint list? =
 
+Preconnect and DNS Prefetch lists start empty. Optional domain suggestions appear as selectable text below each field; copy only the domains your site uses, enable the setting and save. Existing saved lists are preserved.
+
 Enter one HTTPS origin per line, such as https://cdn.example.com. Paths other than a trailing slash, query strings, fragments and credentials are rejected. Preconnect accepts an omitted port or port 443. DNS prefetch uses only the hostname, even if an accepted entry includes a port.
 
 Each list allows 32,768 bytes in total, 100 nonblank lines and 512 bytes per nonblank line, before trimming or removing duplicates and invalid entries. Empty or ASCII-space-only lines are blank.
@@ -64,6 +66,9 @@ No. The option removes WordPress's generator output from the page head; other ve
 
 
 == Changelog ==
+
+= Unreleased =
+* Start Preconnect and DNS Prefetch lists empty and show optional, copyable domain suggestions below each field; preserve existing saved lists.
 
 = 2.2.0 - 2026-09-27 =
 * Correct native CI notice assertions, multisite bootstrap timing and post-by-email filter expectations.

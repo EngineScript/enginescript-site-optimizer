@@ -217,6 +217,28 @@ function es_optimizer_get_domain_list_limits_description(): string {
 }
 
 /**
+ * Get optional domain suggestions for display in settings help only.
+ *
+ * @since Unreleased
+ * @param string $option_name Domain-list option name.
+ * @return array<int, string> Suggested origins, never used as saved defaults.
+ */
+function es_optimizer_get_domain_suggestions( string $option_name ): array {
+	return match ( $option_name ) {
+		'preconnect_domains' => array(
+			'https://fonts.googleapis.com',
+			'https://fonts.gstatic.com',
+			'https://s.w.org', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Selectable help text only; no remote asset is loaded.
+			'https://wordpress.com',
+			'https://cdnjs.cloudflare.com', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Selectable help text only; no remote asset is loaded.
+			'https://www.googletagmanager.com',
+		),
+		'dns_prefetch_domains' => array( 'https://adservice.google.com' ),
+		default => array(),
+	};
+}
+
+/**
  * Build a checkbox settings field definition.
  *
  * @since 2.0.0
@@ -471,6 +493,7 @@ function es_optimizer_render_textarea_field( array $args ): void {
 	$description    = es_optimizer_get_field_description( $option_name );
 	$textarea_value = (string) ( $options[ $option_name ] ?? '' );
 	$budget_error   = es_optimizer_get_domain_list_budget_error( $textarea_value );
+	$suggestions    = es_optimizer_get_domain_suggestions( $option_name );
 
 	if ( '' !== $budget_error ) {
 		$description .= ' ' . $budget_error . ' ' . __( 'This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it.', 'enginescript-site-optimizer' );
@@ -478,8 +501,14 @@ function es_optimizer_render_textarea_field( array $args ): void {
 		$description .= ' ' . __( 'Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared.', 'enginescript-site-optimizer' );
 	}
 	?>
-	<p id="<?php echo esc_attr( $description_id ); ?>" class="description"><?php echo esc_html( $description ); ?></p>
 	<textarea id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" aria-describedby="<?php echo esc_attr( $description_id ); ?>" rows="5" cols="50" class="large-text code"><?php echo esc_textarea( $textarea_value ); ?></textarea>
+	<div id="<?php echo esc_attr( $description_id ); ?>" class="description">
+		<p><?php echo esc_html( $description ); ?></p>
+		<?php if ( array() !== $suggestions ) : ?>
+			<p><?php esc_html_e( 'Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints.', 'enginescript-site-optimizer' ); ?></p>
+			<pre><?php echo esc_html( implode( "\n", $suggestions ) ); ?></pre>
+		<?php endif; ?>
+	</div>
 	<?php
 }
 

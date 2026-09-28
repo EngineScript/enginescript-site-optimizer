@@ -46,19 +46,9 @@ function es_optimizer_get_default_options(): array {
 		'remove_shortlink'             => 0,
 		'remove_recent_comments_style' => 0,
 		'enable_preconnect'            => 0,
-		'preconnect_domains'           => implode(
-			"\n",
-			array(
-				'https://fonts.googleapis.com',
-				'https://fonts.gstatic.com',
-				'https://s.w.org', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Preconnect origin only; no remote asset is loaded.
-				'https://wordpress.com',
-				'https://cdnjs.cloudflare.com', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Preconnect origin only; no remote asset is loaded.
-				'https://www.googletagmanager.com',
-			)
-		),
+		'preconnect_domains'           => '',
 		'enable_dns_prefetch'          => 0,
-		'dns_prefetch_domains'         => 'https://adservice.google.com',
+		'dns_prefetch_domains'         => '',
 		'disable_jetpack_ads'          => 0,
 		'disable_post_via_email'       => 0,
 	);

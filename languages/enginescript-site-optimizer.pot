@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-20T23:11:46+00:00\n"
+"POT-Creation-Date: 2026-09-28T01:46:32+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -156,97 +156,101 @@ msgstr ""
 msgid "Limits: %1$d bytes per list, %2$d nonblank lines, and %3$d bytes per nonblank line. Duplicate and invalid lines count toward the limit. Oversize submissions keep your previous list."
 msgstr ""
 
-#: includes/admin.php:390
-#: includes/admin.php:409
+#: includes/admin.php:412
+#: includes/admin.php:431
 msgid "Site Optimizer Settings"
 msgstr ""
 
-#: includes/admin.php:391
+#: includes/admin.php:413
 msgid "Site Optimizer"
 msgstr ""
 
-#: includes/admin.php:405
+#: includes/admin.php:427
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: includes/admin.php:410
+#: includes/admin.php:432
 msgid "Select which optimizations you want to enable and customize the resource hint domains."
 msgstr ""
 
-#: includes/admin.php:416
+#: includes/admin.php:438
 msgid "Save Changes"
 msgstr ""
 
-#: includes/admin.php:422
+#: includes/admin.php:444
 msgid "This plugin is part of the EngineScript project."
 msgstr ""
 
-#: includes/admin.php:424
+#: includes/admin.php:446
 msgid "Visit the EngineScript GitHub page"
 msgstr ""
 
-#: includes/admin.php:476
+#: includes/admin.php:499
 msgid "This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it."
 msgstr ""
 
-#: includes/admin.php:478
+#: includes/admin.php:501
 msgid "Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared."
 msgstr ""
 
-#: includes/admin.php:494
+#: includes/admin.php:508
+msgid "Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints."
+msgstr ""
+
+#: includes/admin.php:523
 msgid "Settings"
 msgstr ""
 
-#: includes/options.php:174
+#: includes/options.php:164
 msgid "The submitted settings have an invalid format. Your previous settings were retained."
 msgstr ""
 
-#: includes/options.php:196
+#: includes/options.php:186
 msgid "Enter domains as text. Your previous list was retained."
 msgstr ""
 
-#: includes/options.php:221
+#: includes/options.php:211
 msgid "Your previous list was retained."
 msgstr ""
 
 #. translators: 1: Line number in the submitted domain list, 2: Validation reason without submitted text.
-#: includes/options.php:256
+#: includes/options.php:246
 #, php-format
 msgid "Line %1$d: %2$s"
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in one domain list.
-#: includes/options.php:285
+#: includes/options.php:275
 #, php-format
 msgid "Each domain list is limited to %d bytes."
 msgstr ""
 
-#: includes/options.php:293
+#: includes/options.php:283
 msgid "The domain list could not be read."
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in a nonblank domain line.
-#: includes/options.php:308
+#: includes/options.php:298
 #, php-format
 msgid "Each nonblank domain line is limited to %d bytes."
 msgstr ""
 
 #. translators: %d: Maximum nonblank lines allowed before removing duplicates or invalid domains.
-#: includes/options.php:318
+#: includes/options.php:308
 #, php-format
 msgid "Each domain list is limited to %d nonblank lines, including duplicates and invalid entries."
 msgstr ""
 
-#: includes/options.php:340
+#: includes/options.php:330
 msgid "Preconnect supports HTTPS port 443 only."
 msgstr ""
 
-#: includes/options.php:360
+#: includes/options.php:350
 msgid "..."
 msgstr ""
 
 #. translators: 1: Total number of rejected lines, 2: At most three safe reasons with line numbers.
-#: includes/options.php:366
+#: includes/options.php:356
 #, php-format
 msgid "%1$d line was rejected. %2$s"
 msgid_plural "%1$d lines were rejected. %2$s"
@@ -254,55 +258,55 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:375
+#: includes/options.php:365
 #, php-format
 msgid "The preconnect list could not be fully accepted: %s"
 msgstr ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:382
+#: includes/options.php:372
 #, php-format
 msgid "The DNS prefetch list could not be fully accepted: %s"
 msgstr ""
 
-#: includes/options.php:425
+#: includes/options.php:415
 msgid "Encoded characters, backslashes, markup, and control characters are not allowed."
 msgstr ""
 
-#: includes/options.php:432
+#: includes/options.php:422
 msgid "Empty domain."
 msgstr ""
 
-#: includes/options.php:438
-#: includes/options.php:461
+#: includes/options.php:428
+#: includes/options.php:451
 msgid "Invalid URL."
 msgstr ""
 
-#: includes/options.php:494
+#: includes/options.php:484
 msgid "HTTPS is required."
 msgstr ""
 
-#: includes/options.php:498
+#: includes/options.php:488
 msgid "No host found."
 msgstr ""
 
-#: includes/options.php:502
+#: includes/options.php:492
 msgid "File paths are not allowed; use domains only."
 msgstr ""
 
-#: includes/options.php:507
+#: includes/options.php:497
 msgid "Query parameters, fragments, and credentials are not allowed."
 msgstr ""
 
-#: includes/options.php:512
+#: includes/options.php:502
 msgid "Invalid port."
 msgstr ""
 
-#: includes/options.php:531
+#: includes/options.php:521
 msgid "IP addresses and private, local, or reserved hosts are not allowed."
 msgstr ""
 
-#: includes/options.php:536
+#: includes/options.php:526
 msgid "Invalid hostname."
 msgstr ""
 

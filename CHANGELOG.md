@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Start Preconnect and DNS Prefetch lists empty and show optional, copyable domain suggestions below each field; preserve existing saved lists.
+
 ## [2.2.0] - 2026-09-27
 
 ### Fixed
