@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""
-Standard-library regression fixtures, executed by GitHub's package-check job.
+"""Standard-library regression fixtures, executed by GitHub's package-check job.
 
 These fixtures do not bootstrap WordPress or replace workflow-generated PHP tests.
 All mutation is confined to a temporary fixture repository on the runner.
 Processes use system tools in /usr/bin on the Ubuntu runner/WSL target; PATH
-overrides select only the intentional curl/grep substitutes inside shell steps.
+overrides select only intentional command substitutes inside extracted shell steps.
 """
 
 from __future__ import annotations
@@ -45,6 +44,16 @@ def workflow_step(filename: str, name: str) -> str:
     section = (WORKFLOWS / filename).read_text().split(f"      - name: {name}\n", 1)[1]
     section = section.split("\n      - name:", 1)[0]
     return textwrap.dedent(section.split("        run: |\n", 1)[1])
+
+
+def successful_quality_jobs() -> list[dict[str, str]]:
+    """Build completed job fixtures from the compatibility workflow's names."""
+    workflow = (WORKFLOWS / "wp-compatibility-test.yml").read_text()
+    names = [name for name in re.findall(r"^    name: (.+)$", workflow, re.M) if "${{" not in name]
+    names += [f"Test WordPress {wp} with PHP {php} (highest deps)"
+              for php in ("8.2", "8.3", "8.4", "8.5") for wp in ("6.8", "latest", "nightly")]
+    names.append("Test WordPress latest with PHP 8.2 (lowest deps)")
+    return [{"name": name, "status": "completed", "conclusion": "success"} for name in names]
 
 
 class AutomationTests(unittest.TestCase):
@@ -160,18 +169,16 @@ class AutomationTests(unittest.TestCase):
         (self.root / "bin/jq").chmod(0o700)
         with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
             self.assertTrue(accepts_run([run]))
+        self.assertTrue(accepts_run([dict(run, event="workflow_dispatch")]))
         self.assertFalse(accepts_run([]))
         for changes in ({"head_sha": "other"}, {"event": "pull_request"},
                         {"head_branch": "other"}, {"head_repository": {"full_name": "fork/repo"}},
-                        {"conclusion": "failure"}, {"conclusion": "cancelled"}, {"status": "in_progress"}):
+                        {"conclusion": "failure"}, {"conclusion": "cancelled"},
+                        {"status": "queued"}, {"status": "in_progress"}):
             self.assertFalse(accepts_run([dict(run, **changes)]))
         self.assertFalse(accepts_run([run, dict(run, id=2, conclusion="failure")]))
-        workflow = (WORKFLOWS / "wp-compatibility-test.yml").read_text()
-        names = [name for name in re.findall(r"^    name: (.+)$", workflow, re.M) if "${{" not in name]
-        names += [f"Test WordPress {wp} with PHP {php} (highest deps)"
-                  for php in ("8.2", "8.3", "8.4", "8.5") for wp in ("6.8", "latest", "nightly")]
-        names.append("Test WordPress latest with PHP 8.2 (lowest deps)")
-        jobs = [{"name": name, "status": "completed", "conclusion": "success"} for name in names]
+        self.assertFalse(accepts_run([run, dict(run, id=2, status="in_progress", conclusion=None)]))
+        jobs = successful_quality_jobs()
 
         def accepts_jobs(records):
             # Repository-owned jq program; job records remain separate JSON data.
@@ -190,6 +197,66 @@ class AutomationTests(unittest.TestCase):
                 changed[index]["conclusion"] = conclusion
                 self.assertFalse(accepts_jobs(changed))
         self.assertFalse(accepts_jobs(jobs + [jobs[0]]))
+
+    def test_release_gate_uses_tested_commit_and_explains_rejections(self):
+        script = workflow_step("release.yml", "Require successful quality checks for this commit")
+        self.write("bin/gh", '#!/bin/sh\nprintf "%s\\n" "$@" >> "$FIXTURE_GH_ARGS"\n'
+                   'case "$*" in\n'
+                   '  *actions/workflows/wp-compatibility-test.yml/runs*) cat "$FIXTURE_RUNS" ;;\n'
+                   '  *actions/runs/1/jobs*) cat "$FIXTURE_JOBS" ;;\n'
+                   '  *) exit 92 ;;\nesac\n')
+        self.write("bin/git", '#!/bin/sh\n[ "$1" = rev-parse ] || exit 92\n'
+                   '[ -n "$FIXTURE_TAG_SHA" ] || exit 1\nprintf "%s\\n" "$FIXTURE_TAG_SHA"\n')
+        for command in ("gh", "git"):
+            (self.root / "bin" / command).chmod(0o700)
+        run = {"id": 1, "head_sha": "tested-commit", "head_branch": "main",
+               "head_repository": {"full_name": "fixture/repo"},
+               "event": "push", "status": "completed", "conclusion": "success"}
+        jobs = successful_quality_jobs()
+        cases = (
+            ("ready", [run], jobs, "", True),
+            ("missing", [], jobs, "", False),
+            ("queued", [dict(run, status="queued", conclusion=None)], jobs, "", False),
+            ("running", [dict(run, status="in_progress", conclusion=None)], jobs, "", False),
+            ("failed", [dict(run, conclusion="failure")], jobs, "", False),
+            ("missing-job", [run], jobs[:-1], "", False),
+            ("matching-tag", [run], jobs, "tested-commit", True),
+            ("wrong-tag", [run], jobs, "untested-tip", False),
+        )
+        for label, runs, records, tag_sha, accepted in cases:
+            with self.subTest(case=label):
+                self.write("fixture-runs.json", json.dumps({"workflow_runs": runs}))
+                self.write("fixture-jobs.json", json.dumps([{"jobs": records}]))
+                self.write("gh-args", "")
+                self.write("step-summary", "")
+                env = dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}",
+                           GITHUB_REPOSITORY="fixture/repo", VERSION="1.2.3",
+                           GITHUB_SHA="untested-tip", GITHUB_REF_NAME="default-branch",
+                           RELEASE_SHA="tested-commit", RELEASE_BRANCH="main",
+                           GITHUB_SERVER_URL="https://github.invalid", RUNNER_TEMP=str(self.root),
+                           GITHUB_STEP_SUMMARY=str(self.root / "step-summary"),
+                           FIXTURE_RUNS=str(self.root / "fixture-runs.json"),
+                           FIXTURE_JOBS=str(self.root / "fixture-jobs.json"),
+                           FIXTURE_GH_ARGS=str(self.root / "gh-args"), FIXTURE_TAG_SHA=tag_sha)
+                # Local command substitutes need no inherited GitHub credentials.
+                env.pop("GH_TOKEN", None)
+                env.pop("GITHUB_TOKEN", None)
+                # Fixed repository-owned shell step; gh/git are local fixture substitutes.
+                result = subprocess.run(  # nosec B603
+                    ["/usr/bin/bash", "-e", "-o", "pipefail", "-c", script],
+                    env=env, capture_output=True, text=True
+                )
+                self.assertEqual(accepted, result.returncode == 0, result.stdout + result.stderr)
+                arguments = (self.root / "gh-args").read_text()
+                self.assertIn("head_sha=tested-commit\n", arguments)
+                self.assertIn("branch=main\n", arguments)
+                self.assertNotIn("untested-tip", arguments)
+                summary = (self.root / "step-summary").read_text()
+                if accepted:
+                    self.assertIn("https://github.invalid/fixture/repo/actions/runs/1", summary)
+                else:
+                    self.assertIn("::error::", result.stdout)
+                    self.assertEqual("", summary)
 
     def test_release_lookup_fails_closed_on_http_and_transport_errors(self):
         script = workflow_step("release.yml", "Check if release exists")

@@ -1,8 +1,10 @@
 name: Create Release
 
 on:
-  push:
-    # Trigger on pushes to the main or master branch.
+  # Start after quality checks finish, rather than racing them on the same push.
+  workflow_run:
+    workflows: [ "WordPress Compatibility & Plugin Check" ]
+    types: [ completed ]
     branches: [ main, master ]
   # Allow manual triggering.
   workflow_dispatch:
@@ -12,7 +14,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.workflow_run.head_branch || github.ref_name }}
   cancel-in-progress: false
 
 env:
@@ -20,13 +22,25 @@ env:
 
 jobs:
   check-and-release:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: >-
+      (github.event_name == 'workflow_dispatch' &&
+       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')) ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') &&
+       (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # workflow_run's github.sha is the default-branch tip, not necessarily the tested commit.
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      RELEASE_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
+          ref: ${{ env.RELEASE_SHA }}
           fetch-depth: 0
 
       - name: Get latest version
@@ -63,25 +77,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.get_version.outputs.version }}
         run: |
-          # Fail closed while checks are queued/running. Rerun this release job
-          # after the exact commit's compatibility workflow has passed.
+          # Automatic releases start after quality succeeds; manual runs must also
+          # prove every gate for the exact commit checked out above.
           gh api --method GET \
             "repos/$GITHUB_REPOSITORY/actions/workflows/wp-compatibility-test.yml/runs" \
-            -f head_sha="$GITHUB_SHA" -f branch="$GITHUB_REF_NAME" -f per_page=100 \
+            -f head_sha="$RELEASE_SHA" -f branch="$RELEASE_BRANCH" -f per_page=100 \
             > "$RUNNER_TEMP/quality-runs.json"
-          RUN_ID=$(jq -er --arg sha "$GITHUB_SHA" --arg repo "$GITHUB_REPOSITORY" \
-            --arg branch "$GITHUB_REF_NAME" '
+          if ! RUN_ID=$(jq -er --arg sha "$RELEASE_SHA" --arg repo "$GITHUB_REPOSITORY" \
+            --arg branch "$RELEASE_BRANCH" '
             [.workflow_runs[] | select(.head_sha == $sha and .head_branch == $branch
               and .head_repository.full_name == $repo
               and (.event == "push" or .event == "workflow_dispatch"))]
             | sort_by(.id) | last
             | select(.status == "completed" and .conclusion == "success") | .id
-            ' "$RUNNER_TEMP/quality-runs.json")
+            ' "$RUNNER_TEMP/quality-runs.json"); then
+            echo "::error::No completed successful compatibility run for commit $RELEASE_SHA on $RELEASE_BRANCH. Check WordPress Compatibility & Plugin Check before rerunning a manual release."
+            exit 1
+          fi
           gh api --paginate --slurp \
             "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?filter=latest&per_page=100" \
             > "$RUNNER_TEMP/quality-jobs.json"
           # A successful workflow with a skipped/missing gate is insufficient.
-          jq -e '
+          if ! jq -e '
             ["WP Plugin Check (PHP 8.3)", "PHPCS (PHP 8.3)", "WP VIP CS (PHP 8.3)",
              "PHPMD (PHP 8.3)", "Psalm Static Analysis (PHP 8.3)",
              "Security Scan (PHP 8.3)", "PHPStan for WP (PHP 8.3)",
@@ -93,9 +110,15 @@ jobs:
             | all($expected[]; . as $name |
                 ([$jobs[] | select(.name == $name)] | length) == 1 and
                 any($jobs[]; .name == $name and .status == "completed" and .conclusion == "success"))
-            ' "$RUNNER_TEMP/quality-jobs.json"
+            ' "$RUNNER_TEMP/quality-jobs.json"; then
+            echo "::error::Quality run $RUN_ID has a missing, duplicate, unfinished or unsuccessful required job."
+            exit 1
+          fi
           if git rev-parse --verify "refs/tags/v$VERSION" >/dev/null 2>&1; then
-            [[ $(git rev-parse "refs/tags/v$VERSION^{commit}") == "$GITHUB_SHA" ]]
+            if [[ $(git rev-parse "refs/tags/v$VERSION^{commit}") != "$RELEASE_SHA" ]]; then
+              echo "::error::Tag v$VERSION already points to a different commit."
+              exit 1
+            fi
           fi
           echo "Quality evidence: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
             >> "$GITHUB_STEP_SUMMARY"
@@ -155,7 +178,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
-          target_commitish: ${{ github.sha }}
+          target_commitish: ${{ env.RELEASE_SHA }}
           fail_on_unmatched_files: true
           name: Release v${{ steps.get_version.outputs.version }}
           body: |
