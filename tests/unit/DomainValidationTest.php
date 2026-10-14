@@ -192,7 +192,7 @@ final class DomainValidationTest extends TestCase {
 	/**
 	 * Enabling hints without choosing domains preserves only incoming hints.
 	 *
-	 * @since Unreleased
+	 * @since 2.3.0
 	 * @return void
 	 */
 	public function test_resource_hint_lists_require_explicit_domains(): void {

@@ -1,20 +1,79 @@
 <?php
 /**
- * WordPress doubles for the isolated unit suite on GitHub runners.
+ * WordPress doubles for the isolated unit suite.
  *
  * These doubles do not establish native WordPress hook, storage or HTTP behavior.
  *
  * @package EngineScript_Site_Optimizer
  */
 
-if ( 'true' !== getenv( 'GITHUB_ACTIONS' ) ) {
-	fwrite( STDERR, "Run the plugin suites in the WordPress Compatibility workflow.\n" );
-	exit( 1 );
-}
-
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', __DIR__ . '/wordpress/' );
 }
+
+/**
+ * Start from a clean set of recorded calls and request flags.
+ *
+ * The stand-ins below record what the plugin registers, removes, and prints in
+ * $GLOBALS['es_optimizer_test']. Stored options keep their own global, which the
+ * option stand-ins and the older tests share.
+ *
+ * @return void
+ */
+function es_optimizer_test_reset(): void {
+	$GLOBALS['es_optimizer_test'] = array(
+		'hooks'        => array(),
+		'removed'      => array(),
+		'pages'        => array(),
+		'settings'     => array(),
+		'sections'     => array(),
+		'fields'       => array(),
+		'styles'       => array(),
+		'capabilities' => array( 'manage_options' ),
+		'is_admin'     => false,
+		'ajax'         => false,
+		'feed'         => false,
+		'doing'        => null,
+		'translations' => array(),
+	);
+}
+
+/**
+ * Get the priority at which a callback is registered on a hook.
+ *
+ * @param string $hook     Hook name.
+ * @param mixed  $callback Callback.
+ * @return int|false Priority, or false when the callback is not registered.
+ */
+function es_optimizer_test_hook_priority( string $hook, mixed $callback ): int|false {
+	foreach ( $GLOBALS['es_optimizer_test']['hooks'][ $hook ] ?? array() as $priority => $registered ) {
+		foreach ( $registered as $entry ) {
+			if ( $entry['callback'] === $callback ) {
+				return $priority;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Return a translation that a test has set for a source string.
+ *
+ * @param string $text Source string.
+ * @return string Translated string, or the source string.
+ */
+function es_optimizer_test_translate( string $text ): string {
+	return $GLOBALS['es_optimizer_test']['translations'][ $text ] ?? $text;
+}
+
+/**
+ * The wp_die() stand-in throws this, so that a test can see the call.
+ */
+class Es_Optimizer_Test_Die extends RuntimeException {
+}
+
+es_optimizer_test_reset();
 
 if ( ! class_exists( 'WP_Scripts' ) ) {
 	/**
@@ -80,7 +139,10 @@ if ( ! function_exists( 'add_filter' ) ) {
 	 * @return bool True.
 	 */
 	function add_filter( string $hook, callable|string|array $callback, int $priority = 10, int $accepted_args = 1 ): bool {
-		unset( $hook, $callback, $priority, $accepted_args );
+		$GLOBALS['es_optimizer_test']['hooks'][ $hook ][ $priority ][] = array(
+			'callback' => $callback,
+			'args'     => $accepted_args,
+		);
 		return true;
 	}
 }
@@ -109,7 +171,7 @@ if ( ! function_exists( 'remove_filter' ) ) {
 	 * @return bool True.
 	 */
 	function remove_filter( string $hook, callable|string|array $callback, int $priority = 10 ): bool {
-		unset( $hook, $callback, $priority );
+		$GLOBALS['es_optimizer_test']['removed'][] = array( $hook, $callback, $priority );
 		return true;
 	}
 }
@@ -419,7 +481,7 @@ if ( ! function_exists( '__' ) ) {
 	 */
 	function __( string $text, string $domain = 'default' ): string {
 		unset( $domain );
-		return $text;
+		return es_optimizer_test_translate( $text );
 	}
 }
 
@@ -436,7 +498,7 @@ if ( ! function_exists( '_n' ) ) {
 	 */
 	function _n( string $single, string $plural, int $number, string $domain = 'default' ): string {
 		unset( $domain );
-		return 1 === $number ? $single : $plural;
+		return es_optimizer_test_translate( 1 === $number ? $single : $plural );
 	}
 }
 
@@ -462,7 +524,7 @@ if ( ! function_exists( 'esc_html__' ) ) {
 	 */
 	function esc_html__( string $text, string $domain = 'default' ): string {
 		unset( $domain );
-		return esc_html( $text );
+		return esc_html( es_optimizer_test_translate( $text ) );
 	}
 }
 
@@ -495,10 +557,10 @@ if ( ! function_exists( 'is_admin' ) ) {
 	/**
 	 * Check whether current request is admin.
 	 *
-	 * @return bool False for tests.
+	 * @return bool What the test set; false by default.
 	 */
 	function is_admin(): bool {
-		return false;
+		return (bool) $GLOBALS['es_optimizer_test']['is_admin'];
 	}
 }
 
@@ -506,10 +568,10 @@ if ( ! function_exists( 'wp_doing_ajax' ) ) {
 	/**
 	 * Check whether current request is AJAX.
 	 *
-	 * @return bool False for tests.
+	 * @return bool What the test set; false by default.
 	 */
 	function wp_doing_ajax(): bool {
-		return false;
+		return (bool) $GLOBALS['es_optimizer_test']['ajax'];
 	}
 }
 
@@ -528,6 +590,40 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	}
 }
 
+if ( ! function_exists( 'doing_action' ) ) {
+	/**
+	 * Check whether an action is currently running.
+	 *
+	 * @param string|null $hook_name Action name.
+	 * @return bool Whether the test set this action as running; no action runs by default.
+	 */
+	function doing_action( ?string $hook_name = null ): bool {
+		$doing = $GLOBALS['es_optimizer_test']['doing'];
+
+		return null === $hook_name ? null !== $doing : $hook_name === $doing;
+	}
+}
+
+if ( ! function_exists( 'wp_validate_boolean' ) ) {
+	/**
+	 * Read a value as a boolean the way WordPress does.
+	 *
+	 * @param mixed $value Value to read.
+	 * @return bool False for false and for the string "false" in any letter case.
+	 */
+	function wp_validate_boolean( mixed $value ): bool {
+		if ( is_bool( $value ) ) {
+			return $value;
+		}
+
+		if ( is_string( $value ) && 'false' === strtolower( $value ) ) {
+			return false;
+		}
+
+		return (bool) $value;
+	}
+}
+
 if ( ! function_exists( '__return_null' ) ) {
 	/**
 	 * Return null.
@@ -541,4 +637,256 @@ if ( ! function_exists( '__return_null' ) ) {
 	}
 }
 
+if ( ! function_exists( 'is_feed' ) ) {
+	/**
+	 * Check whether the request is for a feed.
+	 *
+	 * @return bool What the test set; false by default.
+	 */
+	function is_feed(): bool {
+		return (bool) $GLOBALS['es_optimizer_test']['feed'];
+	}
+}
+
+if ( ! function_exists( 'current_user_can' ) ) {
+	/**
+	 * Check a capability of the current user.
+	 *
+	 * @param string $capability Capability.
+	 * @return bool Whether the test granted it; manage_options by default.
+	 */
+	function current_user_can( string $capability ): bool {
+		return in_array( $capability, $GLOBALS['es_optimizer_test']['capabilities'], true );
+	}
+}
+
+if ( ! function_exists( 'wp_die' ) ) {
+	/**
+	 * Stop the request.
+	 *
+	 * @param string $message Message.
+	 * @return never
+	 * @throws Es_Optimizer_Test_Die Always, with the message.
+	 */
+	function wp_die( string $message = '' ): never {
+		throw new Es_Optimizer_Test_Die( $message );
+	}
+}
+
+if ( ! function_exists( 'esc_attr' ) ) {
+	/**
+	 * Escape an attribute value.
+	 *
+	 * @param string $text Text.
+	 * @return string Escaped text.
+	 */
+	function esc_attr( string $text ): string {
+		return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'esc_textarea' ) ) {
+	/**
+	 * Escape text area content.
+	 *
+	 * @param string $text Text.
+	 * @return string Escaped text.
+	 */
+	function esc_textarea( string $text ): string {
+		return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+	/**
+	 * Escape a URL for output.
+	 *
+	 * @param string $url URL.
+	 * @return string Escaped URL, or an empty string for a scheme other than HTTP or HTTPS.
+	 */
+	function esc_url( string $url ): string {
+		return preg_match( '#\Ahttps?://#', $url ) ? htmlspecialchars( $url, ENT_QUOTES, 'UTF-8' ) : '';
+	}
+}
+
+if ( ! function_exists( 'esc_html_e' ) ) {
+	/**
+	 * Print escaped translated text.
+	 *
+	 * @param string $text   Text.
+	 * @param string $domain Text domain.
+	 * @return void
+	 */
+	function esc_html_e( string $text, string $domain = 'default' ): void {
+		echo esc_html__( $text, $domain );
+	}
+}
+
+if ( ! function_exists( 'checked' ) ) {
+	/**
+	 * Print the checked attribute when two values are equal as strings.
+	 *
+	 * @param mixed $checked Value to compare.
+	 * @param mixed $current Current value.
+	 * @return string The attribute, or an empty string.
+	 */
+	function checked( mixed $checked, mixed $current = true ): string {
+		$attribute = (string) $checked === (string) $current ? " checked='checked'" : '';
+		echo $attribute; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed attribute.
+		return $attribute;
+	}
+}
+
+if ( ! function_exists( 'admin_url' ) ) {
+	/**
+	 * Build an admin URL.
+	 *
+	 * @param string $path Path relative to the admin URL.
+	 * @return string URL.
+	 */
+	function admin_url( string $path = '' ): string {
+		return 'https://site.example/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'add_options_page' ) ) {
+	/**
+	 * Record a page under Settings.
+	 *
+	 * @param string $page_title Page title.
+	 * @param string $menu_title Menu title.
+	 * @param string $capability Capability.
+	 * @param string $menu_slug  Menu slug.
+	 * @param mixed  $callback   Page callback.
+	 * @return string Page hook suffix.
+	 */
+	function add_options_page( string $page_title, string $menu_title, string $capability, string $menu_slug, mixed $callback = '' ): string {
+		$GLOBALS['es_optimizer_test']['pages'][] = compact( 'page_title', 'menu_title', 'capability', 'menu_slug', 'callback' );
+		return 'settings_page_' . $menu_slug;
+	}
+}
+
+if ( ! function_exists( 'register_setting' ) ) {
+	/**
+	 * Record a registered setting.
+	 *
+	 * @param string               $option_group Option group.
+	 * @param string               $option_name  Option name.
+	 * @param array<string, mixed> $args         Arguments.
+	 * @return void
+	 */
+	function register_setting( string $option_group, string $option_name, array $args = array() ): void {
+		$GLOBALS['es_optimizer_test']['settings'][] = compact( 'option_group', 'option_name', 'args' );
+	}
+}
+
+if ( ! function_exists( 'add_settings_section' ) ) {
+	/**
+	 * Record a settings section.
+	 *
+	 * @param string $id       Section ID.
+	 * @param string $title    Title.
+	 * @param mixed  $callback Callback.
+	 * @param string $page     Page slug.
+	 * @return void
+	 */
+	function add_settings_section( string $id, string $title, mixed $callback, string $page ): void {
+		$GLOBALS['es_optimizer_test']['sections'][] = compact( 'id', 'title', 'callback', 'page' );
+	}
+}
+
+if ( ! function_exists( 'add_settings_field' ) ) {
+	/**
+	 * Record a settings field.
+	 *
+	 * @param string               $id       Field ID.
+	 * @param string               $title    Title.
+	 * @param mixed                $callback Render callback.
+	 * @param string               $page     Page slug.
+	 * @param string               $section  Section ID.
+	 * @param array<string, mixed> $args     Arguments.
+	 * @return void
+	 */
+	function add_settings_field( string $id, string $title, mixed $callback, string $page, string $section = 'default', array $args = array() ): void {
+		$GLOBALS['es_optimizer_test']['fields'][] = compact( 'id', 'title', 'callback', 'page', 'section', 'args' );
+	}
+}
+
+if ( ! function_exists( 'settings_fields' ) ) {
+	/**
+	 * Print a marker for the hidden fields of an option group.
+	 *
+	 * @param string $option_group Option group.
+	 * @return void
+	 */
+	function settings_fields( string $option_group ): void {
+		echo '<input type="hidden" name="option_page" value="' . esc_attr( $option_group ) . '" />';
+	}
+}
+
+if ( ! function_exists( 'do_settings_sections' ) ) {
+	/**
+	 * Print the recorded sections of a page and call each field's render callback.
+	 *
+	 * @param string $page Page slug.
+	 * @return void
+	 */
+	function do_settings_sections( string $page ): void {
+		foreach ( $GLOBALS['es_optimizer_test']['sections'] as $section ) {
+			if ( $section['page'] !== $page ) {
+				continue;
+			}
+
+			echo '<h2>' . $section['title'] . '</h2>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- The plugin escapes the title when it registers it.
+
+			foreach ( $GLOBALS['es_optimizer_test']['fields'] as $field ) {
+				if ( $field['page'] === $page && $field['section'] === $section['id'] ) {
+					call_user_func( $field['callback'], $field['args'] );
+				}
+			}
+		}
+	}
+}
+
+if ( ! function_exists( 'submit_button' ) ) {
+	/**
+	 * Print a submit button.
+	 *
+	 * @param string $text Button text.
+	 * @return void
+	 */
+	function submit_button( string $text = 'Save Changes' ): void {
+		echo '<input type="submit" name="submit" id="submit" value="' . esc_attr( $text ) . '" />';
+	}
+}
+
+if ( ! function_exists( 'wp_dequeue_style' ) ) {
+	/**
+	 * Record a dequeued style.
+	 *
+	 * @param string $handle Style handle.
+	 * @return void
+	 */
+	function wp_dequeue_style( string $handle ): void {
+		$GLOBALS['es_optimizer_test']['styles'][] = array( 'dequeue', $handle );
+	}
+}
+
+if ( ! function_exists( 'wp_deregister_style' ) ) {
+	/**
+	 * Record a deregistered style.
+	 *
+	 * @param string $handle Style handle.
+	 * @return void
+	 */
+	function wp_deregister_style( string $handle ): void {
+		$GLOBALS['es_optimizer_test']['styles'][] = array( 'deregister', $handle );
+	}
+}
+
 require dirname( __DIR__ ) . '/enginescript-site-optimizer.php';
+
+// What loading the plugin file registered, before any test changes the record.
+$GLOBALS['es_optimizer_test_load_time'] = $GLOBALS['es_optimizer_test'];
+
+require __DIR__ . '/EsOptimizerTestCase.php';
