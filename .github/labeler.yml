@@ -4,69 +4,72 @@
 # Core plugin functionality
 core:
   - changed-files:
-    - any-glob-to-any-file: enginescript-site-optimizer.php
-    - any-glob-to-any-file: includes/**/*
-    - any-glob-to-any-file: uninstall.php
+      - any-glob-to-any-file: enginescript-site-optimizer.php
+      - any-glob-to-any-file: includes/**/*
+      - any-glob-to-any-file: uninstall.php
 
 # Frontend related changes
 frontend:
   - changed-files:
-    - any-glob-to-any-file: includes/frontend.php
-    - any-glob-to-any-file: includes/admin.php
+      - any-glob-to-any-file: includes/frontend.php
+      - any-glob-to-any-file: includes/admin.php
 
 # Workflows and automation
 automation:
   - changed-files:
-    - any-glob-to-any-file: .github/**/*
+      - any-glob-to-any-file: .github/**/*
 
 # Security related changes
 security:
   - changed-files:
-    - any-glob-to-any-file: '**/*.php'
-    - any-glob-to-any-file: SECURITY.md
+      - any-glob-to-any-file: '**/*.php'
+      - any-glob-to-any-file: SECURITY.md
 
 # Documentation
 documentation:
   - changed-files:
-    - any-glob-to-any-file: README.md
-    - any-glob-to-any-file: '*.md'
-    - any-glob-to-any-file: docs/**/*
+      - any-glob-to-any-file: README.md
+      - any-glob-to-any-file: '*.md'
 
 # Database related changes
 database:
   - changed-files:
-    - any-glob-to-any-file: includes/options.php
-    - any-glob-to-any-file: uninstall.php
+      - any-glob-to-any-file: includes/options.php
+      - any-glob-to-any-file: uninstall.php
 
 # WordPress integration
 wordpress:
   - changed-files:
-    - any-glob-to-any-file: enginescript-site-optimizer.php
-    - any-glob-to-any-file: includes/bootstrap.php
+      - any-glob-to-any-file: enginescript-site-optimizer.php
+      - any-glob-to-any-file: includes/bootstrap.php
 
 # Translations and localization
 i18n:
   - changed-files:
-    - any-glob-to-any-file: languages/**/*
-    - any-glob-to-any-file: '**/*.pot'
-    - any-glob-to-any-file: '**/*.po'
-    - any-glob-to-any-file: '**/*.mo'
+      - any-glob-to-any-file: languages/**/*
+      - any-glob-to-any-file: '**/*.pot'
+      - any-glob-to-any-file: '**/*.po'
+      - any-glob-to-any-file: '**/*.mo'
 
 # Dependencies
 dependencies:
   - changed-files:
-    - any-glob-to-any-file: .github/dependabot.yml
-    - any-glob-to-any-file: composer.json
-    - any-glob-to-any-file: composer.lock
-    - any-glob-to-any-file: package.json
-    - any-glob-to-any-file: package-lock.json
+      - any-glob-to-any-file: .github/dependabot.yml
+      - any-glob-to-any-file: composer.json
+      - any-glob-to-any-file: package.json
 
 # Tests and quality
 testing:
   - changed-files:
-    - any-glob-to-any-file: tests/**/*
-    - any-glob-to-any-file: phpunit.xml
-    - any-glob-to-any-file: phpcs.xml
-    - any-glob-to-any-file: phpmd.xml
-    - any-glob-to-any-file: phpstan.neon
-    - any-glob-to-any-file: psalm.xml
+      - any-glob-to-any-file: tests/**/*
+      - any-glob-to-any-file: phpunit.xml
+      - any-glob-to-any-file: phpcs.xml
+      - any-glob-to-any-file: phpmd.xml
+      - any-glob-to-any-file: phpstan.neon
+      - any-glob-to-any-file: psalm.xml
+      - any-glob-to-any-file: .markdownlint.json
+      - any-glob-to-any-file: .markdownlint-cli2.jsonc
+      - any-glob-to-any-file: .mypy.ini
+      - any-glob-to-any-file: .ruff.toml
+      - any-glob-to-any-file: .github/lint-requirements.txt
+      - any-glob-to-any-file: .yamllint.yml

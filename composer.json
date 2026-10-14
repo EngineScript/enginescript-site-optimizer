@@ -14,19 +14,18 @@
     "php": ">=8.2"
   },
   "require-dev": {
-    "phpunit/phpunit": "^11.5 || ^12.0",
-    "yoast/phpunit-polyfills": "^4.0",
+    "phpunit/phpunit": "^11.5 || ^12.5 || ^13.4",
     "squizlabs/php_codesniffer": "^3.13.6",
     "wp-coding-standards/wpcs": "^3.4.1",
     "phpcsstandards/phpcsutils": "^1.2.3",
     "phpcsstandards/phpcsextra": "^1.5",
     "dealerdirect/phpcodesniffer-composer-installer": "^1.2",
     "friendsofphp/php-cs-fixer": "^3.95",
-    "phpmd/phpmd": "^2.15",
+    "phpmd/phpmd": "^3.0",
     "vimeo/psalm": "^6.16",
-    "php-stubs/wordpress-stubs": "^7.1",
+    "php-stubs/wordpress-stubs": "^7.1.2",
     "szepeviktor/phpstan-wordpress": "^2.0",
-    "phpstan/phpstan": "^2.1",
+    "phpstan/phpstan": "^2.3.1",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
     "automattic/vipwpcs": "^3.0.1",
     "z4kn4fein/php-semver": "^3.0"
@@ -34,15 +33,18 @@
   "scripts": {
     "phpcs": "phpcs --standard=phpcs.xml",
     "phpcs:fix": "phpcbf --standard=phpcs.xml",
-    "phpmd": "phpmd enginescript-site-optimizer.php,includes,uninstall.php text phpmd.xml",
+    "phpmd": "phpmd analyze . --no-progress --format text --ruleset phpmd.xml --exclude vendor --exclude tests --exclude stubs --exclude .private --exclude node_modules",
     "psalm": "psalm --config=psalm.xml --show-info=true",
+    "psalm:taint": "psalm --config=psalm.xml --taint-analysis",
     "phpstan": "phpstan analyze --memory-limit=1G",
-    "test": "phpunit --configuration phpunit.xml",
+    "test": "phpunit --configuration phpunit.xml --testsuite unit --fail-on-empty-test-suite",
     "check-all": [
       "@phpcs",
       "@phpmd",
       "@psalm",
-      "@phpstan"
+      "@psalm:taint",
+      "@phpstan",
+      "@test"
     ]
   },
   "config": {

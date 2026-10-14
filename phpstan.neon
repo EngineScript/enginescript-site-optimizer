@@ -2,7 +2,7 @@ includes:
     - vendor/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
-    level: 6
+    level: max
     paths:
         - enginescript-site-optimizer.php
         - includes/
@@ -13,7 +13,3 @@ parameters:
 
     bootstrapFiles:
         - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
-
-    treatPhpDocTypesAsCertain: false
-
-    ignoreErrors: []

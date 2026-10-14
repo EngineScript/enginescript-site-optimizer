@@ -5,9 +5,12 @@
          xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
          xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
 
-    <description>Code quality and naming checks with WordPress-compatible thresholds; PHPCS handles formatting.</description>
+    <description>WordPress-compatible PHPMD ruleset for code quality and naming conventions.</description>
 
-    <!-- WordPress-specific file patterns to exclude -->
+    <!--
+        Non-production paths. The composer script and the CI job pass the same
+        list on the command line.
+    -->
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/.private/*</exclude-pattern>
     <exclude-pattern>*/node_modules/*</exclude-pattern>
@@ -16,79 +19,48 @@
 
     <!-- Clean Code Rules (with WordPress exceptions) -->
     <rule ref="rulesets/cleancode.xml">
-        <!-- Allow explicit else branches; review branch behavior independently. -->
-        <exclude name="ElseExpression"/>
-        <!-- Global WordPress and PHP classes do not require namespace imports here. -->
+        <!-- WordPress code uses core classes without namespace imports. -->
         <exclude name="MissingImport"/>
     </rule>
 
-    <!-- Stock limits apply to the optimizer's procedural functions. -->
+    <!-- Code Size Rules (default thresholds) -->
     <rule ref="rulesets/codesize.xml"/>
 
-    <!-- Controversial Rules (with WordPress exceptions) -->
+    <!-- Controversial Rules (with WordPress naming exceptions) -->
     <rule ref="rulesets/controversial.xml">
-        <!-- Exclude CamelCaseClassName - WordPress uses Snake_Case_Class_Names -->
+        <!-- WordPress uses snake_case and Snake_Case_Class_Names. -->
         <exclude name="CamelCaseClassName"/>
-        <!-- Exclude CamelCaseMethodName - WordPress uses snake_case_method_names -->
         <exclude name="CamelCaseMethodName"/>
-        <!-- Exclude CamelCaseVariableName - WordPress uses $snake_case_variables -->
         <exclude name="CamelCaseVariableName"/>
-        <!-- Exclude CamelCaseParameterName - WordPress uses $snake_case_parameters -->
         <exclude name="CamelCaseParameterName"/>
-        <!-- Exclude CamelCasePropertyName - WordPress uses $snake_case_properties -->
         <exclude name="CamelCasePropertyName"/>
     </rule>
 
+    <!-- Design Rules -->
     <rule ref="rulesets/design.xml"/>
 
-    <!-- WORDPRESS-SPECIFIC NAMING RULES -->
-    <!-- WordPress uses snake_case naming which conflicts with standard camelCase rules -->
-    <!-- Import only WordPress-compatible naming rules -->
-
-    <rule ref="rulesets/naming.xml/ShortVariable">
-        <properties>
-            <!-- Keep the stock minimum; optimizer names do not need shorter variables. -->
-            <property name="minimum" value="3"/>
-        </properties>
+    <!-- Naming Rules. The camelCase rules are in the controversial ruleset. -->
+    <rule ref="rulesets/naming.xml">
+        <!-- Added again below with a limit that fits prefixed WordPress names. -->
+        <exclude name="LongVariable"/>
+        <exclude name="LongMethodName"/>
     </rule>
 
     <rule ref="rulesets/naming.xml/LongVariable">
         <properties>
-            <!-- WordPress descriptive variable names can be longer -->
-            <property name="maximum" value="40"/>
+            <!-- Global variables start with the plugin prefix; the longest name has 31 characters. -->
+            <property name="maximum" value="35"/>
         </properties>
     </rule>
 
-    <rule ref="rulesets/naming.xml/ShortMethodName">
+    <rule ref="rulesets/naming.xml/LongMethodName">
         <properties>
-            <!-- Keep the stock minimum for function and method names. -->
-            <property name="minimum" value="3"/>
+            <!-- Function names start with the plugin prefix; the longest has 47 characters. -->
+            <property name="maximum" value="50"/>
         </properties>
     </rule>
-
-    <!-- Detect obsolete constructors named after their class. -->
-    <rule ref="rulesets/naming.xml/ConstructorWithNameAsEnclosingClass"/>
-
-    <!-- WordPress constant naming (UPPER_CASE_WITH_UNDERSCORES) -->
-    <rule ref="rulesets/naming.xml/ConstantNamingConventions"/>
-
-    <!-- WordPress boolean method naming (is_*, has_*, can_*) -->
-    <rule ref="rulesets/naming.xml/BooleanGetMethodName"/>
-
-    <!-- EXPLICITLY EXCLUDED NAMING RULES FOR WORDPRESS COMPATIBILITY -->
-    <!-- These rules are NOT included because they conflict with WordPress standards: -->
-    <!-- - CamelCaseClassName (WordPress uses Class_Name_With_Underscores) -->
-    <!-- - CamelCaseMethodName (WordPress uses method_name_with_underscores) -->
-    <!-- - CamelCaseVariableName (WordPress uses $variable_name_with_underscores) -->
-    <!-- - CamelCaseParameterName (WordPress uses $parameter_name_with_underscores) -->
-    <!-- - CamelCasePropertyName (WordPress uses $property_name_with_underscores) -->
 
     <!-- Unused Code Rules (always enforce) -->
     <rule ref="rulesets/unusedcode.xml"/>
-
-    <!-- WORDPRESS CODING STANDARDS ENFORCEMENT -->
-    <!-- Note: PHPMD doesn't directly enforce spacing/indentation -->
-    <!-- For spacing enforcement, use PHPCS with WordPress standards instead -->
-    <!-- This PHPMD config focuses on code quality and WordPress-compatible naming -->
 
 </ruleset>

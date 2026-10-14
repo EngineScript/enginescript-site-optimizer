@@ -1,4 +1,7 @@
 # Dependabot configuration for automated dependency updates
+#
+# This file is the same in each EngineScript plugin repository. Every ecosystem
+# is checked daily, which is the shortest interval Dependabot offers.
 version: 2
 updates:
   # Updates for GitHub Actions used in workflows
@@ -6,7 +9,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      day: "monday"
       time: "09:00"
     # Set custom labels on pull requests
     labels:
@@ -16,9 +18,6 @@ updates:
       - "maintenance"
     # Limit the number of open PRs
     open-pull-requests-limit: 10
-    # Assign reviewers automatically
-    reviewers:
-      - "EngineScript"
     # Create a group of updates for all actions
     groups:
       actions:
@@ -30,7 +29,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      day: "monday"
       time: "09:00"
     # Set custom labels on pull requests
     labels:
@@ -40,9 +38,6 @@ updates:
       - "maintenance"
     # Limit the number of open PRs
     open-pull-requests-limit: 10
-    # Assign reviewers automatically
-    reviewers:
-      - "EngineScript"
     # Group updates by dependency type
     groups:
       # Group all dev dependencies together
@@ -55,3 +50,53 @@ updates:
     allow:
       - dependency-type: "direct"
       - dependency-type: "indirect"
+
+  # Updates for npm dependencies (the JavaScript tests and the linters)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    # Set custom labels on pull requests
+    labels:
+      - "dependencies"
+      - "javascript"
+      - "automated"
+      - "maintenance"
+    # Limit the number of open PRs
+    open-pull-requests-limit: 10
+    # Group all of the development tooling together
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+    # Allow updates to all dependency types
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    ignore:
+      # The plugins that @wordpress/eslint-plugin bundles accept ESLint 9 at most. With
+      # ESLint 10, "npm ls" reports an invalid tree and the lint job fails. Remove this
+      # entry when a release of the WordPress plugin supports ESLint 10 throughout.
+      - dependency-name: "eslint"
+        update-types:
+          - "version-update:semver-major"
+
+  # Updates for the Python linters that the lint job installs
+  - package-ecosystem: "pip"
+    directory: "/.github"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    # Set custom labels on pull requests
+    labels:
+      - "dependencies"
+      - "python"
+      - "automated"
+      - "maintenance"
+    # Limit the number of open PRs
+    open-pull-requests-limit: 10
+    # Group all of the linters together
+    groups:
+      lint-tools:
+        patterns:
+          - "*"

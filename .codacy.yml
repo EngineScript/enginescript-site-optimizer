@@ -1,0 +1,15 @@
+# Codacy configuration.
+#
+# TSLint is deprecated, and Codacy can still run it on JSON files. It is
+# turned off from here in two ways: tslint.json enables no rule, and the paths
+# below keep every file away from the tool. The two JSON files are named as
+# well, because they are what it flags: it asks for trailing commas and sorted
+# keys, which JSON and npm's lock file cannot have. Every other tool still
+# reads every file.
+engines:
+  tslint:
+    exclude_paths:
+      - "**"
+      - "**/*"
+      - "package.json"
+      - "package-lock.json"
