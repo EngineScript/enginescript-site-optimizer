@@ -79,39 +79,32 @@ function es_optimizer_get_boolean_option_keys(): array {
 /**
  * Get normalized options for the current site using WordPress option caching.
  *
- * The boolean argument retains the established public helper signature.
- *
  * @since 1.5.13
- * @param bool $force_refresh Retained for compatibility; WordPress owns cache freshness.
  * @return array<string, int|string> Plugin options.
- * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
  */
-function es_optimizer_get_options( bool $force_refresh = false ): array {
-	unset( $force_refresh );
-
-	$stored_options = get_option( 'es_optimizer_options', array() );
-
-	if ( ! is_array( $stored_options ) ) {
-		$stored_options = array();
-	}
-
-	return es_optimizer_normalize_stored_options( $stored_options, es_optimizer_get_default_options() );
+function es_optimizer_get_options(): array {
+	return es_optimizer_normalize_stored_options( get_option( 'es_optimizer_options', array() ), es_optimizer_get_default_options() );
 }
 
 /**
  * Normalize stored options before they are used by admin or frontend callbacks.
  *
  * @since 2.0.1
- * @param array<string, mixed>      $stored_options  Stored option values.
+ * @since 2.3.0 Accepts a stored value that is not an array and treats it as empty.
+ * @param mixed                     $stored_options  Stored option value; an array of option values.
  * @param array<string, int|string> $default_options Default option values.
  * @return array<string, int|string> Normalized options.
  */
-function es_optimizer_normalize_stored_options( array $stored_options, array $default_options ): array {
+function es_optimizer_normalize_stored_options( mixed $stored_options, array $default_options ): array {
+	if ( ! is_array( $stored_options ) ) {
+		$stored_options = array();
+	}
+
 	$options = $default_options;
 
 	foreach ( es_optimizer_get_boolean_option_keys() as $option_key ) {
 		if ( array_key_exists( $option_key, $stored_options ) ) {
-			$options[ $option_key ] = ! empty( $stored_options[ $option_key ] ) ? 1 : 0;
+			$options[ $option_key ] = wp_validate_boolean( $stored_options[ $option_key ] ) ? 1 : 0;
 		}
 	}
 
@@ -168,7 +161,7 @@ function es_optimizer_validate_options( mixed $input ): array {
 	}
 
 	foreach ( es_optimizer_get_boolean_option_keys() as $checkbox ) {
-		$valid[ $checkbox ] = ! empty( $input[ $checkbox ] ) ? 1 : 0;
+		$valid[ $checkbox ] = wp_validate_boolean( $input[ $checkbox ] ?? false ) ? 1 : 0;
 	}
 
 	$domain_fields = array(
@@ -191,6 +184,8 @@ function es_optimizer_validate_options( mixed $input ): array {
 
 		$valid[ $option_key ] = es_optimizer_validate_domain_list( $input[ $option_key ], $context );
 	}
+
+	es_optimizer_confirm_save_beside_warnings();
 
 	return $valid;
 }
@@ -237,17 +232,18 @@ function es_optimizer_validate_domain_list( string $domains_input, string $conte
 
 		if ( true === $validation_result['valid'] ) {
 			$sanitized_domains[] = $validation_result['domain'];
-		} else {
-			++$rejected_count;
+			continue;
+		}
 
-			if ( count( $rejected_domains ) < 3 ) {
-				$rejected_domains[] = sprintf(
-					/* translators: 1: Line number in the submitted domain list, 2: Validation reason without submitted text. */
-					__( 'Line %1$d: %2$s', 'enginescript-site-optimizer' ),
-					$line_number + 1,
-					$validation_result['error']
-				);
-			}
+		++$rejected_count;
+
+		if ( count( $rejected_domains ) < 3 ) {
+			$rejected_domains[] = sprintf(
+				/* translators: 1: Line number in the submitted domain list, 2: Validation reason, a complete sentence without submitted text. */
+				__( 'Line %1$d: %2$s', 'enginescript-site-optimizer' ),
+				$line_number + 1,
+				$validation_result['error']
+			);
 		}
 	}
 
@@ -344,15 +340,15 @@ function es_optimizer_validate_domain_for_context( string $domain, string $conte
  */
 function es_optimizer_show_rejection_notice( array $rejected_domains, string $context, ?int $rejected_count = null ): void {
 	$escaped_domains  = array_map( 'esc_html', array_slice( $rejected_domains, 0, 3 ) );
-	$rejected_message = implode( ', ', $escaped_domains );
+	$rejected_message = implode( ' ', $escaped_domains );
 
 	if ( ( $rejected_count ?? count( $rejected_domains ) ) > 3 ) {
-		$rejected_message .= esc_html__( '...', 'enginescript-site-optimizer' );
+		$rejected_message .= ' ' . esc_html__( 'Further rejected lines are not listed.', 'enginescript-site-optimizer' );
 	}
 
 	if ( null !== $rejected_count ) {
 		$rejected_message = sprintf(
-			/* translators: 1: Total number of rejected lines, 2: At most three safe reasons with line numbers. */
+			/* translators: 1: Total number of rejected lines, 2: At most three reasons with their line numbers, each a complete sentence. */
 			esc_html( _n( '%1$d line was rejected. %2$s', '%1$d lines were rejected. %2$s', $rejected_count, 'enginescript-site-optimizer' ) ),
 			$rejected_count,
 			$rejected_message
@@ -360,22 +356,26 @@ function es_optimizer_show_rejection_notice( array $rejected_domains, string $co
 	}
 
 	if ( 'preconnect' === $context ) {
-		$message = sprintf(
-			/* translators: %s: Safe validation reasons and line numbers, without submitted domains. */
-			esc_html__( 'The preconnect list could not be fully accepted: %s', 'enginescript-site-optimizer' ),
-			$rejected_message
+		es_optimizer_add_settings_warning(
+			'preconnect_security',
+			sprintf(
+				/* translators: %s: Safe validation reasons and line numbers, without submitted domains. */
+				esc_html__( 'The preconnect list could not be fully accepted: %s', 'enginescript-site-optimizer' ),
+				$rejected_message
+			)
 		);
-		$error_code = 'preconnect_security';
-	} else {
-		$message = sprintf(
+
+		return;
+	}
+
+	es_optimizer_add_settings_warning(
+		'dns_prefetch_security',
+		sprintf(
 			/* translators: %s: Safe validation reasons and line numbers, without submitted domains. */
 			esc_html__( 'The DNS prefetch list could not be fully accepted: %s', 'enginescript-site-optimizer' ),
 			$rejected_message
-		);
-		$error_code = 'dns_prefetch_security';
-	}
-
-	es_optimizer_add_settings_warning( $error_code, $message );
+		)
+	);
 }
 
 /**
@@ -393,13 +393,52 @@ function es_optimizer_show_rejection_notice( array $rejected_domains, string $co
 function es_optimizer_add_settings_warning( string $code, string $message ): void {
 	global $wp_settings_errors;
 
-	foreach ( (array) $wp_settings_errors as $error ) {
-		if ( is_array( $error ) && 'es_optimizer_options' === ( $error['setting'] ?? null ) && ( $error['code'] ?? null ) === $code ) {
-			return;
-		}
+	$registered = array_filter(
+		(array) $wp_settings_errors,
+		static fn ( mixed $error ): bool => is_array( $error ) && 'es_optimizer_options' === ( $error['setting'] ?? null ) && ( $error['code'] ?? null ) === $code
+	);
+
+	if ( array() !== $registered ) {
+		return;
 	}
 
 	add_settings_error( 'es_optimizer_options', $code, $message, 'warning' );
+}
+
+/**
+ * Confirm a save whose submission also produced a plugin warning.
+ *
+ * WordPress adds its own "Settings saved." notice only when no settings notice
+ * is registered, so a warning about rejected lines would hide that the rest of
+ * the form was saved. The notice uses the setting and code of the native one,
+ * and is added once.
+ *
+ * @since 2.3.0
+ * @global mixed $wp_settings_errors Settings API notices registered in this request.
+ * @return void
+ */
+function es_optimizer_confirm_save_beside_warnings(): void {
+	global $wp_settings_errors;
+
+	$has_plugin_warning = false;
+
+	foreach ( (array) $wp_settings_errors as $error ) {
+		if ( ! is_array( $error ) ) {
+			continue;
+		}
+
+		if ( 'general' === ( $error['setting'] ?? null ) && 'settings_updated' === ( $error['code'] ?? null ) ) {
+			return;
+		}
+
+		if ( 'es_optimizer_options' === ( $error['setting'] ?? null ) ) {
+			$has_plugin_warning = true;
+		}
+	}
+
+	if ( $has_plugin_warning ) {
+		add_settings_error( 'general', 'settings_updated', esc_html__( 'Settings saved.', 'enginescript-site-optimizer' ), 'success' );
+	}
 }
 
 /**
@@ -441,13 +480,9 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 		return $host_error;
 	}
 
-	$clean_domain = 'https://' . $host;
+	$clean_domain = es_optimizer_get_canonical_origin( $domain, $host, $parsed_url['port'] ?? null );
 
-	if ( isset( $parsed_url['port'] ) && 443 !== $parsed_url['port'] ) {
-		$clean_domain .= ':' . $parsed_url['port'];
-	}
-
-	if ( sanitize_url( $clean_domain, array( 'https' ) ) !== $clean_domain ) {
+	if ( '' === $clean_domain ) {
 		return es_optimizer_get_domain_validation_error( __( 'Invalid URL.', 'enginescript-site-optimizer' ) );
 	}
 
@@ -456,6 +491,44 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 		'domain' => $clean_domain,
 		'error'  => '',
 	);
+}
+
+/**
+ * Build the canonical origin of validated origin text.
+ *
+ * The URL parser reads the leading digits of a port and ignores what follows,
+ * and it accepts a hostname in brackets. The text must therefore be the origin
+ * itself: only letter case, one trailing slash and an explicit default port may
+ * differ, so a mistyped origin is rejected and not rewritten.
+ *
+ * @since 2.3.0
+ * @param string   $domain Trimmed origin text as submitted or stored.
+ * @param string   $host   Normalized, validated host parsed from the text.
+ * @param int|null $port   Port parsed from the text, if any.
+ * @return string Canonical HTTPS origin, or an empty string when the text is not that origin.
+ */
+function es_optimizer_get_canonical_origin( string $domain, string $host, ?int $port ): string {
+	$origin = 'https://' . $host;
+
+	if ( null !== $port && 443 !== $port ) {
+		$origin .= ':' . $port;
+	}
+
+	if ( sanitize_url( $origin, array( 'https' ) ) !== $origin ) {
+		return '';
+	}
+
+	$domain = strtolower( $domain );
+
+	if ( str_ends_with( $domain, '/' ) ) {
+		$domain = substr( $domain, 0, -1 );
+	}
+
+	if ( str_ends_with( $domain, ':443' ) ) {
+		$domain = substr( $domain, 0, -4 );
+	}
+
+	return $domain === $origin ? $origin : '';
 }
 
 /**
@@ -599,7 +672,7 @@ function es_optimizer_has_unsupported_preconnect_domains( string $domains_input 
  * @return bool True when the URL uses HTTPS.
  */
 function es_optimizer_url_has_https_scheme( array $parsed_url ): bool {
-	return ! empty( $parsed_url['scheme'] ) && 'https' === strtolower( (string) $parsed_url['scheme'] );
+	return isset( $parsed_url['scheme'] ) && is_string( $parsed_url['scheme'] ) && 'https' === strtolower( $parsed_url['scheme'] );
 }
 
 /**
@@ -610,9 +683,7 @@ function es_optimizer_url_has_https_scheme( array $parsed_url ): bool {
  * @return bool True when a non-root path is present.
  */
 function es_optimizer_url_has_disallowed_path( array $parsed_url ): bool {
-	$path = $parsed_url['path'] ?? '';
-
-	return '/' !== $path && '' !== $path;
+	return isset( $parsed_url['path'] ) && '/' !== $parsed_url['path'] && '' !== $parsed_url['path'];
 }
 
 /**
@@ -646,7 +717,13 @@ function es_optimizer_url_has_invalid_port( array $parsed_url ): bool {
 		return false;
 	}
 
-	$port = (int) $parsed_url['port'];
+	$port = $parsed_url['port'];
+
+	if ( ! is_numeric( $port ) ) {
+		return true;
+	}
+
+	$port = (int) $port;
 
 	return $port < 1 || $port > 65535;
 }
@@ -702,7 +779,7 @@ function es_optimizer_is_ip_literal_host( string $host ): bool {
  * @return bool True when the host resembles an obfuscated IP literal.
  */
 function es_optimizer_looks_like_obfuscated_ip_host( string $host ): bool {
-	return 1 === preg_match( '/^(?:0x[0-9a-f]+|0[0-7]+|\d+)(?:\.(?:0x[0-9a-f]+|0[0-7]+|\d+)){0,3}$/i', $host );
+	return 1 === preg_match( '/^(?:0x[0-9a-f]+|0[0-7]+|\d+)(?:\.(?:0x[0-9a-f]+|0[0-7]+|\d+)){0,3}\z/i', $host );
 }
 
 /**
@@ -714,12 +791,14 @@ function es_optimizer_looks_like_obfuscated_ip_host( string $host ): bool {
  */
 function es_optimizer_is_special_use_hostname( string $host ): bool {
 	$reserved_suffixes = array(
+		'alt',
 		'example',
 		'home.arpa',
 		'internal',
 		'invalid',
 		'local',
 		'localhost',
+		'onion',
 		'test',
 	);
 
@@ -751,14 +830,14 @@ function es_optimizer_is_valid_resource_hint_hostname( string $host ): bool {
 	}
 
 	foreach ( $labels as $label ) {
-		if ( 1 !== preg_match( '/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/', $label ) ) {
+		if ( 1 !== preg_match( '/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\z/', $label ) ) {
 			return false;
 		}
 	}
 
 	$top_level_domain = $labels[ array_key_last( $labels ) ];
 
-	return 1 !== preg_match( '/^\d+$/', $top_level_domain );
+	return 1 !== preg_match( '/^\d+\z/', $top_level_domain );
 }
 
 /**

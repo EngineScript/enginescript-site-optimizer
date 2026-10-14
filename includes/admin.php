@@ -49,9 +49,10 @@ function es_optimizer_register_settings_sections(): void {
 	foreach ( es_optimizer_get_settings_fields() as $field ) {
 		if ( 'textarea' === $field['type'] ) {
 			es_optimizer_register_textarea_field( $page, $field['section'], $field['option'], $field['title'], $field['description'] );
-		} else {
-			es_optimizer_register_checkbox_field( $page, $field['section'], $field['option'], $field['title'], $field['description'] );
+			continue;
 		}
+
+		es_optimizer_register_checkbox_field( $page, $field['section'], $field['option'], $field['title'], $field['description'] );
 	}
 }
 
@@ -128,7 +129,7 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 			$section,
 			'remove_wp_version',
 			__( 'Remove WordPress Version', 'enginescript-site-optimizer' ),
-			__( 'Remove the WordPress version from the document head.', 'enginescript-site-optimizer' )
+			__( 'Remove the WordPress version from the document head and from feeds.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
@@ -140,7 +141,7 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 			$section,
 			'remove_shortlink',
 			__( 'Remove Shortlink', 'enginescript-site-optimizer' ),
-			__( 'Remove WordPress shortlink URLs from the document head.', 'enginescript-site-optimizer' )
+			__( 'Remove WordPress shortlink URLs from the document head and the HTTP response header.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
@@ -219,7 +220,7 @@ function es_optimizer_get_domain_list_limits_description(): string {
 /**
  * Get optional domain suggestions for display in settings help only.
  *
- * @since Unreleased
+ * @since 2.3.0
  * @param string $option_name Domain-list option name.
  * @return array<int, string> Suggested origins, never used as saved defaults.
  */
@@ -318,7 +319,11 @@ function es_optimizer_get_field_description( string $option_name ): string {
 		return '';
 	}
 
-	return (string) ( $es_optimizer_field_descriptions[ $option_name ] ?? '' );
+	if ( ! isset( $es_optimizer_field_descriptions[ $option_name ] ) || ! is_scalar( $es_optimizer_field_descriptions[ $option_name ] ) ) {
+		return '';
+	}
+
+	return (string) $es_optimizer_field_descriptions[ $option_name ];
 }
 
 /**
@@ -409,8 +414,8 @@ function es_optimizer_register_textarea_field( string $page, string $section, st
  */
 function es_optimizer_add_settings_page(): void {
 	add_options_page(
-		__( 'Site Optimizer Settings', 'enginescript-site-optimizer' ),
-		__( 'Site Optimizer', 'enginescript-site-optimizer' ),
+		esc_html__( 'Site Optimizer Settings', 'enginescript-site-optimizer' ),
+		esc_html__( 'Site Optimizer', 'enginescript-site-optimizer' ),
 		'manage_options',
 		'es-optimizer-settings',
 		'es_optimizer_settings_page'
@@ -444,6 +449,12 @@ function es_optimizer_settings_page(): void {
 			<?php esc_html_e( 'This plugin is part of the EngineScript project.', 'enginescript-site-optimizer' ); ?>
 			<a href="https://github.com/EngineScript/EngineScript" target="_blank" rel="noopener noreferrer">
 				<?php esc_html_e( 'Visit the EngineScript GitHub page', 'enginescript-site-optimizer' ); ?>
+				<span class="screen-reader-text">
+					<?php
+					/* translators: Hidden accessibility text. */
+					esc_html_e( '(opens in a new tab)', 'enginescript-site-optimizer' );
+					?>
+				</span>
 			</a>
 		</p>
 	</div>
@@ -516,10 +527,14 @@ function es_optimizer_render_textarea_field( array $args ): void {
  * Add settings link to plugins page.
  *
  * @since 1.0.0
- * @param array<int|string, string> $links Plugin action links.
- * @return array<int|string, string> Modified plugin action links.
+ * @param mixed $links Plugin action links; another filter callback may pass a non-array.
+ * @return mixed Links with the settings link first, or the incoming value when it is not an array.
  */
-function es_optimizer_add_settings_link( array $links ): array {
+function es_optimizer_add_settings_link( mixed $links ): mixed {
+	if ( ! is_array( $links ) ) {
+		return $links;
+	}
+
 	$settings_link = '<a href="' . esc_url( admin_url( 'options-general.php?page=es-optimizer-settings' ) ) . '">' . esc_html__( 'Settings', 'enginescript-site-optimizer' ) . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;

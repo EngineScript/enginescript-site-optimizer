@@ -9,248 +9,253 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-28T01:46:32+00:00\n"
+"POT-Creation-Date: 2026-10-14T05:31:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
 
 #. Plugin Name of the plugin
-#: enginescript-site-optimizer.php:3
+#: enginescript-site-optimizer.php
 msgid "EngineScript Site Optimizer"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: enginescript-site-optimizer.php:4
+#: enginescript-site-optimizer.php
 msgid "https://github.com/EngineScript/enginescript-site-optimizer"
 msgstr ""
 
 #. Description of the plugin
-#: enginescript-site-optimizer.php:5
+#: enginescript-site-optimizer.php
 msgid "Configure optional WordPress features and resource hints."
 msgstr ""
 
 #. Author of the plugin
-#: enginescript-site-optimizer.php:7
+#: enginescript-site-optimizer.php
 msgid "EngineScript"
 msgstr ""
 
-#: includes/admin.php:66
+#: includes/admin.php:67
 msgid "Performance Optimizations"
 msgstr ""
 
-#: includes/admin.php:67
+#: includes/admin.php:68
 msgid "Header Cleanup"
 msgstr ""
 
-#: includes/admin.php:68
+#: includes/admin.php:69
 msgid "Additional Features"
 msgstr ""
 
-#: includes/admin.php:99
+#: includes/admin.php:100
 msgid "Disable WordPress Emojis"
 msgstr ""
 
-#: includes/admin.php:100
+#: includes/admin.php:101
 msgid "Remove WordPress emoji scripts and styles."
 msgstr ""
 
-#: includes/admin.php:105
+#: includes/admin.php:106
 msgid "Remove jQuery Migrate"
 msgstr ""
 
-#: includes/admin.php:106
+#: includes/admin.php:107
 msgid "Remove the jQuery Migrate script. This may affect plugins or themes that depend on it."
 msgstr ""
 
-#: includes/admin.php:111
+#: includes/admin.php:112
 msgid "Disable Classic Theme Styles"
 msgstr ""
 
-#: includes/admin.php:112
+#: includes/admin.php:113
 msgid "Remove the classic theme stylesheet added by WordPress."
 msgstr ""
 
-#: includes/admin.php:130
+#: includes/admin.php:131
 msgid "Remove WordPress Version"
 msgstr ""
 
-#: includes/admin.php:131
-msgid "Remove the WordPress version from the document head."
-msgstr ""
-
-#: includes/admin.php:136
-msgid "Remove RSD Link"
+#: includes/admin.php:132
+msgid "Remove the WordPress version from the document head and from feeds."
 msgstr ""
 
 #: includes/admin.php:137
+msgid "Remove RSD Link"
+msgstr ""
+
+#: includes/admin.php:138
 msgid "Remove the Really Simple Discovery (RSD) link from the document head."
 msgstr ""
 
-#: includes/admin.php:142
+#: includes/admin.php:143
 msgid "Remove Shortlink"
 msgstr ""
 
-#: includes/admin.php:143
-msgid "Remove WordPress shortlink URLs from the document head."
-msgstr ""
-
-#: includes/admin.php:148
-msgid "Remove Recent Comments Style"
+#: includes/admin.php:144
+msgid "Remove WordPress shortlink URLs from the document head and the HTTP response header."
 msgstr ""
 
 #: includes/admin.php:149
+msgid "Remove Recent Comments Style"
+msgstr ""
+
+#: includes/admin.php:150
 msgid "Remove inline CSS from the recent comments widget."
 msgstr ""
 
-#: includes/admin.php:167
+#: includes/admin.php:168
 msgid "Disable Jetpack Promotions"
 msgstr ""
 
-#: includes/admin.php:168
+#: includes/admin.php:169
 msgid "Disable Jetpack promotional messages and Blaze promotions."
 msgstr ""
 
-#: includes/admin.php:173
+#: includes/admin.php:174
 msgid "Disable Post via Email"
 msgstr ""
 
-#: includes/admin.php:174
+#: includes/admin.php:175
 msgid "Disable WordPress post via email."
 msgstr ""
 
-#: includes/admin.php:179
+#: includes/admin.php:180
 msgid "Enable Preconnect"
 msgstr ""
 
-#: includes/admin.php:180
+#: includes/admin.php:181
 msgid "Preconnect to external domains for faster resource loading."
 msgstr ""
 
-#: includes/admin.php:185
+#: includes/admin.php:186
 msgid "Preconnect Domains"
 msgstr ""
 
-#: includes/admin.php:186
+#: includes/admin.php:187
 msgid "Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations."
 msgstr ""
 
-#: includes/admin.php:191
+#: includes/admin.php:192
 msgid "Enable DNS Prefetch"
 msgstr ""
 
-#: includes/admin.php:192
+#: includes/admin.php:193
 msgid "Look up hostnames for less critical external domains."
 msgstr ""
 
-#: includes/admin.php:197
+#: includes/admin.php:198
 msgid "DNS Prefetch Domains"
 msgstr ""
 
-#: includes/admin.php:198
+#: includes/admin.php:199
 msgid "DNS prefetch performs only a hostname lookup; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations."
 msgstr ""
 
 #. translators: 1: Maximum bytes per domain list, 2: Maximum nonblank lines, 3: Maximum bytes per nonblank line.
-#: includes/admin.php:212
+#: includes/admin.php:213
 #, php-format
 msgid "Limits: %1$d bytes per list, %2$d nonblank lines, and %3$d bytes per nonblank line. Duplicate and invalid lines count toward the limit. Oversize submissions keep your previous list."
 msgstr ""
 
-#: includes/admin.php:412
-#: includes/admin.php:431
+#: includes/admin.php:417
+#: includes/admin.php:436
 msgid "Site Optimizer Settings"
 msgstr ""
 
-#: includes/admin.php:413
+#: includes/admin.php:418
 msgid "Site Optimizer"
 msgstr ""
 
-#: includes/admin.php:427
+#: includes/admin.php:432
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: includes/admin.php:432
+#: includes/admin.php:437
 msgid "Select which optimizations you want to enable and customize the resource hint domains."
 msgstr ""
 
-#: includes/admin.php:438
+#: includes/admin.php:443
 msgid "Save Changes"
 msgstr ""
 
-#: includes/admin.php:444
+#: includes/admin.php:449
 msgid "This plugin is part of the EngineScript project."
 msgstr ""
 
-#: includes/admin.php:446
+#: includes/admin.php:451
 msgid "Visit the EngineScript GitHub page"
 msgstr ""
 
-#: includes/admin.php:499
+#. translators: Hidden accessibility text.
+#: includes/admin.php:455
+msgid "(opens in a new tab)"
+msgstr ""
+
+#: includes/admin.php:510
 msgid "This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it."
 msgstr ""
 
-#: includes/admin.php:501
+#: includes/admin.php:512
 msgid "Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared."
 msgstr ""
 
-#: includes/admin.php:508
+#: includes/admin.php:519
 msgid "Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints."
 msgstr ""
 
-#: includes/admin.php:523
+#: includes/admin.php:538
 msgid "Settings"
 msgstr ""
 
-#: includes/options.php:164
+#: includes/options.php:157
 msgid "The submitted settings have an invalid format. Your previous settings were retained."
 msgstr ""
 
-#: includes/options.php:186
+#: includes/options.php:179
 msgid "Enter domains as text. Your previous list was retained."
 msgstr ""
 
-#: includes/options.php:211
+#: includes/options.php:206
 msgid "Your previous list was retained."
 msgstr ""
 
-#. translators: 1: Line number in the submitted domain list, 2: Validation reason without submitted text.
-#: includes/options.php:246
+#. translators: 1: Line number in the submitted domain list, 2: Validation reason, a complete sentence without submitted text.
+#: includes/options.php:243
 #, php-format
 msgid "Line %1$d: %2$s"
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in one domain list.
-#: includes/options.php:275
+#: includes/options.php:271
 #, php-format
 msgid "Each domain list is limited to %d bytes."
 msgstr ""
 
-#: includes/options.php:283
+#: includes/options.php:279
 msgid "The domain list could not be read."
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in a nonblank domain line.
-#: includes/options.php:298
+#: includes/options.php:294
 #, php-format
 msgid "Each nonblank domain line is limited to %d bytes."
 msgstr ""
 
 #. translators: %d: Maximum nonblank lines allowed before removing duplicates or invalid domains.
-#: includes/options.php:308
+#: includes/options.php:304
 #, php-format
 msgid "Each domain list is limited to %d nonblank lines, including duplicates and invalid entries."
 msgstr ""
 
-#: includes/options.php:330
+#: includes/options.php:326
 msgid "Preconnect supports HTTPS port 443 only."
 msgstr ""
 
-#: includes/options.php:350
-msgid "..."
+#: includes/options.php:346
+msgid "Further rejected lines are not listed."
 msgstr ""
 
-#. translators: 1: Total number of rejected lines, 2: At most three safe reasons with line numbers.
-#: includes/options.php:356
+#. translators: 1: Total number of rejected lines, 2: At most three reasons with their line numbers, each a complete sentence.
+#: includes/options.php:352
 #, php-format
 msgid "%1$d line was rejected. %2$s"
 msgid_plural "%1$d lines were rejected. %2$s"
@@ -258,62 +263,137 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:365
+#: includes/options.php:363
 #, php-format
 msgid "The preconnect list could not be fully accepted: %s"
 msgstr ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:372
+#: includes/options.php:375
 #, php-format
 msgid "The DNS prefetch list could not be fully accepted: %s"
 msgstr ""
 
-#: includes/options.php:415
+#: includes/options.php:440
+msgid "Settings saved."
+msgstr ""
+
+#: includes/options.php:454
 msgid "Encoded characters, backslashes, markup, and control characters are not allowed."
 msgstr ""
 
-#: includes/options.php:422
+#: includes/options.php:461
 msgid "Empty domain."
 msgstr ""
 
-#: includes/options.php:428
-#: includes/options.php:451
+#: includes/options.php:467
+#: includes/options.php:486
 msgid "Invalid URL."
 msgstr ""
 
-#: includes/options.php:484
+#: includes/options.php:557
 msgid "HTTPS is required."
 msgstr ""
 
-#: includes/options.php:488
+#: includes/options.php:561
 msgid "No host found."
 msgstr ""
 
-#: includes/options.php:492
+#: includes/options.php:565
 msgid "File paths are not allowed; use domains only."
 msgstr ""
 
-#: includes/options.php:497
+#: includes/options.php:570
 msgid "Query parameters, fragments, and credentials are not allowed."
 msgstr ""
 
-#: includes/options.php:502
+#: includes/options.php:575
 msgid "Invalid port."
 msgstr ""
 
-#: includes/options.php:521
+#: includes/options.php:594
 msgid "IP addresses and private, local, or reserved hosts are not allowed."
 msgstr ""
 
-#: includes/options.php:526
+#: includes/options.php:599
 msgid "Invalid hostname."
 msgstr ""
 
-#: uninstall.php:265
-msgid "Site Optimizer settings could not be fully removed. The plugin files were retained. Pause site and settings changes, then retry removal with sufficient time and memory."
+#: uninstall.php:51
+msgid "Site Optimizer settings could not be fully removed. The plugin files were retained. Pause site and settings changes, then retry removal."
 msgstr ""
 
-#: uninstall.php:266
+#. translators: %s: Why the settings could not be removed.
+#: uninstall.php:60
+#, php-format
+msgid "Reason: %s"
+msgstr ""
+
+#: uninstall.php:75
+#: uninstall.php:81
+#: uninstall.php:160
+msgid "The list of network sites returned an invalid site ID."
+msgstr ""
+
+#: uninstall.php:98
+#: uninstall.php:130
+#: uninstall.php:181
+#: uninstall.php:455
+msgid "The WordPress database object is unavailable."
+msgstr ""
+
+#: uninstall.php:110
+#: uninstall.php:144
+#: uninstall.php:151
+msgid "The list of network sites could not be read."
+msgstr ""
+
+#. translators: %d: Site ID.
+#: uninstall.php:191
+#, php-format
+msgid "The current site changed while the settings of site %d were being deleted."
+msgstr ""
+
+#. translators: %d: Site ID.
+#: uninstall.php:208
+#, php-format
+msgid "The settings of site %d could not be verified as removed."
+msgstr ""
+
+#. translators: %d: Site ID.
+#: uninstall.php:219
+#, php-format
+msgid "The settings of site %d are still stored after deletion."
+msgstr ""
+
+#: uninstall.php:245
+msgid "The site-switch state could not be read."
+msgstr ""
+
+#: uninstall.php:281
+#: uninstall.php:287
+#: uninstall.php:294
+msgid "WordPress could not switch back to the original site."
+msgstr ""
+
+#. translators: %d: Site ID.
+#: uninstall.php:324
+#, php-format
+msgid "WordPress could not switch to site %d."
+msgstr ""
+
+#. translators: 1: Number of sites, 2: Comma-separated site IDs.
+#: uninstall.php:377
+#, php-format
+msgid "Settings could not be removed from %1$d site. Site ID: %2$s."
+msgid_plural "Settings could not be removed from %1$d sites. Site IDs, at most the first 20: %2$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#: uninstall.php:432
+msgid "A site was created during removal."
+msgstr ""
+
+#: uninstall.php:480
 msgid "Site Optimizer removal failed"
 msgstr ""

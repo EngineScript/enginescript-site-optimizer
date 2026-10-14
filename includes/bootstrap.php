@@ -21,36 +21,6 @@ function es_optimizer_init_plugin(): void {
 }
 
 /**
- * Plugin activation hook.
- *
- * Missing settings remain virtual until a changed save. WordPress supplies the
- * boolean argument; the public callback intentionally has no side effects.
- *
- * @since 1.6.0
- * @param bool $network_wide Whether the plugin is being network activated.
- * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
- * @phpstan-ignore void.pure (Retain the registered lifecycle callback without creating settings.)
- */
-function es_optimizer_activate_plugin( bool $network_wide = false ): void {
-	unset( $network_wide );
-}
-
-/**
- * Plugin deactivation hook.
- *
- * Keep each site's saved settings for a later activation. WordPress supplies
- * the boolean argument; the public callback intentionally has no side effects.
- *
- * @since 1.6.0
- * @param bool $network_wide Whether the plugin is being network deactivated.
- * @SuppressWarnings("PHPMD.BooleanArgumentFlag")
- * @phpstan-ignore void.pure (Retain the registered lifecycle callback without deleting settings.)
- */
-function es_optimizer_deactivate_plugin( bool $network_wide = false ): void {
-	unset( $network_wide );
-}
-
-/**
  * Initialize admin-related functionality.
  *
  * @since 1.6.0
@@ -75,11 +45,11 @@ function es_optimizer_init_frontend_optimizations(): void {
 	add_action( 'wp_default_scripts', 'es_optimizer_remove_jquery_migrate' );
 	add_action( 'wp_enqueue_scripts', 'es_optimizer_disable_classic_theme_styles', 100 );
 	add_action( 'init', 'es_optimizer_remove_header_items' );
+	add_action( 'template_redirect', 'es_optimizer_remove_feed_generator' );
 	add_action( 'init', 'es_optimizer_remove_recent_comments_style' );
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints', 10, 2 );
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_dns_prefetch_resource_hints', 10, 2 );
 	add_filter( 'tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce' );
-	add_filter( 'wp_resource_hints', 'es_optimizer_disable_emojis_remove_dns_prefetch', 10, 2 );
 	add_action( 'init', 'es_optimizer_disable_jetpack_ads' );
 	add_action( 'init', 'es_optimizer_disable_post_via_email' );
 }
@@ -95,5 +65,3 @@ function es_optimizer_init_plugin_links(): void {
 }
 
 add_action( 'plugins_loaded', 'es_optimizer_init_plugin' );
-register_activation_hook( ES_SITE_OPTIMIZER_FILE, 'es_optimizer_activate_plugin' );
-register_deactivation_hook( ES_SITE_OPTIMIZER_FILE, 'es_optimizer_deactivate_plugin' );

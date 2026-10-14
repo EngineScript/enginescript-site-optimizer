@@ -15,7 +15,7 @@ A WordPress plugin for disabling selected features and configuring resource hint
 
 ## Features
 
-- **Header Cleanup:** Remove generator output, RSD links, and shortlinks from the page head
+- **Header Cleanup:** Remove generator output from the page head and feeds, RSD links from the page head, and shortlinks from the page head and the HTTP response header
 - **Script Optimization:** Disable WordPress emojis and remove jQuery Migrate
 - **Style Optimization:** Remove inline styles from recent comments widget and disable classic theme styles
 - **Resource Hints:** Configure DNS prefetch and preconnect for HTTPS origins used by your site
@@ -49,7 +49,8 @@ the setting and save. Existing saved lists are preserved.
 Enter one HTTPS origin per line, such as `https://cdn.example.com`. Paths other
 than a trailing slash, query strings, fragments and credentials are rejected.
 Preconnect accepts an omitted port or port 443. DNS prefetch uses only the
-hostname, even if an accepted entry includes a port.
+hostname, even if an accepted entry includes a port. An entry must be an origin
+as written: a malformed port, for example, is rejected and not corrected.
 
 Each list allows 32,768 bytes in total, 100 nonblank lines and 512 bytes per
 nonblank line. These limits apply before trimming or removing duplicate and
@@ -63,7 +64,8 @@ rewriting their saved text until you explicitly save the settings.
 
 Use hints for origins your pages actually need and measure their effect on your
 site. Browsers decide whether to use them; adding a hint does not establish a
-performance improvement.
+performance improvement. The plugin adds its hints to front-end pages only, not
+to the admin area or the login screen.
 
 ## Settings Protection
 
@@ -106,9 +108,10 @@ those features.
 
 ### Will removing the WordPress version improve security?
 
-The option removes WordPress's generator output from the page head. Other
-version indicators can remain. It does not fix vulnerabilities or replace
-WordPress, theme and plugin updates.
+The option removes WordPress's generator output from the page head and from
+feeds. Other version indicators, such as version arguments on asset URLs, can
+remain. It does not fix vulnerabilities or replace WordPress, theme and plugin
+updates.
 
 ### What happens when I deactivate or delete the plugin?
 
@@ -116,29 +119,30 @@ Deactivation retains settings. Deleting the plugin through WordPress runs its
 uninstall cleanup, including separate site settings across multisite networks.
 Pause site creation and settings changes during removal. Large installations
 may need an operator-run uninstall with sufficient time and memory. If cleanup
-fails, resolve the reported problem and retry removal.
+fails, the plugin files stay in place and the message gives the reason and, on
+a network, the IDs of the sites that could not be cleaned. Resolve the reported
+problem and retry removal.
 
 ## Development
 
 ### Requirements
 
 - Plugin runtime: PHP 8.2 or higher and WordPress 6.8 or higher
-- Development tools: Composer and a PHP version that satisfies `composer.lock`
+- Development tools: Composer and a PHP version that satisfies `composer.json`
 
 ### Set Up the Development Environment
 
 1. Clone this repository: `git clone https://github.com/EngineScript/enginescript-site-optimizer.git`
-2. Install development tools from the lock: `composer install --no-interaction --prefer-dist`.
-   The development lock was validated with PHP 8.5.6; let Composer check its exact
-   platform requirements. These are separate from the plugin's PHP 8.2 runtime minimum.
-3. Run scoped static checks with `composer check-all`.
+2. Install the development tools: `composer install --no-interaction --prefer-dist`, then `npm install`.
+   Neither lock file is tracked, so Composer and npm resolve the tools on your machine, and CI resolves
+   them on its runner. These tools are separate from the plugin's PHP 8.2 runtime minimum.
+3. Run the static checks and the unit tests with `composer check-all`.
 4. Submit changes for the [WordPress Compatibility workflow](.github/workflows/wp-compatibility-test.yml).
 
-Plugin and automation suites run on fresh GitHub runners. The workflow runs the
-unit suite through `composer test` before selecting PHPUnit 9.6 for native
-WordPress tests. It generates its installer, native bootstrap, tests and config
-on the runner; there is no checked-in local WordPress installer. Do not provision
-a local suite as a replacement for the CI evidence.
+`composer test` runs the unit suite on any machine. The workflow runs it as well,
+before selecting PHPUnit 9.6 for the native WordPress tests. Those tests run in the
+workflow only: it generates its installer, native bootstrap, tests and config on the
+runner, and there is no checked-in local WordPress installer.
 
 ### PHP Compatibility
 

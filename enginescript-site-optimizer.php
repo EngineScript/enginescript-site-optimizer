@@ -30,10 +30,6 @@ if ( ! defined( 'ES_SITE_OPTIMIZER_FILE' ) ) {
 	define( 'ES_SITE_OPTIMIZER_FILE', __FILE__ );
 }
 
-if ( ! defined( 'ES_SITE_OPTIMIZER_PATH' ) ) {
-	define( 'ES_SITE_OPTIMIZER_PATH', plugin_dir_path( __FILE__ ) );
-}
-
 require_once __DIR__ . '/includes/options.php';
 require_once __DIR__ . '/includes/admin.php';
 require_once __DIR__ . '/includes/frontend.php';

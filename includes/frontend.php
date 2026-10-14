@@ -12,11 +12,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Determine whether frontend-only optimizations should run.
  *
+ * The login screen prints resource hints from its own head action. It is not
+ * a page for visitors, so the plugin's hints are left out there.
+ *
  * @since 2.0.0
  * @return bool True when the current request is a regular frontend request.
  */
 function es_optimizer_is_frontend_request(): bool {
-	return ! is_admin() && ! wp_doing_ajax();
+	return ! is_admin() && ! wp_doing_ajax() && ! doing_action( 'login_head' );
 }
 
 /**
@@ -56,84 +59,22 @@ function es_optimizer_disable_admin_emojis(): void {
  * Filter function used to remove the TinyMCE emoji plugin.
  *
  * @since 1.0.0
- * @param array<int, string> $plugins Array of TinyMCE plugins.
- * @return array<int, string> Plugins without wpemoji.
+ * @param mixed $plugins List of TinyMCE plugin names; another filter callback may pass anything.
+ * @return mixed Plugins without wpemoji, or the incoming value when it is not an array.
  */
-function es_optimizer_disable_emojis_tinymce( array $plugins ): array {
-	if ( ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
+function es_optimizer_disable_emojis_tinymce( mixed $plugins ): mixed {
+	if ( ! is_array( $plugins ) || ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
 		return $plugins;
 	}
 
-	return array_values( array_diff( $plugins, array( 'wpemoji' ) ) );
-}
-
-/**
- * Remove emoji CDN hostname from DNS prefetching hints.
- *
- * @since 1.0.0
- * @param array<int|string, mixed> $urls          Resource hints, including unknown foreign entries.
- * @param string                   $relation_type The relation type the URLs are printed for.
- * @return array<int|string, mixed> Filtered hints with surviving keys, order and values preserved.
- */
-function es_optimizer_disable_emojis_remove_dns_prefetch( array $urls, string $relation_type ): array {
-	if ( 'dns-prefetch' !== $relation_type || ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
-		return $urls;
-	}
-
-	$emoji_svg_url = apply_filters( 'emoji_svg_url', 'https://s.w.org/images/core/emoji/2/svg/' ); // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Identify the emoji host to remove its DNS hint; no remote asset is loaded.
-
-	if ( ! is_string( $emoji_svg_url ) ) {
-		return $urls;
-	}
-
-	$emoji_host = es_optimizer_get_resource_hint_host( $emoji_svg_url );
-
-	if ( '' === $emoji_host ) {
-		return $urls;
-	}
-
-	return array_filter(
-		$urls,
-		static function ( mixed $url ) use ( $emoji_host ): bool {
-			$href = is_array( $url ) ? ( $url['href'] ?? null ) : $url;
-
-			return ! is_string( $href ) || es_optimizer_get_resource_hint_host( $href ) !== $emoji_host;
-		}
+	return array_values(
+		array_filter(
+			$plugins,
+			static function ( mixed $plugin ): bool {
+				return 'wpemoji' !== $plugin;
+			}
+		)
 	);
-}
-
-/**
- * Extract a comparable hostname from an existing browser resource-hint value.
- *
- * Accepts absolute, scheme-relative and bare host forms for matching only.
- * This does not relax the stricter policy for administrator-supplied origins.
- *
- * @since 2.2.0
- * @param string $url Existing URL or hostname to compare.
- * @return string Lowercase hostname, or an empty string for an unsupported value.
- */
-function es_optimizer_get_resource_hint_host( string $url ): string {
-	if ( 1 === preg_match( '/[<>\x00-\x20\x7F\\\\]/', $url ) ) {
-		return '';
-	}
-
-	if ( ! str_contains( $url, '://' ) && ! str_starts_with( $url, '//' ) ) {
-		$url = '//' . $url;
-	}
-
-	$parts = wp_parse_url( $url );
-
-	if ( ! is_array( $parts ) || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
-		return '';
-	}
-
-	if ( ! in_array( strtolower( $parts['scheme'] ?? 'https' ), array( 'http', 'https' ), true ) ) {
-		return '';
-	}
-
-	$host = strtolower( $parts['host'] ?? '' );
-
-	return str_contains( $host, '%' ) ? '' : $host;
 }
 
 /**
@@ -173,11 +114,21 @@ function es_optimizer_disable_classic_theme_styles(): void {
 /**
  * Remove selected WordPress header items.
  *
+ * The version is removed from the document head and from feeds, and the
+ * shortlink from the document head and the HTTP response header. Version
+ * arguments on asset URLs are left alone, and so is an export file: see
+ * es_optimizer_remove_feed_generator() for the one feed action it shares.
+ *
  * @since 1.0.0
  */
 function es_optimizer_remove_header_items(): void {
 	if ( es_optimizer_is_option_enabled( 'remove_wp_version' ) ) {
 		remove_action( 'wp_head', 'wp_generator' );
+
+		// The feed actions that WordPress gives a generator tag, except the one an export file also runs.
+		foreach ( array( 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ) as $feed_action ) {
+			remove_action( $feed_action, 'the_generator' );
+		}
 	}
 
 	if ( es_optimizer_is_option_enabled( 'remove_rsd_link' ) ) {
@@ -186,6 +137,24 @@ function es_optimizer_remove_header_items(): void {
 
 	if ( es_optimizer_is_option_enabled( 'remove_shortlink' ) ) {
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10 );
+		remove_action( 'template_redirect', 'wp_shortlink_header', 11 );
+	}
+}
+
+/**
+ * Remove the generator tag from the RSS 2 feed while a feed is being served.
+ *
+ * WordPress runs the head action of the RSS 2 feed inside an export file as
+ * well, in the admin area, under WP-CLI, and wherever other code builds an
+ * export. An export must stay as WordPress writes it, so the tag is removed
+ * only on a feed request, which is known once the request has been parsed.
+ *
+ * @since 2.3.0
+ * @return void
+ */
+function es_optimizer_remove_feed_generator(): void {
+	if ( is_feed() && es_optimizer_is_option_enabled( 'remove_wp_version' ) ) {
+		remove_action( 'rss2_head', 'the_generator' );
 	}
 }
 
@@ -213,12 +182,12 @@ function es_optimizer_filter_recent_comments_style( mixed $show_style ): mixed {
  * Add preconnect hints through the native WordPress resource hints API.
  *
  * @since 1.4.1
- * @param array<int|string, mixed> $urls          Resource hints, including unknown foreign values.
- * @param string                   $relation_type The relation type the URLs are printed for.
- * @return array<int|string, mixed> Original entries plus at most 100 supported plugin origins.
+ * @param mixed $urls          Resource hints, including unknown foreign values; another filter callback may pass a non-array.
+ * @param mixed $relation_type The relation type the URLs are printed for.
+ * @return mixed Original entries plus at most 100 supported plugin origins, or the incoming value when it is not an array.
  */
-function es_optimizer_add_preconnect_resource_hints( array $urls, string $relation_type ): array {
-	if ( 'preconnect' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
+function es_optimizer_add_preconnect_resource_hints( mixed $urls, mixed $relation_type = '' ): mixed {
+	if ( ! is_array( $urls ) || 'preconnect' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
 		return $urls;
 	}
 
@@ -226,7 +195,6 @@ function es_optimizer_add_preconnect_resource_hints( array $urls, string $relati
 		return $urls;
 	}
 
-	$font_domains   = array( 'fonts.googleapis.com', 'fonts.gstatic.com' );
 	$existing_hrefs = es_optimizer_get_resource_hint_hrefs( $urls );
 
 	foreach ( es_optimizer_get_validated_domains( 'preconnect_domains' ) as $domain ) {
@@ -237,7 +205,9 @@ function es_optimizer_add_preconnect_resource_hints( array $urls, string $relati
 		$host = wp_parse_url( $domain, PHP_URL_HOST );
 		$hint = array( 'href' => $domain );
 
-		if ( is_string( $host ) && in_array( $host, $font_domains, true ) ) {
+		// Font files are fetched without credentials and need their own connection.
+		// A stylesheet is fetched with credentials, so its host must not be marked.
+		if ( 'fonts.gstatic.com' === $host ) {
 			$hint['crossorigin'] = 'anonymous';
 		}
 
@@ -252,12 +222,12 @@ function es_optimizer_add_preconnect_resource_hints( array $urls, string $relati
  * Add DNS prefetch hints through the native WordPress resource hints API.
  *
  * @since 1.8.0
- * @param array<int|string, mixed> $urls          Resource hints, including unknown foreign values.
- * @param string                   $relation_type The relation type the URLs are printed for.
- * @return array<int|string, mixed> Original entries plus at most 100 origins for core's host-only DNS output.
+ * @param mixed $urls          Resource hints, including unknown foreign values; another filter callback may pass a non-array.
+ * @param mixed $relation_type The relation type the URLs are printed for.
+ * @return mixed Original entries plus at most 100 origins for core's host-only DNS output, or the incoming value when it is not an array.
  */
-function es_optimizer_add_dns_prefetch_resource_hints( array $urls, string $relation_type ): array {
-	if ( 'dns-prefetch' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
+function es_optimizer_add_dns_prefetch_resource_hints( mixed $urls, mixed $relation_type = '' ): mixed {
+	if ( ! is_array( $urls ) || 'dns-prefetch' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
 		return $urls;
 	}
 
@@ -278,18 +248,6 @@ function es_optimizer_add_dns_prefetch_resource_hints( array $urls, string $rela
 }
 
 /**
- * Determine whether a resource hint already exists.
- *
- * @since 2.0.0
- * @param array<int|string, mixed> $urls Resource hints, including unknown foreign values.
- * @param string                   $href URL to check.
- * @return bool True when the hint exists.
- */
-function es_optimizer_resource_hint_exists( array $urls, string $href ): bool {
-	return isset( es_optimizer_get_resource_hint_hrefs( $urls )[ $href ] );
-}
-
-/**
  * Index existing string href values without changing or coercing foreign hints.
  *
  * Callers build this set once, then add each new href as they append a hint.
@@ -302,15 +260,28 @@ function es_optimizer_resource_hint_exists( array $urls, string $href ): bool {
 function es_optimizer_get_resource_hint_hrefs( array $urls ): array {
 	$hrefs = array();
 
-	foreach ( $urls as $url ) {
-		$href = is_array( $url ) ? ( $url['href'] ?? null ) : $url;
-
-		if ( is_string( $href ) ) {
+	foreach ( array_map( 'es_optimizer_get_resource_hint_href', $urls ) as $href ) {
+		if ( null !== $href ) {
 			$hrefs[ $href ] = true;
 		}
 	}
 
 	return $hrefs;
+}
+
+/**
+ * Get the href of one resource hint.
+ *
+ * @since 2.3.0
+ * @param mixed $url A resource hint: a URL string, or an array with an href.
+ * @return string|null The href, or null when the hint has no string href.
+ */
+function es_optimizer_get_resource_hint_href( mixed $url ): ?string {
+	if ( is_array( $url ) ) {
+		return isset( $url['href'] ) && is_string( $url['href'] ) ? $url['href'] : null;
+	}
+
+	return is_string( $url ) ? $url : null;
 }
 
 /**
