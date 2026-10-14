@@ -8,7 +8,8 @@ on:
   issues:
     types: [opened, reopened]
   # Metadata-only base-branch actions; no checkout/build of PR code.
-  pull_request_target:
+  # No step checks out or runs code from the pull request; the job only reads the event.
+  pull_request_target:  # zizmor: ignore[dangerous-triggers]
     types: [opened, reopened]
 
 permissions:
@@ -23,15 +24,15 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/labeler@v7
-      if: github.event_name == 'pull_request_target'
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        configuration-path: .github/labeler.yml
-        sync-labels: false
-    - uses: actions/stale@v11
-      with:
-        days-before-stale: 30
-        days-before-close: 7
-        stale-issue-message: 'This issue is stale due to inactivity'
-        stale-pr-message: 'This PR is stale due to inactivity'
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13  # v7.0.0
+        if: github.event_name == 'pull_request_target'
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/labeler.yml
+          sync-labels: false
+      - uses: actions/stale@4391f3da665fdf50b6810c1a66712fb9ba21aa93  # v11.0.0
+        with:
+          days-before-stale: 30
+          days-before-close: 7
+          stale-issue-message: 'This issue is stale due to inactivity'
+          stale-pr-message: 'This PR is stale due to inactivity'

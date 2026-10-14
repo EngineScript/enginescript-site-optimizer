@@ -6,34 +6,124 @@ from __future__ import annotations
 import argparse
 import hashlib
 import stat
-# The sole invocation uses system Git with fixed arguments to list tracked files.
+
+# Every invocation uses system Git with fixed arguments to list tracked files.
 import subprocess  # nosec B404
 from pathlib import Path
-from zipfile import ZipFile
-
+from zipfile import ZipFile, ZipInfo
 
 SLUG = "enginescript-site-optimizer"
-RELEASE_FILES = {
-    f"{SLUG}.php", "uninstall.php", "readme.txt", "README.md", "CHANGELOG.md", "LICENSE"
-}
+# No Markdown file ships: readme.txt is the readme and the changelog of the package.
+RELEASE_FILES = {f"{SLUG}.php", "uninstall.php", "readme.txt", "LICENSE"}
 RELEASE_DIRS = {"includes", "languages"}
+
+# File rules of the WordPress.org plugin directory, as the Plugin Check plugin
+# applies them: no compressed archive, PHP archive, or application file.
+FORBIDDEN_EXTENSIONS = {
+    "7z",
+    "gz",
+    "rar",
+    "tar",
+    "tgz",
+    "zip",
+    "phar",
+    "a",
+    "bin",
+    "bpk",
+    "deploy",
+    "dist",
+    "distz",
+    "dmg",
+    "dms",
+    "dump",
+    "elc",
+    "exe",
+    "iso",
+    "lha",
+    "lrf",
+    "lzh",
+    "o",
+    "obj",
+    "pkg",
+    "sh",
+    "so",
+}
+# This project's own rule: readme.txt is the only readme and changelog that ships.
+FORBIDDEN_EXTENSIONS.add("md")
+FORBIDDEN_NAME_CHARACTERS = set("!@#$%^&*()+=[]{};:\"'<>,?\\|`~")
+
+
+def tracked_files(root: Path, *options: str) -> set[str]:
+    """List tracked files, optionally narrowed by more `git ls-files` options."""
+    # Ubuntu/WSL system Git; package paths and file contents are not command code.
+    listing = (
+        subprocess.run(  # nosec B603
+            ["/usr/bin/git", "ls-files", "-z", *options], cwd=root, check=True, capture_output=True
+        )
+        .stdout.decode("utf-8")
+        .split("\0")
+    )
+    return {name for name in listing if name}
+
+
+def check_distignore(root: Path, tracked: set[str], names: set[str]) -> None:
+    """Require .distignore to keep exactly the tracked files that the allowlist ships.
+
+    Git matches the patterns, so they mean what they mean to `wp dist-archive`.
+    """
+    distignore = root / ".distignore"
+    if distignore.is_symlink() or not distignore.is_file():
+        raise ValueError("The .distignore file is missing.")
+    excluded = tracked_files(root, "--cached", "--ignored", "--exclude-from=.distignore")
+    difference = sorted((tracked - excluded) ^ names)
+    if difference:
+        raise ValueError("The .distignore file and the release allowlist disagree about: " + ", ".join(difference))
+
+
+def directory_rule_problem(name: str) -> str | None:
+    """Say why the WordPress.org plugin directory would not accept a file, or None."""
+    path = Path(name)
+    if any(part.startswith(".") for part in path.parts):
+        return "hidden file or directory"
+    if path.suffix.lower().lstrip(".") in FORBIDDEN_EXTENSIONS:
+        return "file type that must not ship"
+    if any(character.isspace() for character in name):
+        return "space in the name"
+    if FORBIDDEN_NAME_CHARACTERS & set(path.name):
+        return "special character in the name"
+    return None
+
+
+def check_directory_rules(names: set[str]) -> None:
+    """Refuse a package that breaks a file rule of the WordPress.org plugin directory."""
+    problems = [
+        f"{name} ({problem})" for name in sorted(names) for problem in [directory_rule_problem(name)] if problem
+    ]
+    lowered: dict[str, str] = {}
+    for name in sorted(names):
+        if name.lower() in lowered:
+            problems.append(f"{name} (differs from {lowered[name.lower()]} only by case)")
+        lowered[name.lower()] = name
+    if problems:
+        raise ValueError("Not allowed in the release package: " + ", ".join(problems))
 
 
 def expected_contents(root: Path) -> dict[str, bytes]:
     """Read only tracked regular production/public files, never vendor output."""
-    # Ubuntu/WSL system Git; package paths and file contents are not command code.
-    result = subprocess.run(  # nosec B603
-        ["/usr/bin/git", "ls-files", "-z"], cwd=root, check=True, capture_output=True
-    )
-    tracked = result.stdout.decode("utf-8").split("\0")
+    tracked = tracked_files(root)
     names = {
-        name for name in tracked
-        if name in RELEASE_FILES or Path(name).parts[:1] in
-        {(directory,) for directory in RELEASE_DIRS}
+        name
+        for name in tracked
+        if name in RELEASE_FILES or Path(name).parts[:1] in {(directory,) for directory in RELEASE_DIRS}
     }
+    check_directory_rules(names)
+    check_distignore(root, tracked, names)
     required = RELEASE_FILES | {
-        "includes/admin.php", "includes/bootstrap.php", "includes/frontend.php",
-        "includes/options.php", f"languages/{SLUG}.pot"
+        "includes/admin.php",
+        "includes/bootstrap.php",
+        "includes/frontend.php",
+        "includes/options.php",
+        f"languages/{SLUG}.pot",
     }
     if not required <= names or not any(name.startswith("includes/") for name in names):
         raise ValueError("Tracked release sources are incomplete.")
@@ -46,45 +136,19 @@ def expected_contents(root: Path) -> dict[str, bytes]:
     return contents
 
 
-def validate_archive(archive: Path, expected: dict[str, bytes], allowed_dirs: set[str]) -> None:
-    """Reject duplicate, linked, extra or altered ZIP members before reporting."""
-    with ZipFile(archive) as zipped:
-        members = zipped.infolist()
-        names = [member.filename for member in members]
-        if len(names) != len(set(names)):
-            raise ValueError("Duplicate ZIP members.")
-        zip_files = {}
-        for member in members:
-            mode = member.external_attr >> 16
-            if stat.S_ISLNK(mode):
-                raise ValueError("Linked ZIP member.")
-            if member.is_dir():
-                if member.filename not in {
-                    f"{SLUG}/" if directory == "." else f"{SLUG}/{directory}/"
-                    for directory in allowed_dirs
-                }:
-                    raise ValueError("Unexpected ZIP directory.")
-                continue
-            prefix = f"{SLUG}/"
-            if not member.filename.startswith(prefix):
-                raise ValueError("ZIP member outside plugin root.")
-            name = member.filename[len(prefix):]
-            if name not in expected or member.file_size != len(expected[name]):
-                raise ValueError("Unexpected ZIP member or size.")
-            zip_files[name] = zipped.read(member)
-        if zip_files != expected:
-            raise ValueError("ZIP file set or bytes differ from tracked sources.")
-
-
-def validate_package(root: Path, build: Path, archive: Path | None = None) -> int:
-    """Reject missing, extra, linked, or altered files in the directory and ZIP."""
-    expected = expected_contents(root)
-    if build.name != SLUG or build.is_symlink() or not build.is_dir():
-        raise ValueError("Unexpected plugin build root.")
-    actual = {}
+def _allowed_directories(expected: dict[str, bytes]) -> set[str]:
+    """List every directory that holds an expected file, relative to the plugin root."""
     allowed_dirs = {"."}
     for name in expected:
         allowed_dirs.update(parent.as_posix() for parent in Path(name).parents)
+    return allowed_dirs
+
+
+def _validate_build_directory(build: Path, expected: dict[str, bytes], allowed_dirs: set[str]) -> None:
+    """Reject missing, extra, linked, or altered files in the build directory."""
+    if build.name != SLUG or build.is_symlink() or not build.is_dir():
+        raise ValueError("Unexpected plugin build root.")
+    actual = {}
     for path in build.rglob("*"):
         name = path.relative_to(build).as_posix()
         if path.is_symlink():
@@ -96,9 +160,50 @@ def validate_package(root: Path, build: Path, archive: Path | None = None) -> in
         actual[name] = path.read_bytes()
     if actual != expected:
         raise ValueError("Package file set or bytes differ from tracked sources.")
+
+
+def _zip_member_name(member: ZipInfo, expected: dict[str, bytes], zip_dirs: set[str]) -> str | None:
+    """Return a file member's plugin-relative name, or None for an allowed directory."""
+    if stat.S_ISLNK(member.external_attr >> 16):
+        raise ValueError("Linked ZIP member.")
+    if member.is_dir():
+        if member.filename not in zip_dirs:
+            raise ValueError("Unexpected ZIP directory.")
+        return None
+    prefix = f"{SLUG}/"
+    if not member.filename.startswith(prefix):
+        raise ValueError("ZIP member outside plugin root.")
+    name = member.filename[len(prefix) :]
+    if name not in expected or member.file_size != len(expected[name]):
+        raise ValueError("Unexpected ZIP member or size.")
+    return name
+
+
+def _validate_archive(archive: Path, expected: dict[str, bytes], allowed_dirs: set[str]) -> None:
+    """Reject missing, extra, duplicate, linked, or altered members in the ZIP."""
+    zip_dirs = {f"{SLUG}/" if directory == "." else f"{SLUG}/{directory}/" for directory in allowed_dirs}
+    with ZipFile(archive) as zipped:
+        members = zipped.infolist()
+        names = [member.filename for member in members]
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate ZIP members.")
+        zip_files = {}
+        for member in members:
+            name = _zip_member_name(member, expected, zip_dirs)
+            if name is not None:
+                zip_files[name] = zipped.read(member)
+        if zip_files != expected:
+            raise ValueError("ZIP file set or bytes differ from tracked sources.")
+    print(f"ZIP SHA-256: {hashlib.sha256(archive.read_bytes()).hexdigest()}")
+
+
+def validate_package(root: Path, build: Path, archive: Path | None = None) -> int:
+    """Reject missing, extra, linked, or altered files in the directory and ZIP."""
+    expected = expected_contents(root)
+    allowed_dirs = _allowed_directories(expected)
+    _validate_build_directory(build, expected, allowed_dirs)
     if archive is not None:
-        validate_archive(archive, expected, allowed_dirs)
-        print(f"ZIP SHA-256: {hashlib.sha256(archive.read_bytes()).hexdigest()}")
+        _validate_archive(archive, expected, allowed_dirs)
     for name, content in sorted(expected.items()):
         print(f"{hashlib.sha256(content).hexdigest()}  {name}")
     return len(expected)

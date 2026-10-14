@@ -21,15 +21,16 @@ Replace the placeholders with the actual failed step and run details.
 ### Test execution
 
 The compatibility workflow runs isolated unit tests with the Composer-selected
-PHPUnit 11.5/12 before pinning PHPUnit 9.6 for native WordPress tests. The native
+PHPUnit 11.5, 12.5, or 13.4 before pinning PHPUnit 9.6 for native WordPress tests. The native
 suite runs in both single-site and multisite modes in each existing matrix cell.
 
 ### Diagnosis
 
 1. Identify the failed setup, unit, native, or intentional-failure control step.
 2. Inspect the run's PHP, resolved dependency, core revision and JUnit artifacts.
-3. Reproduce on a fresh GitHub runner for the exact candidate commit; do not run
-   plugin suites locally or copy generated runner files into tracked source.
+3. Reproduce a unit failure with `composer test`. Reproduce a native failure on a fresh
+   GitHub runner for the exact candidate commit; do not copy generated runner files into
+   tracked source.
 4. Keep an empty suite, bootstrap failure and failed assertion distinct. All must
    fail the job; none establishes a plugin regression without further diagnosis.
 
