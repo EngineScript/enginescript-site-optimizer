@@ -65,7 +65,7 @@ composer run psalm
 composer test
 ```
 
-`composer run check-all` runs these checks, Psalm's taint analysis, and the unit tests in one go. PHPStan runs at level `max` and Psalm at error level 2, with no baseline.
+`composer run check-all` runs these checks, Psalm's taint analysis, and the unit tests in one go. PHPStan runs at level `max` and Psalm at error level 1, with no baseline.
 
 ### Test Layers
 
