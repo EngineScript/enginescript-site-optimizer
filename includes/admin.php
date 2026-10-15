@@ -184,19 +184,19 @@ function es_optimizer_get_additional_settings_fields(): array {
 			$section,
 			'preconnect_domains',
 			__( 'Preconnect Domains', 'enginescript-site-optimizer' ),
-			__( 'Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
+			__( 'Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
 		),
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'enable_dns_prefetch',
 			__( 'Enable DNS Prefetch', 'enginescript-site-optimizer' ),
-			__( 'Look up hostnames for less critical external domains.', 'enginescript-site-optimizer' )
+			__( 'Resolve less critical external domains in DNS ahead of time.', 'enginescript-site-optimizer' )
 		),
 		es_optimizer_get_textarea_field_definition(
 			$section,
 			'dns_prefetch_domains',
 			__( 'DNS Prefetch Domains', 'enginescript-site-optimizer' ),
-			__( 'DNS prefetch performs only a hostname lookup; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
+			__( 'DNS prefetch performs only a DNS lookup of the domain name; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
 		),
 	);
 }
@@ -222,7 +222,7 @@ function es_optimizer_get_domain_list_limits_description(): string {
  *
  * @since 2.3.0
  * @param string $option_name Domain-list option name.
- * @return array<int, string> Suggested origins, never used as saved defaults.
+ * @return array<int, string> Suggested domains, never used as saved defaults.
  */
 function es_optimizer_get_domain_suggestions( string $option_name ): array {
 	return match ( $option_name ) {

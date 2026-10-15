@@ -49,7 +49,7 @@ final class OriginRulesTest extends EsOptimizerTestCase {
 
 		$this->assertFalse( $result['valid'] );
 		$this->assertSame( '', $result['domain'] );
-		$this->assertSame( 'Invalid URL.', $result['error'] );
+		$this->assertSame( 'Invalid domain entry.', $result['error'] );
 	}
 
 	/**
@@ -157,7 +157,7 @@ final class OriginRulesTest extends EsOptimizerTestCase {
 		foreach ( array( 'onion.example.org', 'salt.example.org', 'alt.example.org', 'example.salt', 'example.org' ) as $host ) {
 			$this->assertFalse( es_optimizer_is_special_use_hostname( $host ), $host );
 		}
-		$this->assertSame( 'IP addresses and private, local, or reserved hosts are not allowed.', es_optimizer_validate_single_domain( 'https://foo.onion' )['error'] );
+		$this->assertSame( 'IP addresses and private, local, or reserved domain names are not allowed.', es_optimizer_validate_single_domain( 'https://foo.onion' )['error'] );
 	}
 
 	/**
@@ -171,17 +171,17 @@ final class OriginRulesTest extends EsOptimizerTestCase {
 			'percent encoding'  => array( 'https://ex%61mple.org', 'Encoded characters, backslashes, markup, and control characters are not allowed.' ),
 			'backslash'         => array( 'https://example.org\\x', 'Encoded characters, backslashes, markup, and control characters are not allowed.' ),
 			'blank'             => array( '   ', 'Empty domain.' ),
-			'unparsable'        => array( 'https:///example.org', 'Invalid URL.' ),
+			'unparsable'        => array( 'https:///example.org', 'Invalid domain entry.' ),
 			'plain HTTP'        => array( 'http://example.org', 'HTTPS is required.' ),
 			'no scheme'         => array( 'example.org', 'HTTPS is required.' ),
 			'path'              => array( 'https://example.org/path', 'File paths are not allowed; use domains only.' ),
 			'double slash'      => array( 'https://example.org//', 'File paths are not allowed; use domains only.' ),
 			'query'             => array( 'https://example.org?x=1', 'Query parameters, fragments, and credentials are not allowed.' ),
 			'credentials'       => array( 'https://user@example.org', 'Query parameters, fragments, and credentials are not allowed.' ),
-			'port out of range' => array( 'https://example.org:70000', 'Invalid URL.' ),
-			'IP address'        => array( 'https://127.0.0.1', 'IP addresses and private, local, or reserved hosts are not allowed.' ),
-			'obfuscated IP'     => array( 'https://0x7f.1', 'IP addresses and private, local, or reserved hosts are not allowed.' ),
-			'bad label'         => array( 'https://a_b.example.org', 'Invalid hostname.' ),
+			'port out of range' => array( 'https://example.org:70000', 'Invalid domain entry.' ),
+			'IP address'        => array( 'https://127.0.0.1', 'IP addresses and private, local, or reserved domain names are not allowed.' ),
+			'obfuscated IP'     => array( 'https://0x7f.1', 'IP addresses and private, local, or reserved domain names are not allowed.' ),
+			'bad label'         => array( 'https://a_b.example.org', 'Invalid domain name.' ),
 		);
 	}
 

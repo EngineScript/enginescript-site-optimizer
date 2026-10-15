@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-14T05:31:50+00:00\n"
+"POT-Creation-Date: 2026-10-15T03:11:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -131,7 +131,7 @@ msgid "Preconnect Domains"
 msgstr ""
 
 #: includes/admin.php:187
-msgid "Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations."
+msgid "Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations."
 msgstr ""
 
 #: includes/admin.php:192
@@ -139,7 +139,7 @@ msgid "Enable DNS Prefetch"
 msgstr ""
 
 #: includes/admin.php:193
-msgid "Look up hostnames for less critical external domains."
+msgid "Resolve less critical external domains in DNS ahead of time."
 msgstr ""
 
 #: includes/admin.php:198
@@ -147,7 +147,7 @@ msgid "DNS Prefetch Domains"
 msgstr ""
 
 #: includes/admin.php:199
-msgid "DNS prefetch performs only a hostname lookup; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Hostname checks do not verify DNS destinations."
+msgid "DNS prefetch performs only a DNS lookup of the domain name; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations."
 msgstr ""
 
 #. translators: 1: Maximum bytes per domain list, 2: Maximum nonblank lines, 3: Maximum bytes per nonblank line.
@@ -288,7 +288,7 @@ msgstr ""
 
 #: includes/options.php:467
 #: includes/options.php:486
-msgid "Invalid URL."
+msgid "Invalid domain entry."
 msgstr ""
 
 #: includes/options.php:557
@@ -296,7 +296,7 @@ msgid "HTTPS is required."
 msgstr ""
 
 #: includes/options.php:561
-msgid "No host found."
+msgid "No domain name found."
 msgstr ""
 
 #: includes/options.php:565
@@ -312,11 +312,11 @@ msgid "Invalid port."
 msgstr ""
 
 #: includes/options.php:594
-msgid "IP addresses and private, local, or reserved hosts are not allowed."
+msgid "IP addresses and private, local, or reserved domain names are not allowed."
 msgstr ""
 
 #: includes/options.php:599
-msgid "Invalid hostname."
+msgid "Invalid domain name."
 msgstr ""
 
 #: uninstall.php:51

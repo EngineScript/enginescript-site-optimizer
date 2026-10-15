@@ -18,7 +18,7 @@ A WordPress plugin for disabling selected features and configuring resource hint
 - **Header Cleanup:** Remove generator output from the page head and feeds, RSD links from the page head, and shortlinks from the page head and the HTTP response header
 - **Script Optimization:** Disable WordPress emojis and remove jQuery Migrate
 - **Style Optimization:** Remove inline styles from recent comments widget and disable classic theme styles
-- **Resource Hints:** Configure DNS prefetch and preconnect for HTTPS origins used by your site
+- **Resource Hints:** Configure DNS prefetch and preconnect for HTTPS domains used by your site
 - **Jetpack Promotions:** Disable Jetpack promotional messages and Blaze promotions
 
 ## Installation
@@ -46,10 +46,10 @@ Preconnect and DNS Prefetch lists start empty. Optional domain suggestions appea
 as selectable text below each field. Copy only the domains your site uses, enable
 the setting and save. Existing saved lists are preserved.
 
-Enter one HTTPS origin per line, such as `https://cdn.example.com`. Paths other
+Enter one HTTPS domain per line, such as `https://cdn.example.com`. Paths other
 than a trailing slash, query strings, fragments and credentials are rejected.
 Preconnect accepts an omitted port or port 443. DNS prefetch uses only the
-hostname, even if an accepted entry includes a port. An entry must be an origin
+domain name, even if an accepted entry includes a port. Each entry must be valid
 as written: a malformed port, for example, is rejected and not corrected.
 
 Each list allows 32,768 bytes in total, 100 nonblank lines and 512 bytes per
@@ -62,7 +62,7 @@ retains the previous list. An oversized saved list produces no plugin hints
 until corrected. Legacy custom-port preconnect entries are skipped without
 rewriting their saved text until you explicitly save the settings.
 
-Use hints for origins your pages actually need and measure their effect on your
+Use hints for domains your pages actually need and measure their effect on your
 site. Browsers decide whether to use them; adding a hint does not establish a
 performance improvement. The plugin adds its hints to front-end pages only, not
 to the admin area or the login screen.
@@ -70,14 +70,15 @@ to the admin area or the login screen.
 ## Settings Protection
 
 Settings submissions use WordPress Settings API nonce and capability checks.
-The plugin checks domain input types and original URL text, escapes settings
-output for its context, and reports rejected lines without repeating submitted
-URLs or credentials.
+The plugin checks the input type and the original text of each domain, escapes
+settings output for its context, and reports rejected lines without repeating
+submitted domains or credentials.
 
-Host validation rejects IP literals, localhost and configured reserved hostname
-suffixes. It checks hostname syntax without resolving DNS. An accepted hostname
-can still resolve to a private address in a visitor's environment; the plugin
-does not verify its DNS destination or fetch the origin from the server.
+Domain validation rejects IP literals, localhost and configured reserved domain
+name suffixes. It checks domain name syntax without resolving DNS. An accepted
+domain can still resolve to a private address in a visitor's environment; the
+plugin does not verify its DNS destination or connect to the domain from the
+server.
 
 ## Quality Checks
 

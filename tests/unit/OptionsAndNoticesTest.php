@@ -206,7 +206,7 @@ final class OptionsAndNoticesTest extends EsOptimizerTestCase {
 		es_optimizer_validate_domain_list( "http://a.example.org\nnot a url\nhttps://ok.example.org\nhttps://127.0.0.1\nhttps://x.example.org:99999\nhttps://y.example.org?q=1", 'dns_prefetch' );
 		$message = $this->notice_messages()[0];
 		$this->assertStringStartsWith( 'The DNS prefetch list could not be fully accepted: 5 lines were rejected. Line 1: HTTPS is required. Line 2: ', $message );
-		$this->assertStringEndsWith( ' Line 4: IP addresses and private, local, or reserved hosts are not allowed. Further rejected lines are not listed.', $message );
+		$this->assertStringEndsWith( ' Line 4: IP addresses and private, local, or reserved domain names are not allowed. Further rejected lines are not listed.', $message );
 		$this->assertSame( 3, substr_count( $message, 'Line ' ) );
 		$this->assertDoesNotMatchRegularExpression( '/\.,|\.\.|\s{2}/', $message );
 	}

@@ -129,35 +129,35 @@ final class DomainValidationTest extends TestCase {
 			),
 			'localhost'           => array(
 				'domain'         => 'https://localhost',
-				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+				'expected_error' => 'IP addresses and private, local, or reserved domain names are not allowed',
 			),
 			'localhost-subdomain' => array(
 				'domain'         => 'https://cdn.localhost',
-				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+				'expected_error' => 'IP addresses and private, local, or reserved domain names are not allowed',
 			),
 			'special-use-domain'  => array(
 				'domain'         => 'https://cache.internal',
-				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+				'expected_error' => 'IP addresses and private, local, or reserved domain names are not allowed',
 			),
 			'single-label-host'   => array(
 				'domain'         => 'https://cdn',
-				'expected_error' => 'Invalid hostname.',
+				'expected_error' => 'Invalid domain name.',
 			),
 			'public-ip'           => array(
 				'domain'         => 'https://8.8.8.8',
-				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+				'expected_error' => 'IP addresses and private, local, or reserved domain names are not allowed',
 			),
 			'private-ip'          => array(
 				'domain'         => 'https://192.168.1.1',
-				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+				'expected_error' => 'IP addresses and private, local, or reserved domain names are not allowed',
 			),
 			'obfuscated-ip'       => array(
 				'domain'         => 'https://127.000.000.001',
-				'expected_error' => 'IP addresses and private, local, or reserved hosts are not allowed',
+				'expected_error' => 'IP addresses and private, local, or reserved domain names are not allowed',
 			),
 			'invalid-label'       => array(
 				'domain'         => 'https://-example.com',
-				'expected_error' => 'Invalid hostname.',
+				'expected_error' => 'Invalid domain name.',
 			),
 			'invalid-port'        => array(
 				'domain'         => 'https://example.com:0',

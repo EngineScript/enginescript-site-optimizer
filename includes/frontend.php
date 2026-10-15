@@ -184,7 +184,7 @@ function es_optimizer_filter_recent_comments_style( mixed $show_style ): mixed {
  * @since 1.4.1
  * @param mixed $urls          Resource hints, including unknown foreign values; another filter callback may pass a non-array.
  * @param mixed $relation_type The relation type the URLs are printed for.
- * @return mixed Original entries plus at most 100 supported plugin origins, or the incoming value when it is not an array.
+ * @return mixed Original entries plus at most 100 supported plugin domains, or the incoming value when it is not an array.
  */
 function es_optimizer_add_preconnect_resource_hints( mixed $urls, mixed $relation_type = '' ): mixed {
 	if ( ! is_array( $urls ) || 'preconnect' !== $relation_type || ! es_optimizer_is_frontend_request() ) {
@@ -206,7 +206,7 @@ function es_optimizer_add_preconnect_resource_hints( mixed $urls, mixed $relatio
 		$hint = array( 'href' => $domain );
 
 		// Font files are fetched without credentials and need their own connection.
-		// A stylesheet is fetched with credentials, so its host must not be marked.
+		// A stylesheet is fetched with credentials, so its domain must not be marked.
 		if ( 'fonts.gstatic.com' === $host ) {
 			$hint['crossorigin'] = 'anonymous';
 		}
@@ -224,7 +224,7 @@ function es_optimizer_add_preconnect_resource_hints( mixed $urls, mixed $relatio
  * @since 1.8.0
  * @param mixed $urls          Resource hints, including unknown foreign values; another filter callback may pass a non-array.
  * @param mixed $relation_type The relation type the URLs are printed for.
- * @return mixed Original entries plus at most 100 origins for core's host-only DNS output, or the incoming value when it is not an array.
+ * @return mixed Original entries plus at most 100 domains, which core prints as domain names only for DNS prefetch, or the incoming value when it is not an array.
  */
 function es_optimizer_add_dns_prefetch_resource_hints( mixed $urls, mixed $relation_type = '' ): mixed {
 	if ( ! is_array( $urls ) || 'dns-prefetch' !== $relation_type || ! es_optimizer_is_frontend_request() ) {

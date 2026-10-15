@@ -48,13 +48,13 @@ Each site has separate settings. Network activation does not create shared netwo
 
 Preconnect and DNS Prefetch lists start empty. Optional domain suggestions appear as selectable text below each field; copy only the domains your site uses, enable the setting and save. Existing saved lists are preserved.
 
-Enter one HTTPS origin per line, such as https://cdn.example.com. Paths other than a trailing slash, query strings, fragments and credentials are rejected. Preconnect accepts an omitted port or port 443. DNS prefetch uses only the hostname, even if an accepted entry includes a port. An entry must be an origin as written: a malformed port, for example, is rejected and not corrected.
+Enter one HTTPS domain per line, such as https://cdn.example.com. Paths other than a trailing slash, query strings, fragments and credentials are rejected. Preconnect accepts an omitted port or port 443. DNS prefetch uses only the domain name, even if an accepted entry includes a port. Each entry must be valid as written: a malformed port, for example, is rejected and not corrected.
 
 Each list allows 32,768 bytes in total, 100 nonblank lines and 512 bytes per nonblank line, before trimming or removing duplicates and invalid entries. Empty or ASCII-space-only lines are blank.
 
 Saving a blank list clears it. Within the limits, invalid entries are omitted; an entirely invalid list is saved empty. A malformed or oversized submission retains the previous list. Oversized saved lists produce no plugin hints until corrected. Legacy custom-port preconnect entries are skipped without rewriting their saved text until an explicit save.
 
-Validation rejects IP literals, localhost and configured reserved hostname suffixes. It does not resolve DNS or verify that a hostname resolves to a public address. Use hints for origins your pages need and measure their effect; browsers decide whether to use them. The plugin adds its hints to front-end pages only, not to the admin area or the login screen.
+Validation rejects IP literals, localhost and configured reserved domain name suffixes. It does not resolve DNS or verify that a domain name resolves to a public address. Use hints for domains your pages need and measure their effect; browsers decide whether to use them. The plugin adds its hints to front-end pages only, not to the admin area or the login screen.
 
 = What happens when I deactivate or delete the plugin? =
 
@@ -73,10 +73,11 @@ No. The option removes WordPress's generator output from the page head and from 
 * Say why an uninstall failed, with the site ID where one applies. A failure raised by other code keeps its own message and is not shown.
 * During a network uninstall, pass over a site whose settings cannot be removed, clean the remaining sites, then fail with the affected site IDs. The plugin files are still retained.
 * Return a non-array value from another plugin's filter callback unchanged in the resource-hint, TinyMCE and plugin-action-link callbacks, instead of stopping the page with a type error.
-* Reject an origin with a malformed port, a colon without a port, or a bracketed hostname, instead of rewriting it.
-* Stop three hostname patterns from matching text that ends in a line break.
+* Reject a domain with a malformed port, a colon without a port, or a bracketed domain name, instead of rewriting it.
+* Stop three domain name patterns from matching text that ends in a line break.
 * Read on/off settings the way WordPress reads booleans: a stored or submitted string `false` now means off.
 * Reject the special-use names `alt` and `onion` in domain lists.
+* Use one term, "domain", for an entry of the Preconnect and DNS Prefetch lists in the settings, the rejection reasons, and the documentation. The reasons now read "Invalid domain entry.", "No domain name found.", "Invalid domain name.", and "IP addresses and private, local, or reserved domain names are not allowed."
 * Let `es_optimizer_normalize_stored_options()` accept a stored value that is not an array and treat it as empty, instead of failing with a type error.
 * Mark only the `fonts.gstatic.com` preconnect hint with `crossorigin`. The hint for `fonts.googleapis.com` no longer carries it, so the stylesheet request can use the connection.
 * Confirm a save with "Settings saved." when the same save also reports rejected lines.
@@ -86,7 +87,7 @@ No. The option removes WordPress's generator output from the page head and from 
 * Stop adding the plugin's resource hints to the login screen.
 * Write the reasons in a rejected-lines notice as separate sentences, say in words when further rejected lines are not listed, and drop the time-and-memory advice from the uninstall failure message, which now gives its reason.
 * Remove the unused function `es_optimizer_resource_hint_exists()`, the unused constant `ES_SITE_OPTIMIZER_PATH`, and the unused `$force_refresh` parameter of `es_optimizer_get_options()`. A call that passes that parameter by name now fails; a positional argument is ignored.
-* Remove the filter that took the emoji host out of DNS prefetch hints, with its host parser: WordPress 6.8 and later print no such hint. Remove the two activation and deactivation callbacks, which did nothing. The functions `es_optimizer_disable_emojis_remove_dns_prefetch()`, `es_optimizer_get_resource_hint_host()`, `es_optimizer_activate_plugin()`, and `es_optimizer_deactivate_plugin()` no longer exist.
+* Remove the filter that took the emoji domain out of DNS prefetch hints, with its parser: WordPress 6.8 and later print no such hint. Remove the two activation and deactivation callbacks, which did nothing. The functions `es_optimizer_disable_emojis_remove_dns_prefetch()`, `es_optimizer_get_resource_hint_host()`, `es_optimizer_activate_plugin()`, and `es_optimizer_deactivate_plugin()` no longer exist.
 
 = 2.2.0 - 2026-09-27 =
 * Correct native CI notice assertions, multisite bootstrap timing and post-by-email filter expectations.

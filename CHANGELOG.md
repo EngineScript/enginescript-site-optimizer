@@ -11,8 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Say why an uninstall failed, with the site ID where one applies. A failure raised by other code keeps its own message and is not shown.
 - During a network uninstall, pass over a site whose settings cannot be removed, clean the remaining sites, then fail with the affected site IDs. The plugin files are still retained.
 - Return a non-array value from another plugin's filter callback unchanged in the resource-hint, TinyMCE and plugin-action-link callbacks, instead of stopping the page with a type error.
-- Reject an origin with a malformed port, a colon without a port, or a bracketed hostname, instead of rewriting it.
-- Stop three hostname patterns from matching text that ends in a line break.
+- Reject a domain with a malformed port, a colon without a port, or a bracketed domain name, instead of rewriting it.
+- Stop three domain name patterns from matching text that ends in a line break.
 - Mark only the `fonts.gstatic.com` preconnect hint with `crossorigin`. The hint for `fonts.googleapis.com` no longer carries it, so the stylesheet request can use the connection.
 - Confirm a save with "Settings saved." when the same save also reports rejected lines.
 - Tell screen-reader users that the EngineScript link on the settings page opens in a new tab.
@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Read on/off settings the way WordPress reads booleans: a stored or submitted string `false` now means off.
 - Let `es_optimizer_normalize_stored_options()` accept a stored value that is not an array and treat it as empty, instead of failing with a type error.
 - Reject the special-use names `alt` and `onion` in domain lists.
+- Use one term, "domain", for an entry of the Preconnect and DNS Prefetch lists in the settings, the rejection reasons, and the documentation. The reasons now read "Invalid domain entry.", "No domain name found.", "Invalid domain name.", and "IP addresses and private, local, or reserved domain names are not allowed."
 - "Remove WordPress Version" now also removes the generator tag from feeds, and "Remove Shortlink" also removes the shortlink HTTP response header.
 - Stop adding the plugin's resource hints to the login screen.
 - Write the reasons in a rejected-lines notice as separate sentences, say in words when further rejected lines are not listed, and drop the time-and-memory advice from the uninstall failure message, which now gives its reason.
@@ -31,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove the unused function `es_optimizer_resource_hint_exists()`, the unused constant `ES_SITE_OPTIMIZER_PATH`, and the unused `$force_refresh` parameter of `es_optimizer_get_options()`. A call that passes that parameter by name now fails; a positional argument is ignored.
-- Remove the filter that took the emoji host out of DNS prefetch hints, with its host parser: WordPress 6.8 and later print no such hint. Remove the two activation and deactivation callbacks, which did nothing. The functions `es_optimizer_disable_emojis_remove_dns_prefetch()`, `es_optimizer_get_resource_hint_host()`, `es_optimizer_activate_plugin()`, and `es_optimizer_deactivate_plugin()` no longer exist.
+- Remove the filter that took the emoji domain out of DNS prefetch hints, with its parser: WordPress 6.8 and later print no such hint. Remove the two activation and deactivation callbacks, which did nothing. The functions `es_optimizer_disable_emojis_remove_dns_prefetch()`, `es_optimizer_get_resource_hint_host()`, `es_optimizer_activate_plugin()`, and `es_optimizer_deactivate_plugin()` no longer exist.
 
 ## [2.2.0] - 2026-09-27
 

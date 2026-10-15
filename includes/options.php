@@ -255,7 +255,7 @@ function es_optimizer_validate_domain_list( string $domains_input, string $conte
 }
 
 /**
- * Check raw list budgets before trimming, parsing or validating any origin.
+ * Check raw list budgets before trimming, parsing or validating any domain.
  *
  * Empty and ASCII-space-only lines are blank. Duplicates and invalid nonblank
  * lines count before deduplication. No caller may partially use an oversized list.
@@ -311,10 +311,10 @@ function es_optimizer_get_domain_list_budget_error( string $domains_input ): str
 }
 
 /**
- * Validate one raw origin and apply the policy of its resource-hint context.
+ * Validate one raw domain entry and apply the policy of its resource-hint context.
  *
  * @since 2.2.0
- * @param string $domain  Original origin text.
+ * @param string $domain  Original domain text.
  * @param string $context Either 'preconnect' or 'dns_prefetch'.
  * @return array{valid: bool, domain: string, error: string} Validation result.
  */
@@ -464,7 +464,7 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 	$parsed_url = wp_parse_url( $domain );
 
 	if ( ! is_array( $parsed_url ) ) {
-		return es_optimizer_get_domain_validation_error( __( 'Invalid URL.', 'enginescript-site-optimizer' ) );
+		return es_optimizer_get_domain_validation_error( __( 'Invalid domain entry.', 'enginescript-site-optimizer' ) );
 	}
 
 	$url_parts_error = es_optimizer_validate_domain_url_parts( $domain, $parsed_url );
@@ -483,7 +483,7 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 	$clean_domain = es_optimizer_get_canonical_origin( $domain, $host, $parsed_url['port'] ?? null );
 
 	if ( '' === $clean_domain ) {
-		return es_optimizer_get_domain_validation_error( __( 'Invalid URL.', 'enginescript-site-optimizer' ) );
+		return es_optimizer_get_domain_validation_error( __( 'Invalid domain entry.', 'enginescript-site-optimizer' ) );
 	}
 
 	return array(
@@ -494,18 +494,18 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 }
 
 /**
- * Build the canonical origin of validated origin text.
+ * Build the canonical form of a validated domain entry.
  *
  * The URL parser reads the leading digits of a port and ignores what follows,
- * and it accepts a hostname in brackets. The text must therefore be the origin
- * itself: only letter case, one trailing slash and an explicit default port may
- * differ, so a mistyped origin is rejected and not rewritten.
+ * and it accepts a host in brackets. The text must therefore already be the
+ * canonical form: only letter case, one trailing slash and an explicit default
+ * port may differ, so a mistyped domain is rejected and not rewritten.
  *
  * @since 2.3.0
- * @param string   $domain Trimmed origin text as submitted or stored.
+ * @param string   $domain Trimmed domain text as submitted or stored.
  * @param string   $host   Normalized, validated host parsed from the text.
  * @param int|null $port   Port parsed from the text, if any.
- * @return string Canonical HTTPS origin, or an empty string when the text is not that origin.
+ * @return string Canonical HTTPS domain entry, or an empty string when the text is not already in that form.
  */
 function es_optimizer_get_canonical_origin( string $domain, string $host, ?int $port ): string {
 	$origin = 'https://' . $host;
@@ -558,7 +558,7 @@ function es_optimizer_validate_domain_url_parts( string $domain, array $parsed_u
 	}
 
 	if ( empty( $parsed_url['host'] ) ) {
-		return es_optimizer_get_domain_validation_error( __( 'No host found.', 'enginescript-site-optimizer' ) );
+		return es_optimizer_get_domain_validation_error( __( 'No domain name found.', 'enginescript-site-optimizer' ) );
 	}
 
 	if ( es_optimizer_url_has_disallowed_path( $parsed_url ) ) {
@@ -591,12 +591,12 @@ function es_optimizer_validate_resource_hint_host( string $domain, string $host 
 
 	if ( es_optimizer_is_disallowed_resource_hint_host( $host ) ) {
 		return es_optimizer_get_domain_validation_error(
-			__( 'IP addresses and private, local, or reserved hosts are not allowed.', 'enginescript-site-optimizer' )
+			__( 'IP addresses and private, local, or reserved domain names are not allowed.', 'enginescript-site-optimizer' )
 		);
 	}
 
 	if ( ! es_optimizer_is_valid_resource_hint_hostname( $host ) ) {
-		return es_optimizer_get_domain_validation_error( __( 'Invalid hostname.', 'enginescript-site-optimizer' ) );
+		return es_optimizer_get_domain_validation_error( __( 'Invalid domain name.', 'enginescript-site-optimizer' ) );
 	}
 
 	return null;
@@ -618,25 +618,25 @@ function es_optimizer_get_domain_validation_error( string $error ): array {
 }
 
 /**
- * Apply a resource-hint context policy to an already validated canonical origin.
+ * Apply a resource-hint context policy to an already validated canonical domain entry.
  *
  * The shared validator removes explicit port 443, so any remaining port is custom.
  *
  * @since 2.2.0
- * @param string $domain  Canonical HTTPS origin from the single-domain validator.
+ * @param string $domain  Canonical HTTPS domain entry from the single-domain validator.
  * @param string $context Either 'preconnect' or 'dns_prefetch'.
- * @return bool Whether the origin is supported in this context.
+ * @return bool Whether the domain is supported in this context.
  */
 function es_optimizer_is_domain_allowed_for_context( string $domain, string $context ): bool {
 	return 'preconnect' !== $context || null === wp_parse_url( $domain, PHP_URL_PORT );
 }
 
 /**
- * Detect saved custom-port origins without modifying their stored or displayed text.
+ * Detect saved custom-port domains without modifying their stored or displayed text.
  *
  * @since 2.2.0
  * @param string $domains_input Saved preconnect list.
- * @return bool Whether a valid origin has a port unsupported by preconnect.
+ * @return bool Whether a valid domain has a port unsupported by preconnect.
  */
 function es_optimizer_has_unsupported_preconnect_domains( string $domains_input ): bool {
 	if ( '' !== es_optimizer_get_domain_list_budget_error( $domains_input ) ) {
@@ -845,7 +845,7 @@ function es_optimizer_is_valid_resource_hint_hostname( string $host ): bool {
  *
  * @since 2.0.1
  * @param string $option_key The option key to read domains from.
- * @return array<int, string> Canonical origins permitted by the option's hint context.
+ * @return array<int, string> Canonical domains permitted by the option's hint context.
  */
 function es_optimizer_get_validated_domains( string $option_key ): array {
 	$options = es_optimizer_get_options();
