@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-15T03:11:40+00:00\n"
+"POT-Creation-Date: 2026-10-15T03:46:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -274,10 +274,6 @@ msgstr ""
 msgid "The DNS prefetch list could not be fully accepted: %s"
 msgstr ""
 
-#: includes/options.php:440
-msgid "Settings saved."
-msgstr ""
-
 #: includes/options.php:454
 msgid "Encoded characters, backslashes, markup, and control characters are not allowed."
 msgstr ""
@@ -338,7 +334,7 @@ msgstr ""
 #: uninstall.php:98
 #: uninstall.php:130
 #: uninstall.php:181
-#: uninstall.php:455
+#: uninstall.php:460
 msgid "The WordPress database object is unavailable."
 msgstr ""
 
@@ -390,10 +386,10 @@ msgid_plural "Settings could not be removed from %1$d sites. Site IDs, at most t
 msgstr[0] ""
 msgstr[1] ""
 
-#: uninstall.php:432
+#: uninstall.php:437
 msgid "A site was created during removal."
 msgstr ""
 
-#: uninstall.php:480
+#: uninstall.php:485
 msgid "Site Optimizer removal failed"
 msgstr ""

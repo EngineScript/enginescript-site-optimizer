@@ -2160,7 +2160,12 @@ jobs:
                   } catch (RuntimeException $error) {
                       $this->assertSame(1, $this->option_rows());
                       $this->assertSame($was_suppressed, $wpdb->suppress_errors);
-                      $this->assertTrue(wp_cache_get('notoptions', 'options')['es_optimizer_options']);
+                      if (is_multisite()) {
+                          // The network uninstall clears the runtime cache after each site (CR-ARCH-002), core's notoptions mark included.
+                          $this->assertFalse(wp_cache_get('notoptions', 'options'));
+                      } else {
+                          $this->assertTrue(wp_cache_get('notoptions', 'options')['es_optimizer_options']);
+                      }
                   } finally {
                       remove_filter('query', $failure);
                       wp_cache_delete('notoptions', 'options');
@@ -2320,6 +2325,23 @@ jobs:
                       $GLOBALS['_wp_switched_stack'] = $stack;
                       $GLOBALS['switched'] = $switched;
                   }
+                  $this->assertSame(array_fill(0, 3, 0), $this->rows_per_site($sites));
+              }
+
+              /**
+               * The network uninstall clears the in-memory cache after each site, so memory does not grow with the network (CR-ARCH-002).
+               *
+               * @since 2.3.0
+               * @return void
+               */
+              public function test_network_uninstall_clears_the_runtime_cache(): void {
+                  $this->require_multisite();
+                  $sites = $this->sites_with_options(2);
+                  $this->assertTrue(wp_cache_supports('flush_runtime'));
+                  wp_cache_set('probe', 'kept', 'es_optimizer_test');
+                  es_optimizer_uninstall_network_options();
+                  $this->assertFalse(wp_cache_get('probe', 'es_optimizer_test'));
+                  $this->assertSame($sites[0], get_current_blog_id());
                   $this->assertSame(array_fill(0, 3, 0), $this->rows_per_site($sites));
               }
 

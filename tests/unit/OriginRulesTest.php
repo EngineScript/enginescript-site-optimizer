@@ -182,6 +182,9 @@ final class OriginRulesTest extends EsOptimizerTestCase {
 			'IP address'        => array( 'https://127.0.0.1', 'IP addresses and private, local, or reserved domain names are not allowed.' ),
 			'obfuscated IP'     => array( 'https://0x7f.1', 'IP addresses and private, local, or reserved domain names are not allowed.' ),
 			'bad label'         => array( 'https://a_b.example.org', 'Invalid domain name.' ),
+			'hex last label'    => array( 'https://cdn.0x1f', 'Invalid domain name.' ),
+			'bare 0x label'     => array( 'https://cdn.0x', 'Invalid domain name.' ),
+			'upper-case hex'    => array( 'https://example.0XFF', 'Invalid domain name.' ),
 		);
 	}
 

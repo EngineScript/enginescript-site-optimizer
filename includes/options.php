@@ -437,7 +437,7 @@ function es_optimizer_confirm_save_beside_warnings(): void {
 	}
 
 	if ( $has_plugin_warning ) {
-		add_settings_error( 'general', 'settings_updated', esc_html__( 'Settings saved.', 'enginescript-site-optimizer' ), 'success' );
+		add_settings_error( 'general', 'settings_updated', esc_html__( 'Settings saved.', 'default' ), 'success' ); // phpcs:ignore WordPress.WP.I18n.TextDomainMismatch -- WordPress's own string, so that its existing translation applies.
 	}
 }
 
@@ -837,7 +837,8 @@ function es_optimizer_is_valid_resource_hint_hostname( string $host ): bool {
 
 	$top_level_domain = $labels[ array_key_last( $labels ) ];
 
-	return 1 !== preg_match( '/^\d+\z/', $top_level_domain );
+	// Browsers parse a host whose last label is a decimal or hexadecimal number as IPv4.
+	return 1 !== preg_match( '/^(?:\d+|0x[0-9a-f]*)\z/', $top_level_domain );
 }
 
 /**

@@ -50,7 +50,6 @@ function es_optimizer_init_frontend_optimizations(): void {
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints', 10, 2 );
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_dns_prefetch_resource_hints', 10, 2 );
 	add_filter( 'tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce' );
-	add_action( 'init', 'es_optimizer_disable_jetpack_ads' );
 	add_action( 'init', 'es_optimizer_disable_post_via_email' );
 }
 
@@ -65,3 +64,6 @@ function es_optimizer_init_plugin_links(): void {
 }
 
 add_action( 'plugins_loaded', 'es_optimizer_init_plugin' );
+
+// Jetpack reads its promotion filters during plugins_loaded, before init, so they are added when the plugin loads.
+es_optimizer_disable_jetpack_ads();

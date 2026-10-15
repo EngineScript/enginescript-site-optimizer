@@ -11,15 +11,21 @@
 final class PluginWiringTest extends EsOptimizerTestCase {
 
 	/**
-	 * Loading the plugin file registers the start-up hook and nothing else.
+	 * Loading the plugin file registers the start-up hook and Jetpack's three filters, and nothing else.
+	 *
+	 * Jetpack reads its filters during plugins_loaded, before init, so they must exist when the plugin loads (CR-API-003).
 	 *
 	 * @return void
 	 */
-	public function test_loading_the_plugin_registers_only_its_start_up_hook(): void {
-		$loaded = $GLOBALS['es_optimizer_test_load_time'];
+	public function test_loading_the_plugin_registers_the_start_up_hook_and_the_jetpack_filters(): void {
+		$loaded  = $GLOBALS['es_optimizer_test_load_time'];
+		$jetpack = array( 'jetpack_just_in_time_msgs', 'jetpack_show_promotions', 'jetpack_blaze_enabled' );
 
-		$this->assertSame( array( 'plugins_loaded' ), array_keys( $loaded['hooks'] ) );
+		$this->assertSame( array_merge( array( 'plugins_loaded' ), $jetpack ), array_keys( $loaded['hooks'] ) );
 		$this->assertSame( array( 10 => array( array( 'callback' => 'es_optimizer_init_plugin', 'args' => 1 ) ) ), $loaded['hooks']['plugins_loaded'] );
+		foreach ( $jetpack as $hook ) {
+			$this->assertSame( array( PHP_INT_MAX => array( array( 'callback' => 'es_optimizer_filter_jetpack_ads', 'args' => 1 ) ) ), $loaded['hooks'][ $hook ], $hook );
+		}
 		$this->assertSame( array(), $loaded['removed'] );
 		$this->assertEmpty( $GLOBALS['es_optimizer_test_activation_hooks'] ?? array(), 'Activation needs no callback: settings stay virtual until a save.' );
 		$this->assertEmpty( $GLOBALS['es_optimizer_test_deactivation_hooks'] ?? array(), 'Deactivation needs no callback: settings are kept.' );
@@ -38,7 +44,6 @@ final class PluginWiringTest extends EsOptimizerTestCase {
 			array( 'init', 'es_optimizer_disable_emojis', 10, 1 ),
 			array( 'init', 'es_optimizer_remove_header_items', 10, 1 ),
 			array( 'init', 'es_optimizer_remove_recent_comments_style', 10, 1 ),
-			array( 'init', 'es_optimizer_disable_jetpack_ads', 10, 1 ),
 			array( 'init', 'es_optimizer_disable_post_via_email', 10, 1 ),
 			array( 'wp_default_scripts', 'es_optimizer_remove_jquery_migrate', 10, 1 ),
 			array( 'wp_enqueue_scripts', 'es_optimizer_disable_classic_theme_styles', 100, 1 ),

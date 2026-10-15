@@ -153,6 +153,7 @@ final class OptionsAndNoticesTest extends EsOptimizerTestCase {
 		es_optimizer_validate_options( array( 'preconnect_domains' => "https://ok.example.org\nnot a url" ) );
 		$this->assertSame( array( 'es_optimizer_options/preconnect_security/warning', 'general/settings_updated/success' ), $this->notice_keys() );
 		$this->assertSame( 'Settings saved.', $this->notice_messages()[1] );
+		$this->assertSame( 'default', $GLOBALS['es_optimizer_test']['domains']['Settings saved.'], "Core's own translation applies." );
 
 		es_optimizer_validate_options( array( 'preconnect_domains' => "https://ok.example.org\nnot a url" ) );
 		$this->assertSame( array( 'es_optimizer_options/preconnect_security/warning', 'general/settings_updated/success' ), $this->notice_keys(), 'Validated twice, as on a first insert: one of each.' );

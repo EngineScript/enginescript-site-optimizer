@@ -83,6 +83,10 @@ No. The option removes WordPress's generator output from the page head and from 
 * Confirm a save with "Settings saved." when the same save also reports rejected lines.
 * Tell screen-reader users that the EngineScript link on the settings page opens in a new tab.
 * Escape the translated menu and page titles of the settings page, so that a translation file cannot put markup into the admin menu.
+* Let "Disable Jetpack Promotions" turn off Jetpack's Just-in-Time Messages: the plugin now adds its Jetpack filters when it loads, before Jetpack reads them.
+* Reject a domain whose last label is a hexadecimal number, such as `cdn.0x1f`, which browsers treat as an IP address.
+* Keep a network uninstall's memory use flat: clear WordPress's in-memory cache after each site, when the object cache supports it.
+* Show WordPress's own translation of "Settings saved." beside a rejected-lines warning.
 * "Remove WordPress Version" now also removes the generator tag from feeds, and "Remove Shortlink" also removes the shortlink HTTP response header.
 * Stop adding the plugin's resource hints to the login screen.
 * Write the reasons in a rejected-lines notice as separate sentences, say in words when further rejected lines are not listed, and drop the time-and-memory advice from the uninstall failure message, which now gives its reason.

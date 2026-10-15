@@ -285,9 +285,12 @@ function es_optimizer_get_resource_hint_href( mixed $url ): ?string {
 }
 
 /**
- * Disable Jetpack promotional messages and Blaze initialization.
+ * Add the plugin's answer to Jetpack's promotion, Just-in-Time Message, and Blaze filters.
+ *
+ * Called when the plugin loads: Jetpack reads these filters during plugins_loaded.
  *
  * @since 1.0.0
+ * @since 2.3.0 Called when the plugin loads instead of on init.
  */
 function es_optimizer_disable_jetpack_ads(): void {
 	add_filter( 'jetpack_just_in_time_msgs', 'es_optimizer_filter_jetpack_ads', PHP_INT_MAX );

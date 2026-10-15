@@ -415,6 +415,11 @@ function es_optimizer_uninstall_network_options(): void {
 			$error   = es_optimizer_uninstall_try_site_options( $site_id );
 			$last_id = $site_id;
 
+			// Switching loads each site's options into the in-memory cache; clear it, so memory does not grow with the network.
+			if ( wp_cache_supports( 'flush_runtime' ) ) {
+				wp_cache_flush_runtime();
+			}
+
 			if ( null === $error ) {
 				continue;
 			}

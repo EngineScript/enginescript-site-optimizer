@@ -35,6 +35,7 @@ function es_optimizer_test_reset(): void {
 		'feed'         => false,
 		'doing'        => null,
 		'translations' => array(),
+		'domains'      => array(),
 	);
 }
 
@@ -63,7 +64,9 @@ function es_optimizer_test_hook_priority( string $hook, mixed $callback ): int|f
  * @param string $text Source string.
  * @return string Translated string, or the source string.
  */
-function es_optimizer_test_translate( string $text ): string {
+function es_optimizer_test_translate( string $text, string $domain = 'default' ): string {
+	$GLOBALS['es_optimizer_test']['domains'][ $text ] = $domain;
+
 	return $GLOBALS['es_optimizer_test']['translations'][ $text ] ?? $text;
 }
 
@@ -480,8 +483,7 @@ if ( ! function_exists( '__' ) ) {
 	 * @return string Text.
 	 */
 	function __( string $text, string $domain = 'default' ): string {
-		unset( $domain );
-		return es_optimizer_test_translate( $text );
+		return es_optimizer_test_translate( $text, $domain );
 	}
 }
 
@@ -497,8 +499,7 @@ if ( ! function_exists( '_n' ) ) {
 	 * @return string Selected English message.
 	 */
 	function _n( string $single, string $plural, int $number, string $domain = 'default' ): string {
-		unset( $domain );
-		return es_optimizer_test_translate( 1 === $number ? $single : $plural );
+		return es_optimizer_test_translate( 1 === $number ? $single : $plural, $domain );
 	}
 }
 
@@ -523,8 +524,7 @@ if ( ! function_exists( 'esc_html__' ) ) {
 	 * @return string Escaped text.
 	 */
 	function esc_html__( string $text, string $domain = 'default' ): string {
-		unset( $domain );
-		return esc_html( es_optimizer_test_translate( $text ) );
+		return esc_html( es_optimizer_test_translate( $text, $domain ) );
 	}
 }
 

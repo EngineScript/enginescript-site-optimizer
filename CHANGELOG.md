@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Confirm a save with "Settings saved." when the same save also reports rejected lines.
 - Tell screen-reader users that the EngineScript link on the settings page opens in a new tab.
 - Escape the translated menu and page titles of the settings page, so that a translation file cannot put markup into the admin menu.
+- Let "Disable Jetpack Promotions" turn off Jetpack's Just-in-Time Messages: the plugin now adds its Jetpack filters when it loads, before Jetpack reads them.
+- Reject a domain whose last label is a hexadecimal number, such as `cdn.0x1f`, which browsers treat as an IP address.
+- Keep a network uninstall's memory use flat: clear WordPress's in-memory cache after each site, when the object cache supports it.
+- Show WordPress's own translation of "Settings saved." beside a rejected-lines warning.
 
 ### Changed
 
