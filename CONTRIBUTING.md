@@ -11,7 +11,7 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 ### Requirements
 
 - **PHP**: 8.2 or higher
-- **WordPress**: 6.8 or higher
+- **WordPress**: 7.0 or higher
 - **Composer**: For dependency management and quality tools
 - **Git**: For version control
 
@@ -149,7 +149,7 @@ function es_optimizer_example_function( string $input ): string {
 
 1. **Manual testing**:
 
-   - Test with WordPress 6.8 or higher.
+   - Test with WordPress 7.0 or higher.
    - Test with PHP 8.2 or higher.
    - Verify the settings screen at **Settings > Site Optimizer**.
    - Turn each option on and off and check the page source of the front end for its effect.

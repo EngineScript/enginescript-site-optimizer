@@ -1,7 +1,7 @@
 === EngineScript Site Optimizer ===
 Contributors: enginescript
 Tags: optimization, performance, cleanup
-Requires at least: 6.8
+Requires at least: 7.0
 Tested up to: 7.1
 Stable tag: 2.2.0
 Requires PHP: 8.2
@@ -77,6 +77,7 @@ No. The option removes WordPress's generator output from the page head and from 
 * Stop three domain name patterns from matching text that ends in a line break.
 * Read on/off settings the way WordPress reads booleans: a stored or submitted string `false` now means off.
 * Reject the special-use names `alt` and `onion` in domain lists.
+* Raise the minimum WordPress version to 7.0, the version Jetpack requires. PHP 8.2 stays the minimum.
 * Use one term, "domain", for an entry of the Preconnect and DNS Prefetch lists in the settings, the rejection reasons, and the documentation. The reasons now read "Invalid domain entry.", "No domain name found.", "Invalid domain name.", and "IP addresses and private, local, or reserved domain names are not allowed."
 * Let `es_optimizer_normalize_stored_options()` accept a stored value that is not an array and treat it as empty, instead of failing with a type error.
 * Mark only the `fonts.gstatic.com` preconnect hint with `crossorigin`. The hint for `fonts.googleapis.com` no longer carries it, so the stylesheet request can use the connection.

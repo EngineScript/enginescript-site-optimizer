@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Read on/off settings the way WordPress reads booleans: a stored or submitted string `false` now means off.
 - Let `es_optimizer_normalize_stored_options()` accept a stored value that is not an array and treat it as empty, instead of failing with a type error.
 - Reject the special-use names `alt` and `onion` in domain lists.
+- Raise the minimum WordPress version to 7.0, the version Jetpack requires. PHP 8.2 stays the minimum.
 - Use one term, "domain", for an entry of the Preconnect and DNS Prefetch lists in the settings, the rejection reasons, and the documentation. The reasons now read "Invalid domain entry.", "No domain name found.", "Invalid domain name.", and "IP addresses and private, local, or reserved domain names are not allowed."
 - "Remove WordPress Version" now also removes the generator tag from feeds, and "Remove Shortlink" also removes the shortlink HTTP response header.
 - Stop adding the plugin's resource hints to the login screen.
