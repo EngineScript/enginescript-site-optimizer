@@ -38,6 +38,10 @@
     "psalm:taint": "psalm --config=psalm.xml --taint-analysis",
     "phpstan": "phpstan analyze --memory-limit=1G",
     "test": "phpunit --configuration phpunit.xml --testsuite unit --fail-on-empty-test-suite",
+    "make-pot": [
+      "wp i18n make-pot . languages/enginescript-site-optimizer.pot --slug=enginescript-site-optimizer --domain=enginescript-site-optimizer --include=enginescript-site-optimizer.php,uninstall.php,includes --headers={\\\"Report-Msgid-Bugs-To\\\":\\\"https://github.com/EngineScript/enginescript-site-optimizer/issues\\\"}",
+      "git diff --quiet --ignore-matching-lines=POT-Creation-Date: -- languages/enginescript-site-optimizer.pot && git checkout -- languages/enginescript-site-optimizer.pot || exit 0"
+    ],
     "check-all": [
       "@phpcs",
       "@phpmd",

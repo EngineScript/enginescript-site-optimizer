@@ -33,11 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Remove WordPress Version" now also removes the generator tag from feeds, and "Remove Shortlink" also removes the shortlink HTTP response header.
 - Stop adding the plugin's resource hints to the login screen.
 - Write the reasons in a rejected-lines notice as separate sentences, say in words when further rejected lines are not listed, and drop the time-and-memory advice from the uninstall failure message, which now gives its reason.
+- Name the GitHub issue tracker as the translation template's bug report address, in place of a WordPress.org support forum the plugin does not have.
 
 ### Removed
 
 - Remove the unused function `es_optimizer_resource_hint_exists()`, the unused constant `ES_SITE_OPTIMIZER_PATH`, and the unused `$force_refresh` parameter of `es_optimizer_get_options()`. A call that passes that parameter by name now fails; a positional argument is ignored.
 - Remove the filter that took the emoji domain out of DNS prefetch hints, with its parser: WordPress 6.8 and later print no such hint. Remove the two activation and deactivation callbacks, which did nothing. The functions `es_optimizer_disable_emojis_remove_dns_prefetch()`, `es_optimizer_get_resource_hint_host()`, `es_optimizer_activate_plugin()`, and `es_optimizer_deactivate_plugin()` no longer exist.
+- Remove the Update Translation File workflow. Generate the translation template locally with `composer make-pot` and commit it with each change.
 
 ## [2.2.0] - 2026-09-27
 

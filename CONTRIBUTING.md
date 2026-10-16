@@ -240,17 +240,13 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 Use the literal `enginescript-site-optimizer` text domain for user-facing strings. Add translator comments for placeholders, use numbered placeholders when there is more than one, and escape translated text for its output context.
 
-After source strings settle, run the same extraction command as the [Update Translation File workflow](.github/workflows/update-pot-file.yml) from the repository root with WP-CLI's `i18n` command available:
+The translation template, `languages/enginescript-site-optimizer.pot`, is generated locally and committed; no workflow regenerates it. Before committing a change to a shipped PHP or JavaScript file, run this from the repository root with WP-CLI's `i18n` command available:
 
 ```bash
-wp i18n make-pot . languages/enginescript-site-optimizer.pot \
-  --slug=enginescript-site-optimizer \
-  --domain=enginescript-site-optimizer \
-  --include=enginescript-site-optimizer.php,includes,uninstall.php \
-  --exclude=vendor,node_modules,tests,build,plugin-check-build,.git,.github,.private
+composer make-pot
 ```
 
-Review message text, source references, translator notes, and plural forms in the generated diff. A POT is a translation template; it does not provide a translated interface.
+The script scans the shipped PHP and JavaScript files and names the GitHub issue tracker as the template's bug report address. When only the creation date would change, it puts the committed template back, so it is safe to run every time. Review message text, source references, translator notes, and plural forms in the generated diff, and commit the template with the change. A POT is a translation template; it does not provide a translated interface.
 
 ## Support Channels
 

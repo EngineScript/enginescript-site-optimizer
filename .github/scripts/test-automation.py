@@ -384,41 +384,6 @@ class AutomationTests(unittest.TestCase):
                     self.assertEqual(0, result.returncode)
                     self.assertEqual(f"exists={expected}\n", output.read_text())
 
-    def test_pot_diff_handles_timestamp_large_change_and_untracked_file(self) -> None:
-        script = workflow_step("update-pot-file.yml", "Check for changes")
-        filename = "languages/enginescript-site-optimizer.pot"
-        baseline = 'msgid ""\nmsgstr ""\n"POT-Creation-Date: old\\n"\n\n'
-        self.write(filename, baseline)
-        # filename is the constant POT fixture path above, after --.
-        subprocess.run(["/usr/bin/git", "add", "--", filename], check=True)  # nosec B603
-        output = self.root / "step-output"
-        env = dict(os.environ, PLUGIN_SLUG=package.SLUG, GITHUB_OUTPUT=str(output))
-
-        def check(expected: str) -> None:
-            output.write_text("")
-            # Only the repository's fixed POT step is code; fixture paths are environment data.
-            subprocess.run(
-                ["/usr/bin/bash", "-e", "-o", "pipefail", "-c", script],
-                env=env,  # nosec B603
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            self.assertEqual(f"has_changes={expected}\n", output.read_text())
-
-        check("false")
-        self.write(filename, baseline.replace("old", "new"))
-        check("false")
-        self.assertEqual(baseline, (self.root / filename).read_text())
-        self.write(filename, baseline + "".join(f'msgid "message {i}"\nmsgstr ""\n\n' for i in range(3000)))
-        check("true")
-        # Same constant fixture filename and explicit option delimiter.
-        subprocess.run(  # nosec B603
-            ["/usr/bin/git", "rm", "--cached", "--force", "--quiet", "--", filename], check=True
-        )
-        check("true")
-        self.assertTrue((self.root / filename).is_file())
-
     def create_package_fixture(self) -> tuple[Path, Path]:
         """Build a valid directory and ZIP for independent package failure cases."""
         for name in (
