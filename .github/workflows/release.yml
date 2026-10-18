@@ -105,6 +105,7 @@ jobs:
             ["WP Plugin Check (PHP 8.3)", "PHPCS (PHP 8.3)", "WP VIP CS (PHP 8.3)",
              "PHPMD (PHP 8.3)", "Psalm Static Analysis (PHP 8.3)",
              "Security Scan (PHP 8.3)", "PHPStan for WP (PHP 8.3)",
+             "Rector (PHP 8.3)",
              "Lint (Node 24)", "Unit Test Coverage (PHP 8.4)",
              ( ["8.2", "8.3", "8.4", "8.5"][] as $php |
                ["7.0", "latest", "nightly"][] as $wp |

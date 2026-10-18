@@ -44,7 +44,6 @@ function es_optimizer_disable_emojis(): void {
  * Remove admin emoji output after WordPress has registered its admin callbacks.
  *
  * @since 2.2.0
- * @return void
  */
 function es_optimizer_disable_admin_emojis(): void {
 	if ( ! es_optimizer_is_option_enabled( 'disable_emojis' ) ) {
@@ -70,9 +69,7 @@ function es_optimizer_disable_emojis_tinymce( mixed $plugins ): mixed {
 	return array_values(
 		array_filter(
 			$plugins,
-			static function ( mixed $plugin ): bool {
-				return 'wpemoji' !== $plugin;
-			}
+			static fn( mixed $plugin ): bool => 'wpemoji' !== $plugin
 		)
 	);
 }
@@ -94,7 +91,7 @@ function es_optimizer_remove_jquery_migrate( WP_Scripts $scripts ): void {
 
 	$script = $scripts->registered['jquery'];
 
-	$script->deps = array_values( array_diff( $script->deps, array( 'jquery-migrate' ) ) );
+	$script->deps = array_values( array_diff( $script->deps, [ 'jquery-migrate' ] ) );
 }
 
 /**
@@ -126,7 +123,7 @@ function es_optimizer_remove_header_items(): void {
 		remove_action( 'wp_head', 'wp_generator' );
 
 		// The feed actions that WordPress gives a generator tag, except the one an export file also runs.
-		foreach ( array( 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ) as $feed_action ) {
+		foreach ( [ 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ] as $feed_action ) {
 			remove_action( $feed_action, 'the_generator' );
 		}
 	}
@@ -150,7 +147,6 @@ function es_optimizer_remove_header_items(): void {
  * only on a feed request, which is known once the request has been parsed.
  *
  * @since 2.3.0
- * @return void
  */
 function es_optimizer_remove_feed_generator(): void {
 	if ( is_feed() && es_optimizer_is_option_enabled( 'remove_wp_version' ) ) {
@@ -203,7 +199,7 @@ function es_optimizer_add_preconnect_resource_hints( mixed $urls, mixed $relatio
 		}
 
 		$host = wp_parse_url( $domain, PHP_URL_HOST );
-		$hint = array( 'href' => $domain );
+		$hint = [ 'href' => $domain ];
 
 		// Font files are fetched without credentials and need their own connection.
 		// A stylesheet is fetched with credentials, so its domain must not be marked.
@@ -258,9 +254,9 @@ function es_optimizer_add_dns_prefetch_resource_hints( mixed $urls, mixed $relat
  * @return array<int|string, true> Exact string href membership set.
  */
 function es_optimizer_get_resource_hint_hrefs( array $urls ): array {
-	$hrefs = array();
+	$hrefs = [];
 
-	foreach ( array_map( 'es_optimizer_get_resource_hint_href', $urls ) as $href ) {
+	foreach ( array_map( es_optimizer_get_resource_hint_href( ... ), $urls ) as $href ) {
 		if ( null !== $href ) {
 			$hrefs[ $href ] = true;
 		}

@@ -37,7 +37,7 @@ const ES_SITE_OPTIMIZER_MAX_DOMAIN_LINE_BYTES = 512;
  * @return array<string, int|string> Default options.
  */
 function es_optimizer_get_default_options(): array {
-	return array(
+	return [
 		'disable_emojis'               => 0,
 		'remove_jquery_migrate'        => 0,
 		'disable_classic_theme_styles' => 0,
@@ -51,7 +51,7 @@ function es_optimizer_get_default_options(): array {
 		'dns_prefetch_domains'         => '',
 		'disable_jetpack_ads'          => 0,
 		'disable_post_via_email'       => 0,
-	);
+	];
 }
 
 /**
@@ -61,7 +61,7 @@ function es_optimizer_get_default_options(): array {
  * @return array<int, string> Boolean option keys.
  */
 function es_optimizer_get_boolean_option_keys(): array {
-	return array(
+	return [
 		'disable_emojis',
 		'remove_jquery_migrate',
 		'disable_classic_theme_styles',
@@ -73,7 +73,7 @@ function es_optimizer_get_boolean_option_keys(): array {
 		'enable_dns_prefetch',
 		'disable_jetpack_ads',
 		'disable_post_via_email',
-	);
+	];
 }
 
 /**
@@ -83,7 +83,7 @@ function es_optimizer_get_boolean_option_keys(): array {
  * @return array<string, int|string> Plugin options.
  */
 function es_optimizer_get_options(): array {
-	return es_optimizer_normalize_stored_options( get_option( 'es_optimizer_options', array() ), es_optimizer_get_default_options() );
+	return es_optimizer_normalize_stored_options( get_option( 'es_optimizer_options', [] ), es_optimizer_get_default_options() );
 }
 
 /**
@@ -97,7 +97,7 @@ function es_optimizer_get_options(): array {
  */
 function es_optimizer_normalize_stored_options( mixed $stored_options, array $default_options ): array {
 	if ( ! is_array( $stored_options ) ) {
-		$stored_options = array();
+		$stored_options = [];
 	}
 
 	$options = $default_options;
@@ -108,7 +108,7 @@ function es_optimizer_normalize_stored_options( mixed $stored_options, array $de
 		}
 	}
 
-	foreach ( array( 'preconnect_domains', 'dns_prefetch_domains' ) as $option_key ) {
+	foreach ( [ 'preconnect_domains', 'dns_prefetch_domains' ] as $option_key ) {
 		if ( isset( $stored_options[ $option_key ] ) && is_scalar( $stored_options[ $option_key ] ) ) {
 			$options[ $option_key ] = (string) $stored_options[ $option_key ];
 		}
@@ -120,12 +120,14 @@ function es_optimizer_normalize_stored_options( mixed $stored_options, array $de
 /**
  * Retain the cache-clear helper for callers using earlier plugin versions.
  *
- * WordPress owns option caching; the plugin no longer stores a second copy.
+ * WordPress owns option caching; the plugin no longer stores a second copy,
+ * so there is nothing to clear. A later version removes this function.
  *
  * @since 1.5.13
+ * @deprecated 2.3.0 WordPress clears its own option cache.
  */
 function es_optimizer_clear_options_cache(): void {
-	// No plugin-owned cache remains to clear.
+	_deprecated_function( __FUNCTION__, '2.3.0' );
 }
 
 /**
@@ -164,10 +166,10 @@ function es_optimizer_validate_options( mixed $input ): array {
 		$valid[ $checkbox ] = wp_validate_boolean( $input[ $checkbox ] ?? false ) ? 1 : 0;
 	}
 
-	$domain_fields = array(
+	$domain_fields = [
 		'preconnect_domains'   => 'preconnect',
 		'dns_prefetch_domains' => 'dns_prefetch',
-	);
+	];
 
 	foreach ( $domain_fields as $option_key => $context ) {
 		if ( ! array_key_exists( $option_key, $input ) ) {
@@ -176,7 +178,7 @@ function es_optimizer_validate_options( mixed $input ): array {
 
 		if ( ! is_string( $input[ $option_key ] ) ) {
 			es_optimizer_show_rejection_notice(
-				array( __( 'Enter domains as text. Your previous list was retained.', 'enginescript-site-optimizer' ) ),
+				[ __( 'Enter domains as text. Your previous list was retained.', 'enginescript-site-optimizer' ) ],
 				$context
 			);
 			continue;
@@ -203,7 +205,7 @@ function es_optimizer_validate_domain_list( string $domains_input, string $conte
 
 	if ( '' !== $budget_error ) {
 		es_optimizer_show_rejection_notice(
-			array( $budget_error . ' ' . __( 'Your previous list was retained.', 'enginescript-site-optimizer' ) ),
+			[ $budget_error . ' ' . __( 'Your previous list was retained.', 'enginescript-site-optimizer' ) ],
 			$context
 		);
 		$options    = es_optimizer_get_options();
@@ -213,8 +215,8 @@ function es_optimizer_validate_domain_list( string $domains_input, string $conte
 	}
 
 	$domains           = preg_split( '/\r\n|\r|\n/', $domains_input );
-	$sanitized_domains = array();
-	$rejected_domains  = array();
+	$sanitized_domains = [];
+	$rejected_domains  = [];
 	$rejected_count    = 0;
 
 	if ( false === $domains ) {
@@ -339,7 +341,7 @@ function es_optimizer_validate_domain_for_context( string $domain, string $conte
  * @param int|null           $rejected_count   Total rejected lines, or null for a field-level warning.
  */
 function es_optimizer_show_rejection_notice( array $rejected_domains, string $context, ?int $rejected_count = null ): void {
-	$escaped_domains  = array_map( 'esc_html', array_slice( $rejected_domains, 0, 3 ) );
+	$escaped_domains  = array_map( esc_html( ... ), array_slice( $rejected_domains, 0, 3 ) );
 	$rejected_message = implode( ' ', $escaped_domains );
 
 	if ( ( $rejected_count ?? count( $rejected_domains ) ) > 3 ) {
@@ -388,7 +390,6 @@ function es_optimizer_show_rejection_notice( array $rejected_domains, string $co
  * @global mixed $wp_settings_errors Settings API notices registered in this request.
  * @param string $code    Fixed plugin warning code.
  * @param string $message Escaped message containing only safe diagnostic text.
- * @return void
  */
 function es_optimizer_add_settings_warning( string $code, string $message ): void {
 	global $wp_settings_errors;
@@ -398,7 +399,7 @@ function es_optimizer_add_settings_warning( string $code, string $message ): voi
 		static fn ( mixed $error ): bool => is_array( $error ) && 'es_optimizer_options' === ( $error['setting'] ?? null ) && ( $error['code'] ?? null ) === $code
 	);
 
-	if ( array() !== $registered ) {
+	if ( [] !== $registered ) {
 		return;
 	}
 
@@ -415,7 +416,6 @@ function es_optimizer_add_settings_warning( string $code, string $message ): voi
  *
  * @since 2.3.0
  * @global mixed $wp_settings_errors Settings API notices registered in this request.
- * @return void
  */
 function es_optimizer_confirm_save_beside_warnings(): void {
 	global $wp_settings_errors;
@@ -486,11 +486,11 @@ function es_optimizer_validate_single_domain( string $domain ): array {
 		return es_optimizer_get_domain_validation_error( __( 'Invalid domain entry.', 'enginescript-site-optimizer' ) );
 	}
 
-	return array(
+	return [
 		'valid'  => true,
 		'domain' => $clean_domain,
 		'error'  => '',
-	);
+	];
 }
 
 /**
@@ -514,7 +514,7 @@ function es_optimizer_get_canonical_origin( string $domain, string $host, ?int $
 		$origin .= ':' . $port;
 	}
 
-	if ( sanitize_url( $origin, array( 'https' ) ) !== $origin ) {
+	if ( sanitize_url( $origin, [ 'https' ] ) !== $origin ) {
 		return '';
 	}
 
@@ -610,11 +610,11 @@ function es_optimizer_validate_resource_hint_host( string $domain, string $host 
  * @return array{valid: bool, domain: string, error: string} Validation result.
  */
 function es_optimizer_get_domain_validation_error( string $error ): array {
-	return array(
+	return [
 		'valid'  => false,
 		'domain' => '',
 		'error'  => $error,
-	);
+	];
 }
 
 /**
@@ -694,7 +694,7 @@ function es_optimizer_url_has_disallowed_path( array $parsed_url ): bool {
  * @return bool True when disallowed parts are present.
  */
 function es_optimizer_url_has_disallowed_parts( array $parsed_url ): bool {
-	$disallowed_parts = array( 'query', 'fragment', 'user', 'pass' );
+	$disallowed_parts = [ 'query', 'fragment', 'user', 'pass' ];
 
 	foreach ( $disallowed_parts as $part ) {
 		if ( isset( $parsed_url[ $part ] ) ) {
@@ -790,7 +790,7 @@ function es_optimizer_looks_like_obfuscated_ip_host( string $host ): bool {
  * @return bool True when the hostname is reserved or local-use.
  */
 function es_optimizer_is_special_use_hostname( string $host ): bool {
-	$reserved_suffixes = array(
+	$reserved_suffixes = [
 		'alt',
 		'example',
 		'home.arpa',
@@ -800,7 +800,7 @@ function es_optimizer_is_special_use_hostname( string $host ): bool {
 		'localhost',
 		'onion',
 		'test',
-	);
+	];
 
 	foreach ( $reserved_suffixes as $suffix ) {
 		if ( $host === $suffix || str_ends_with( $host, '.' . $suffix ) ) {
@@ -853,15 +853,15 @@ function es_optimizer_get_validated_domains( string $option_key ): array {
 	$raw     = $options[ $option_key ] ?? '';
 
 	if ( ! is_string( $raw ) || '' !== es_optimizer_get_domain_list_budget_error( $raw ) ) {
-		return array();
+		return [];
 	}
 
 	$context       = 'preconnect_domains' === $option_key ? 'preconnect' : 'dns_prefetch';
 	$domains       = preg_split( '/\r\n|\r|\n/', $raw );
-	$valid_domains = array();
+	$valid_domains = [];
 
 	if ( false === $domains ) {
-		return array();
+		return [];
 	}
 
 	foreach ( $domains as $domain ) {

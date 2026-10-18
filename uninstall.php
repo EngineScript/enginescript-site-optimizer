@@ -26,6 +26,21 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 const ES_SITE_OPTIMIZER_UNINSTALL_ERROR = 0x45534F;
 
 /**
+ * Stop the uninstall with a failure that this file raised.
+ *
+ * Every caller passes text that is already escaped, so the reason can be shown
+ * as it is. The code marks the failure as this file's own.
+ *
+ * @since 2.3.0
+ * @param string         $message  Escaped reason.
+ * @param Throwable|null $previous Failure that caused this one, if any.
+ * @throws RuntimeException Always.
+ */
+function es_optimizer_uninstall_fail( string $message, ?Throwable $previous = null ): never {
+	throw new RuntimeException( $message, ES_SITE_OPTIMIZER_UNINSTALL_ERROR, $previous ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Callers pass escaped text; the code is an integer constant.
+}
+
+/**
  * Get the fixed reason of a failure raised by this file.
  *
  * @since 2.3.0
@@ -72,13 +87,13 @@ function es_optimizer_uninstall_get_failure_message( Throwable $error ): string 
  */
 function es_optimizer_uninstall_validate_site_id( mixed $site_id ): int {
 	if ( ! is_int( $site_id ) && ! is_string( $site_id ) ) {
-		throw new RuntimeException( esc_html__( 'The list of network sites returned an invalid site ID.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The list of network sites returned an invalid site ID.', 'enginescript-site-optimizer' ) );
 	}
 
-	$validated = filter_var( $site_id, FILTER_VALIDATE_INT, array( 'options' => array( 'min_range' => 1 ) ) );
+	$validated = filter_var( $site_id, FILTER_VALIDATE_INT, [ 'options' => [ 'min_range' => 1 ] ] );
 
 	if ( false === $validated ) {
-		throw new RuntimeException( esc_html__( 'The list of network sites returned an invalid site ID.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The list of network sites returned an invalid site ID.', 'enginescript-site-optimizer' ) );
 	}
 
 	return $validated;
@@ -95,7 +110,7 @@ function es_optimizer_uninstall_get_site_limit(): int {
 	global $wpdb;
 
 	if ( ! $wpdb instanceof wpdb ) {
-		throw new RuntimeException( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ) );
 	}
 
 	// A fresh physical read distinguishes query failure from an empty directory.
@@ -107,11 +122,11 @@ function es_optimizer_uninstall_get_site_limit(): int {
 	}
 
 	if ( 1 !== $rows ) {
-		throw new RuntimeException( esc_html__( 'The list of network sites could not be read.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The list of network sites could not be read.', 'enginescript-site-optimizer' ) );
 	}
 
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Null reads the already checked prepared query result; it executes no SQL.
-	return es_optimizer_uninstall_validate_site_id( $wpdb->get_var( null ) );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Called without a query, it reads the result of the checked prepared query above; it executes no SQL.
+	return es_optimizer_uninstall_validate_site_id( $wpdb->get_var() );
 }
 
 /**
@@ -127,7 +142,7 @@ function es_optimizer_uninstall_get_site_ids( int $last_id, int $maximum_id ): a
 	global $wpdb;
 
 	if ( ! $wpdb instanceof wpdb ) {
-		throw new RuntimeException( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ) );
 	}
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- A prepared cursor read avoids cached pages and offset skips during uninstall.
@@ -141,23 +156,23 @@ function es_optimizer_uninstall_get_site_ids( int $last_id, int $maximum_id ): a
 	);
 
 	if ( ! is_int( $rows ) || $rows < 0 || $rows > 100 ) {
-		throw new RuntimeException( esc_html__( 'The list of network sites could not be read.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The list of network sites could not be read.', 'enginescript-site-optimizer' ) );
 	}
 
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Null reads the already checked prepared query result; it executes no SQL.
-	$site_ids = $wpdb->get_col( null );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- Called without a query, it reads the result of the checked prepared query above; it executes no SQL.
+	$site_ids = $wpdb->get_col();
 
 	if ( count( $site_ids ) !== $rows ) {
-		throw new RuntimeException( esc_html__( 'The list of network sites could not be read.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The list of network sites could not be read.', 'enginescript-site-optimizer' ) );
 	}
 
-	$validated_ids = array();
+	$validated_ids = [];
 
 	foreach ( $site_ids as $site_id ) {
 		$site_id = es_optimizer_uninstall_validate_site_id( $site_id );
 
 		if ( $site_id <= $last_id || $site_id > $maximum_id ) {
-			throw new RuntimeException( esc_html__( 'The list of network sites returned an invalid site ID.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+			es_optimizer_uninstall_fail( esc_html__( 'The list of network sites returned an invalid site ID.', 'enginescript-site-optimizer' ) );
 		}
 
 		$validated_ids[] = $site_id;
@@ -171,27 +186,25 @@ function es_optimizer_uninstall_get_site_ids( int $last_id, int $maximum_id ): a
  * Delete and physically verify the current site's fixed option.
  *
  * @since 2.2.0
- * @return void
  * @throws RuntimeException If the site changes, verification fails or the row remains.
  */
 function es_optimizer_uninstall_current_site_options(): void {
 	global $wpdb;
 
 	if ( ! $wpdb instanceof wpdb ) {
-		throw new RuntimeException( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ) );
 	}
 
 	$site_id = get_current_blog_id();
 	delete_option( 'es_optimizer_options' );
 
 	if ( get_current_blog_id() !== $site_id ) {
-		throw new RuntimeException(
+		es_optimizer_uninstall_fail(
 			sprintf(
 				/* translators: %d: Site ID. */
 				esc_html__( 'The current site changed while the settings of site %d were being deleted.', 'enginescript-site-optimizer' ),
-				$site_id // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- An integer site ID for the %d placeholder.
-			),
-			ES_SITE_OPTIMIZER_UNINSTALL_ERROR // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+				$site_id
+			)
 		);
 	}
 
@@ -202,24 +215,22 @@ function es_optimizer_uninstall_current_site_options(): void {
 	);
 
 	if ( ! is_int( $rows ) ) {
-		throw new RuntimeException(
+		es_optimizer_uninstall_fail(
 			sprintf(
 				/* translators: %d: Site ID. */
 				esc_html__( 'The settings of site %d could not be verified as removed.', 'enginescript-site-optimizer' ),
-				$site_id // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- An integer site ID for the %d placeholder.
-			),
-			ES_SITE_OPTIMIZER_UNINSTALL_ERROR // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+				$site_id
+			)
 		);
 	}
 
 	if ( 0 !== $rows ) {
-		throw new RuntimeException(
+		es_optimizer_uninstall_fail(
 			sprintf(
 				/* translators: %d: Site ID. */
 				esc_html__( 'The settings of site %d are still stored after deletion.', 'enginescript-site-optimizer' ),
-				$site_id // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- An integer site ID for the %d placeholder.
-			),
-			ES_SITE_OPTIMIZER_UNINSTALL_ERROR // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+				$site_id
+			)
 		);
 	}
 }
@@ -238,17 +249,17 @@ function es_optimizer_uninstall_current_site_options(): void {
 function es_optimizer_uninstall_get_switch_state(): array {
 	global $_wp_switched_stack, $switched;
 
-	$stack = $_wp_switched_stack ?? array();
+	$stack = $_wp_switched_stack ?? [];
 	$flag  = $switched ?? false;
 
 	if ( ! is_array( $stack ) || ! is_bool( $flag ) ) {
-		throw new RuntimeException( esc_html__( 'The site-switch state could not be read.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The site-switch state could not be read.', 'enginescript-site-optimizer' ) );
 	}
 
-	return array(
+	return [
 		'stack'    => $stack,
 		'switched' => $flag,
-	);
+	];
 }
 
 /**
@@ -267,7 +278,6 @@ function es_optimizer_uninstall_get_switch_depth(): int {
  *
  * @since 2.2.0
  * @param array{site_id: int, stack: array<int|string, mixed>, switched: bool} $context Original site context.
- * @return void
  * @throws RuntimeException If context cannot be restored without additional switching.
  */
 function es_optimizer_uninstall_restore_context( array $context ): void {
@@ -278,20 +288,20 @@ function es_optimizer_uninstall_restore_context( array $context ): void {
 		$previous_depth = $current_depth;
 
 		if ( ! restore_current_blog() ) {
-			throw new RuntimeException( esc_html__( 'WordPress could not switch back to the original site.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+			es_optimizer_uninstall_fail( esc_html__( 'WordPress could not switch back to the original site.', 'enginescript-site-optimizer' ) );
 		}
 
 		$current_depth = es_optimizer_uninstall_get_switch_depth();
 
 		if ( $current_depth >= $previous_depth ) {
-			throw new RuntimeException( esc_html__( 'WordPress could not switch back to the original site.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+			es_optimizer_uninstall_fail( esc_html__( 'WordPress could not switch back to the original site.', 'enginescript-site-optimizer' ) );
 		}
 	}
 
 	$state = es_optimizer_uninstall_get_switch_state();
 
 	if ( get_current_blog_id() !== $context['site_id'] || $state['stack'] !== $context['stack'] || $state['switched'] !== $context['switched'] ) {
-		throw new RuntimeException( esc_html__( 'WordPress could not switch back to the original site.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'WordPress could not switch back to the original site.', 'enginescript-site-optimizer' ) );
 	}
 }
 
@@ -300,16 +310,15 @@ function es_optimizer_uninstall_restore_context( array $context ): void {
  *
  * @since 2.2.0
  * @param int $site_id Site to clean.
- * @return void
  * @throws RuntimeException If the switch state is unreadable, or switching or context restoration fails.
  */
 function es_optimizer_uninstall_site_options( int $site_id ): void {
 	$state   = es_optimizer_uninstall_get_switch_state();
-	$context = array(
+	$context = [
 		'site_id'  => get_current_blog_id(),
 		'stack'    => $state['stack'],
 		'switched' => $state['switched'],
-	);
+	];
 
 	try {
 		if ( $site_id !== $context['site_id'] ) {
@@ -318,13 +327,12 @@ function es_optimizer_uninstall_site_options( int $site_id ): void {
 		}
 
 		if ( get_current_blog_id() !== $site_id ) {
-			throw new RuntimeException(
+			es_optimizer_uninstall_fail(
 				sprintf(
 					/* translators: %d: Site ID. */
 					esc_html__( 'WordPress could not switch to site %d.', 'enginescript-site-optimizer' ),
-					$site_id // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- An integer site ID for the %d placeholder.
-				),
-				ES_SITE_OPTIMIZER_UNINSTALL_ERROR // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+					$site_id
+				)
 			);
 		}
 
@@ -381,7 +389,7 @@ function es_optimizer_uninstall_get_sites_failure_reason( int $failed_count, arr
 			'enginescript-site-optimizer'
 		),
 		$failed_count,
-		implode( ', ', array_map( 'intval', $failed_ids ) )
+		implode( ', ', array_map( intval( ... ), $failed_ids ) )
 	);
 
 	return trim( esc_html( $reason ) . ' ' . es_optimizer_uninstall_get_failure_reason( $first_error ) );
@@ -394,14 +402,13 @@ function es_optimizer_uninstall_get_sites_failure_reason( int $failed_count, arr
  * does not keep the settings of every later site. The uninstall still fails.
  *
  * @since 2.2.0
- * @return void
  * @throws RuntimeException If any site could not be cleaned or the directory grows during removal.
  */
 function es_optimizer_uninstall_network_options(): void {
 	$maximum_id   = es_optimizer_uninstall_get_site_limit();
 	$last_id      = 0;
 	$failed_count = 0;
-	$failed_ids   = array();
+	$failed_ids   = [];
 	$first_error  = null;
 
 	while ( $last_id < $maximum_id ) {
@@ -434,14 +441,13 @@ function es_optimizer_uninstall_network_options(): void {
 	}
 
 	if ( es_optimizer_uninstall_get_site_limit() > $maximum_id ) {
-		throw new RuntimeException( esc_html__( 'A site was created during removal.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'A site was created during removal.', 'enginescript-site-optimizer' ) );
 	}
 
 	if ( null !== $first_error ) {
-		throw new RuntimeException(
+		es_optimizer_uninstall_fail(
 			esc_html( es_optimizer_uninstall_get_sites_failure_reason( $failed_count, $failed_ids, $first_error ) ),
-			ES_SITE_OPTIMIZER_UNINSTALL_ERROR, // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
-			$first_error // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The previous exception is passed on, not printed.
+			$first_error
 		);
 	}
 }
@@ -450,14 +456,13 @@ function es_optimizer_uninstall_network_options(): void {
  * Run native deletion with private database diagnostics and checked reads.
  *
  * @since 2.2.0
- * @return void
  * @throws RuntimeException If the database object is unavailable.
  */
 function es_optimizer_uninstall_options(): void {
 	global $wpdb;
 
 	if ( ! $wpdb instanceof wpdb ) {
-		throw new RuntimeException( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ), ES_SITE_OPTIMIZER_UNINSTALL_ERROR ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The code is an integer constant.
+		es_optimizer_uninstall_fail( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ) );
 	}
 
 	// The checked object, so that suppression is restored on the object it was set on.
@@ -483,7 +488,7 @@ try {
 	wp_die(
 		esc_html( es_optimizer_uninstall_get_failure_message( $es_optimizer_uninstall_failure ) ),
 		esc_html__( 'Site Optimizer removal failed', 'enginescript-site-optimizer' ),
-		array( 'response' => 500 )
+		[ 'response' => 500 ]
 	);
 
 	/**

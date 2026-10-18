@@ -68,6 +68,8 @@ No. The option removes WordPress's generator output from the page head and from 
 == Changelog ==
 
 = Unreleased =
+* Deprecate `es_optimizer_clear_options_cache()`, which has done nothing since WordPress took over option caching; calling it triggers WordPress's deprecation notice.
+* Write the plugin's PHP in PHP 8 forms (short arrays, an arrow function, first-class callables); behavior is unchanged.
 * Start Preconnect and DNS Prefetch lists empty and show optional, copyable domain suggestions below each field; preserve existing saved lists.
 * Let `wp plugin uninstall` remove every site's settings on multisite: treat the site-switch state as empty when WordPress has not set it yet, as under WP-CLI.
 * Say why an uninstall failed, with the site ID where one applies. A failure raised by other code keeps its own message and is not shown.

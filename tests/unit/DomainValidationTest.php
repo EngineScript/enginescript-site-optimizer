@@ -37,7 +37,6 @@ final class DomainValidationTest extends TestCase {
 		global $wp_settings_errors;
 
 		delete_option( 'es_optimizer_options' );
-		es_optimizer_clear_options_cache();
 		$wp_settings_errors = array();
 	}
 
@@ -220,7 +219,6 @@ final class DomainValidationTest extends TestCase {
 		$options['dns_prefetch_domains'] = 'https://static.example.com';
 
 		update_option( 'es_optimizer_options', $options );
-		es_optimizer_clear_options_cache();
 
 		$preconnect_hints  = es_optimizer_add_preconnect_resource_hints( array(), 'preconnect' );
 		$dns_prefetch_urls = es_optimizer_add_dns_prefetch_resource_hints( array(), 'dns-prefetch' );
@@ -244,7 +242,6 @@ final class DomainValidationTest extends TestCase {
 		$options['dns_prefetch_domains'] = 'https://static.example.com';
 
 		update_option( 'es_optimizer_options', $options );
-		es_optimizer_clear_options_cache();
 
 		$existing_preconnect_hints = array(
 			array( 'href' => 'https://existing.example.com' ),

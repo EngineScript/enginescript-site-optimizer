@@ -5,6 +5,7 @@
 # - PHP compatibility testing across multiple PHP versions (8.2, 8.3, 8.4, 8.5)
 # - WordPress compatibility testing across multiple WP versions (7.0, latest, nightly)
 # - PHPStan static analysis for WordPress-specific code quality
+# - Rector dry run, which fails on PHP that a current idiom would replace
 # - WordPress security vulnerability scanning using pattern analysis
 # - PHPCS code standards validation for WordPress coding standards
 # - Psalm static analysis and taint analysis
@@ -1065,6 +1066,106 @@ jobs:
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           filename: .github/ISSUE_TEMPLATE/phpstan-failure.md
+          update_existing: false
+
+  rector:
+    name: Rector (PHP 8.3)
+    runs-on: ubuntu-latest
+    # The job files an issue when it fails on main.
+    permissions:
+      contents: read
+      issues: write
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        id: checkout_code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+          # Always fetch the latest commit, disable any caching
+          fetch-depth: 0
+          clean: true
+
+      - name: Setup PHP 8.3
+        id: setup_php_8_3
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962  # 2.40.0
+        with:
+          php-version: '8.3'
+          extensions: mysqli, curl, zip, intl, gd, mbstring, fileinfo, xml
+          coverage: none
+          tools: composer:v2
+
+      - name: Clear any existing composer cache
+        id: clear_any_existing_composer_cache
+        run: |
+          composer clear-cache || true
+          rm -rf vendor/ composer.lock || true
+
+      - name: Install Composer dependencies (no cache)
+        id: install_composer_dependencies_no_cache
+        run: |
+          composer install --prefer-dist --no-progress --no-cache
+
+      - name: Run Rector dry run
+        id: run_rector_dry_run
+        # The dry run changes nothing and fails when any configured rule would change the code.
+        run: |
+          vendor/bin/rector --version
+          vendor/bin/rector process --dry-run --no-progress-bar
+
+      - name: Preserve diagnostic summary
+        id: preserve_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          STEP_RESULTS: |
+            checkout_code=${{ steps.checkout_code.outcome }}
+            setup_php_8_3=${{ steps.setup_php_8_3.outcome }}
+            clear_any_existing_composer_cache=${{ steps.clear_any_existing_composer_cache.outcome }}
+            install_composer_dependencies_no_cache=${{ steps.install_composer_dependencies_no_cache.outcome }}
+            run_rector_dry_run=${{ steps.run_rector_dry_run.outcome }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/es-optimizer-diagnostics"
+          printf '%s\n' "$STEP_RESULTS" > "$RUNNER_TEMP/es-optimizer-diagnostics/steps.txt"
+          printf 'commit=%s\njob=%s\n' "$GITHUB_SHA" "$GITHUB_JOB" > "$RUNNER_TEMP/es-optimizer-diagnostics/run.txt"
+          if command -v php >/dev/null; then
+            php -r 'echo PHP_VERSION, PHP_EOL;' > "$RUNNER_TEMP/es-optimizer-diagnostics/php.txt"
+          fi
+          if command -v composer >/dev/null && [ -f vendor/composer/installed.json ]; then
+            php -r '$data = json_decode(file_get_contents("vendor/composer/installed.json"), true, 512, JSON_THROW_ON_ERROR); foreach ($data["packages"] ?? $data as $package) { echo $package["name"], " ", $package["version"], PHP_EOL; }' > "$RUNNER_TEMP/es-optimizer-diagnostics/dependencies.txt"
+          fi
+          # Never upload config, authentication data, SQL, exports, or arbitrary logs.
+          # Refuse oversized or linked diagnostics instead of uploading them.
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type l -delete
+          find "$RUNNER_TEMP/es-optimizer-diagnostics" -type f -size +2M -delete
+
+      - name: Upload diagnostic summary
+        id: upload_diagnostics
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: wp-compat-rector
+          path: |
+            ${{ runner.temp }}/es-optimizer-diagnostics/run.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/steps.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/php.txt
+            ${{ runner.temp }}/es-optimizer-diagnostics/dependencies.txt
+          retention-days: 7
+          if-no-files-found: warn
+
+      - name: Create issue on Rector failure
+        id: create_issue_on_rector_failure
+        if: ${{ failure() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.actor != 'dependabot[bot]' }}
+        uses: JasonEtco/create-an-issue@1b14a70e4d8dc185e5cc76d3bec9eab20257b2c5  # v2.9.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURE_STAGE: ${{ steps.checkout_code.outcome == 'failure' && 'checkout_code' || steps.setup_php_8_3.outcome == 'failure' && 'setup_php_8_3' || steps.clear_any_existing_composer_cache.outcome == 'failure' && 'clear_any_existing_composer_cache' || steps.install_composer_dependencies_no_cache.outcome == 'failure' && 'install_composer_dependencies_no_cache' || steps.run_rector_dry_run.outcome == 'failure' && 'run_rector_dry_run' || 'unknown_or_canceled' }}
+          PHP_VERSION: '8.3'
+          RUN_ID: ${{ github.run_id }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/rector-failure.md
           update_existing: false
 
   lint:

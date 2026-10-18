@@ -18,12 +18,12 @@ function es_optimizer_init_settings(): void {
 	register_setting(
 		'es_optimizer_settings',
 		'es_optimizer_options',
-		array(
+		[
 			'sanitize_callback' => 'es_optimizer_validate_options',
 			'default'           => es_optimizer_get_default_options(),
 			'show_in_rest'      => false,
 			'type'              => 'array',
-		)
+		]
 	);
 
 	es_optimizer_register_settings_sections();
@@ -63,11 +63,11 @@ function es_optimizer_register_settings_sections(): void {
  * @return array<string, string> Section labels keyed by section ID.
  */
 function es_optimizer_get_settings_sections(): array {
-	return array(
+	return [
 		'es_optimizer_performance'         => __( 'Performance Optimizations', 'enginescript-site-optimizer' ),
 		'es_optimizer_header_cleanup'      => __( 'Header Cleanup', 'enginescript-site-optimizer' ),
 		'es_optimizer_additional_features' => __( 'Additional Features', 'enginescript-site-optimizer' ),
-	);
+	];
 }
 
 /**
@@ -93,7 +93,7 @@ function es_optimizer_get_settings_fields(): array {
 function es_optimizer_get_performance_settings_fields(): array {
 	$section = 'es_optimizer_performance';
 
-	return array(
+	return [
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'disable_emojis',
@@ -112,7 +112,7 @@ function es_optimizer_get_performance_settings_fields(): array {
 			__( 'Disable Classic Theme Styles', 'enginescript-site-optimizer' ),
 			__( 'Remove the classic theme stylesheet added by WordPress.', 'enginescript-site-optimizer' )
 		),
-	);
+	];
 }
 
 /**
@@ -124,7 +124,7 @@ function es_optimizer_get_performance_settings_fields(): array {
 function es_optimizer_get_header_cleanup_settings_fields(): array {
 	$section = 'es_optimizer_header_cleanup';
 
-	return array(
+	return [
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'remove_wp_version',
@@ -149,7 +149,7 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 			__( 'Remove Recent Comments Style', 'enginescript-site-optimizer' ),
 			__( 'Remove inline CSS from the recent comments widget.', 'enginescript-site-optimizer' )
 		),
-	);
+	];
 }
 
 /**
@@ -161,7 +161,7 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 function es_optimizer_get_additional_settings_fields(): array {
 	$section = 'es_optimizer_additional_features';
 
-	return array(
+	return [
 		es_optimizer_get_checkbox_field_definition(
 			$section,
 			'disable_jetpack_ads',
@@ -198,7 +198,7 @@ function es_optimizer_get_additional_settings_fields(): array {
 			__( 'DNS Prefetch Domains', 'enginescript-site-optimizer' ),
 			__( 'DNS prefetch performs only a DNS lookup of the domain name; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
 		),
-	);
+	];
 }
 
 /**
@@ -226,16 +226,16 @@ function es_optimizer_get_domain_list_limits_description(): string {
  */
 function es_optimizer_get_domain_suggestions( string $option_name ): array {
 	return match ( $option_name ) {
-		'preconnect_domains' => array(
+		'preconnect_domains' => [
 			'https://fonts.googleapis.com',
 			'https://fonts.gstatic.com',
 			'https://s.w.org', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Selectable help text only; no remote asset is loaded.
 			'https://wordpress.com',
 			'https://cdnjs.cloudflare.com', // phpcs:ignore PluginCheck.CodeAnalysis.Offloading.OffloadedContent -- Selectable help text only; no remote asset is loaded.
 			'https://www.googletagmanager.com',
-		),
-		'dns_prefetch_domains' => array( 'https://adservice.google.com' ),
-		default => array(),
+		],
+		'dns_prefetch_domains' => [ 'https://adservice.google.com' ],
+		default => [],
 	};
 }
 
@@ -279,13 +279,13 @@ function es_optimizer_get_textarea_field_definition( string $section, string $op
  * @return array{type: string, section: string, option: string, title: string, description: string}
  */
 function es_optimizer_get_field_definition( string $type, string $section, string $option_name, string $title, string $description ): array {
-	return array(
+	return [
 		'type'        => $type,
 		'section'     => $section,
 		'option'      => $option_name,
 		'title'       => $title,
 		'description' => $description,
-	);
+	];
 }
 
 /**
@@ -299,7 +299,7 @@ function es_optimizer_register_field_description( string $option_name, string $d
 	global $es_optimizer_field_descriptions;
 
 	if ( ! isset( $es_optimizer_field_descriptions ) || ! is_array( $es_optimizer_field_descriptions ) ) {
-		$es_optimizer_field_descriptions = array();
+		$es_optimizer_field_descriptions = [];
 	}
 
 	$es_optimizer_field_descriptions[ $option_name ] = $description;
@@ -374,10 +374,10 @@ function es_optimizer_register_checkbox_field( string $page, string $section, st
 		'es_optimizer_render_checkbox_field',
 		$page,
 		$section,
-		array(
+		[
 			'label_for' => es_optimizer_get_field_id( $option_name ),
 			'class'     => 'es-optimizer-field',
-		)
+		]
 	);
 }
 
@@ -400,10 +400,10 @@ function es_optimizer_register_textarea_field( string $page, string $section, st
 		'es_optimizer_render_textarea_field',
 		$page,
 		$section,
-		array(
+		[
 			'label_for' => es_optimizer_get_field_id( $option_name ),
 			'class'     => 'es-optimizer-field',
-		)
+		]
 	);
 }
 
@@ -515,7 +515,7 @@ function es_optimizer_render_textarea_field( array $args ): void {
 	<textarea id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" aria-describedby="<?php echo esc_attr( $description_id ); ?>" rows="5" cols="50" class="large-text code"><?php echo esc_textarea( $textarea_value ); ?></textarea>
 	<div id="<?php echo esc_attr( $description_id ); ?>" class="description">
 		<p><?php echo esc_html( $description ); ?></p>
-		<?php if ( array() !== $suggestions ) : ?>
+		<?php if ( [] !== $suggestions ) : ?>
 			<p><?php esc_html_e( 'Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints.', 'enginescript-site-optimizer' ); ?></p>
 			<pre><?php echo esc_html( implode( "\n", $suggestions ) ); ?></pre>
 		<?php endif; ?>
