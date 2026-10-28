@@ -246,7 +246,7 @@ class AutomationTests(unittest.TestCase):
                 == 0
             )
 
-        self.assertEqual(23, len(jobs))
+        self.assertEqual(20, len(jobs))
         with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
             self.assertTrue(accepts_jobs(jobs))
         for index in range(len(jobs)):
