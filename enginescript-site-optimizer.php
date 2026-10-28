@@ -10,7 +10,7 @@
  * Text Domain: enginescript-site-optimizer
  * Domain Path: /languages
  * Requires at least: 7.0
- * Requires PHP: 8.2
+ * Requires PHP: 8.3
  * Tested up to: 7.1
  *
  * @package EngineScript_Site_Optimizer

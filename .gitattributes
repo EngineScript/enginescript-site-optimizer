@@ -13,6 +13,7 @@
 /.ruff.toml export-ignore
 /.yamllint.yml export-ignore
 /composer.json export-ignore
+/composer.lock export-ignore
 /CHANGELOG.md export-ignore
 /CONTRIBUTING.md export-ignore
 /package.json export-ignore

@@ -60,10 +60,10 @@ def successful_quality_jobs() -> list[dict[str, str]]:
     names = [name for name in re.findall(r"^    name: (.+)$", workflow, re.MULTILINE) if "${{" not in name]
     names += [
         f"Test WordPress {wp} with PHP {php} (highest deps)"
-        for php in ("8.2", "8.3", "8.4", "8.5")
+        for php in ("8.3", "8.4", "8.5")
         for wp in ("7.0", "latest", "nightly")
     ]
-    names.append("Test WordPress latest with PHP 8.2 (lowest deps)")
+    names.append("Test WordPress latest with PHP 8.3 (lowest deps)")
     return [{"name": name, "status": "completed", "conclusion": "success"} for name in names]
 
 

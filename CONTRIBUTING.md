@@ -10,7 +10,7 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 
 ### Requirements
 
-- **PHP**: 8.2 or higher
+- **PHP**: 8.3 or higher
 - **WordPress**: 7.0 or higher
 - **Composer**: For dependency management and quality tools
 - **Git**: For version control
@@ -29,10 +29,10 @@ This project follows the [WordPress Community Code of Conduct](https://make.word
 
    ```bash
    composer install
-   npm install
+   npm ci
    ```
 
-   `composer.lock` and `package-lock.json` are not tracked. Composer and npm resolve the development tools on your machine, and each CI job resolves them on its runner.
+   `composer.lock` and `package-lock.json` are tracked, so your machine and CI install the same versions of the development tools. Composer resolves them for PHP 8.3 (`config.platform` in `composer.json`).
 
 4. Create a feature branch:
 
@@ -150,7 +150,7 @@ function es_optimizer_example_function( string $input ): string {
 1. **Manual testing**:
 
    - Test with WordPress 7.0 or higher.
-   - Test with PHP 8.2 or higher.
+   - Test with PHP 8.3 or higher.
    - Verify the settings screen at **Settings > Site Optimizer**.
    - Turn each option on and off and check the page source of the front end for its effect.
    - Save a preconnect list and a DNS prefetch list, including a line that must be rejected, and check the notice and the printed resource hints.

@@ -628,7 +628,7 @@ if ( ! function_exists( '__return_null' ) ) {
 	/**
 	 * Return null.
 	 *
-	 * The native null return type is intentional; this project requires PHP 8.2+.
+	 * The native null return type is intentional; this project requires PHP 8.3+.
 	 *
 	 * @return null
 	 */

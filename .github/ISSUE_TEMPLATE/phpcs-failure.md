@@ -29,7 +29,7 @@ If PHPCS reached analysis, inspect its output for violations of the configured s
 2. **WordPress Extra**: Extended WordPress coding standards
 3. **WordPress VIP**: WordPress VIP-specific standards
 4. **WordPress Docs and Security**: Documentation and security-focused rules
-5. **PHPCompatibilityWP**: Rules configured for PHP 8.2 and later
+5. **PHPCompatibilityWP**: Rules configured for PHP 8.3 and later
 6. **Modernize and NormalizedArrays**: Selected modernization and array checks
 
 The root `phpcs.xml` is authoritative for exclusions and individual rules,

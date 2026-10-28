@@ -3,7 +3,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/cf82cdb35973466abe7895e6d37666ed)](https://app.codacy.com/gh/EngineScript/enginescript-site-optimizer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![GitHub License](https://img.shields.io/badge/License-GPL%20v3-green.svg?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.html)
 [![WordPress Compatible](https://img.shields.io/badge/WordPress-7.0%2B-blue.svg?logo=wordpress)](https://wordpress.org/)
-[![PHP Compatible](https://img.shields.io/badge/PHP-8.2%2B-purple.svg?logo=php)](https://www.php.net/)
+[![PHP Compatible](https://img.shields.io/badge/PHP-8.3%2B-purple.svg?logo=php)](https://www.php.net/)
 
 ## Current Version
 
@@ -128,15 +128,15 @@ problem and retry removal.
 
 ### Requirements
 
-- Plugin runtime: PHP 8.2 or higher and WordPress 7.0 or higher
+- Plugin runtime: PHP 8.3 or higher and WordPress 7.0 or higher
 - Development tools: Composer and a PHP version that satisfies `composer.json`
 
 ### Set Up the Development Environment
 
 1. Clone this repository: `git clone https://github.com/EngineScript/enginescript-site-optimizer.git`
-2. Install the development tools: `composer install --no-interaction --prefer-dist`, then `npm install`.
-   Neither lock file is tracked, so Composer and npm resolve the tools on your machine, and CI resolves
-   them on its runner. These tools are separate from the plugin's PHP 8.2 runtime minimum.
+2. Install the development tools: `composer install --no-interaction --prefer-dist`, then `npm ci`.
+   Both lock files are tracked, so your machine and CI install the same versions of the tools. These
+   tools are separate from the plugin's PHP 8.3 runtime minimum.
 3. Run the static checks and the unit tests with `composer check-all`.
 4. Submit changes for the [WordPress Compatibility workflow](.github/workflows/wp-compatibility-test.yml).
 
@@ -147,7 +147,7 @@ runner, and there is no checked-in local WordPress installer.
 
 ### PHP Compatibility
 
-The declared plugin minimum is PHP 8.2. The workflow covers PHP 8.2–8.5 with
+The declared plugin minimum is PHP 8.3. The workflow covers PHP 8.3–8.5 with
 WordPress 7.0, latest and nightly, plus a lowest-dependency lane. A compatibility
 claim requires a successful run for the exact reviewed commit and resolved
 versions. Static analysis and a Composer installation alone do not establish it.
@@ -162,7 +162,7 @@ This repository uses GitHub Actions to test the plugin against supported PHP and
 
 The GitHub workflow defines isolated unit and generated native WordPress tests. Its configured matrix includes:
 
-- PHP versions: 8.2, 8.3, 8.4, 8.5
+- PHP versions: 8.3, 8.4, 8.5
 - WordPress versions: 7.0, latest, nightly
 
 Compatibility acceptance requires a successful run for the exact source commit;
