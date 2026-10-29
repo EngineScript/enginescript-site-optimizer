@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Name the GitHub issue tracker as the translation template's bug report address, in place of a WordPress.org support forum the plugin does not have.
 - Deprecate `es_optimizer_clear_options_cache()`. It has done nothing since WordPress took over the plugin's option caching; calling it now triggers WordPress's deprecation notice, and a later version removes it.
 - Write the plugin's PHP in PHP 8 forms: short arrays, an arrow function, and first-class callables. The uninstall builds its failures in one helper. Behavior is unchanged.
-- Add a Rector check to CI that fails on PHP a current idiom would replace, require the short array syntax in PHPCS, override `smol-toml` and `katex` for their npm advisories (one advisory remains in `braces`, which the Markdown linter uses, until a fixed release exists), and remove three issue templates that no workflow used.
+- Add a Rector check to CI that fails on PHP a current idiom would replace, require the short array syntax in PHPCS, override `smol-toml`, `katex`, and `re2js` (used by the Markdown linter) for their npm advisories, and remove three issue templates that no workflow used.
 
 ### Removed
 
