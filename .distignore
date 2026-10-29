@@ -70,7 +70,6 @@
 /phpunit.xml
 /psalm.xml
 /rector.php
-/renovate.json
 /stubs
 /tests
 /tslint.json
