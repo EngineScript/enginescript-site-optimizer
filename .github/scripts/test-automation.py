@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Standard-library regression fixtures, executed by GitHub's package-check job.
+"""Standard-library regression fixtures, executed by GitHub's package-check job."""
 
-These fixtures do not bootstrap WordPress or replace workflow-generated PHP tests.
-All mutation is confined to a temporary fixture repository on the runner.
-Processes use system tools in /usr/bin on the Ubuntu runner/WSL target; PATH
-overrides select only intentional command substitutes inside extracted shell steps.
-"""
+# These fixtures do not bootstrap WordPress or replace workflow-generated PHP tests.
+# All mutation is confined to a temporary fixture repository on the runner.
+# Processes use system tools in /usr/bin on the Ubuntu runner/WSL target; PATH
+# overrides select only intentional command substitutes inside extracted shell steps.
 
 from __future__ import annotations
 
