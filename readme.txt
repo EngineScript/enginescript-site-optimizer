@@ -80,6 +80,7 @@ No. The option removes WordPress's generator output from the page head and from 
 * Read on/off settings the way WordPress reads booleans: a stored or submitted string `false` now means off.
 * Reject the special-use names `alt` and `onion` in domain lists.
 * Raise the minimum WordPress version to 7.0, the version Jetpack requires, and the minimum PHP version to 8.3 (PHP 8.2 reaches end of life on December 31, 2026).
+* Declare "Tested up to" only in `readme.txt`, not in the plugin header, as Plugin Check requires
 * Use one term, "domain", for an entry of the Preconnect and DNS Prefetch lists in the settings, the rejection reasons, and the documentation. The reasons now read "Invalid domain entry.", "No domain name found.", "Invalid domain name.", and "IP addresses and private, local, or reserved domain names are not allowed."
 * Let `es_optimizer_normalize_stored_options()` accept a stored value that is not an array and treat it as empty, instead of failing with a type error.
 * Mark only the `fonts.gstatic.com` preconnect hint with `crossorigin`. The hint for `fonts.googleapis.com` no longer carries it, so the stylesheet request can use the connection.
