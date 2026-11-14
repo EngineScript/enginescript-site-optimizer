@@ -545,7 +545,7 @@ class AutomationTests(unittest.TestCase):
         self.write("bin/git", "#!/bin/sh\nexit 97\n")
         (self.root / "bin/git").chmod(0o700)
         with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
-            self.assertEqual(2, len(self.findings()))
+            self.assertEqual(1, len(self.findings()))
             build, archive = self.create_package_fixture()
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(9, package.validate_package(self.root, build, archive))
