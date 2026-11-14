@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reject the special-use names `alt` and `onion` in domain lists.
 - Raise the minimum WordPress version to 7.0, the version Jetpack requires.
 - Raise the minimum PHP version from 8.2 to 8.3. PHP 8.2 reaches end of life on December 31, 2026, and EngineScript servers no longer support it. A site on PHP 8.2 keeps its current version of the plugin until it moves to PHP 8.3 or newer. The tests cover PHP 8.3 to 8.5.
+- Declare "Tested up to" only in `readme.txt`, not in the plugin header. Plugin Check refuses the field in the plugin header, because two copies can drift apart; the scheduled WordPress version check now updates `readme.txt` only. Static analysis runs on Psalm 7.
 - Use one term, "domain", for an entry of the Preconnect and DNS Prefetch lists in the settings, the rejection reasons, and the documentation. The reasons now read "Invalid domain entry.", "No domain name found.", "Invalid domain name.", and "IP addresses and private, local, or reserved domain names are not allowed."
 - "Remove WordPress Version" now also removes the generator tag from feeds, and "Remove Shortlink" also removes the shortlink HTTP response header.
 - Stop adding the plugin's resource hints to the login screen.

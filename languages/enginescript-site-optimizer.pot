@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-16T00:12:09+00:00\n"
+"POT-Creation-Date: 2026-11-14T08:44:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -206,56 +206,56 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: includes/options.php:157
+#: includes/options.php:159
 msgid "The submitted settings have an invalid format. Your previous settings were retained."
 msgstr ""
 
-#: includes/options.php:179
+#: includes/options.php:181
 msgid "Enter domains as text. Your previous list was retained."
 msgstr ""
 
-#: includes/options.php:206
+#: includes/options.php:208
 msgid "Your previous list was retained."
 msgstr ""
 
 #. translators: 1: Line number in the submitted domain list, 2: Validation reason, a complete sentence without submitted text.
-#: includes/options.php:243
+#: includes/options.php:245
 #, php-format
 msgid "Line %1$d: %2$s"
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in one domain list.
-#: includes/options.php:271
+#: includes/options.php:273
 #, php-format
 msgid "Each domain list is limited to %d bytes."
 msgstr ""
 
-#: includes/options.php:279
+#: includes/options.php:281
 msgid "The domain list could not be read."
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in a nonblank domain line.
-#: includes/options.php:294
+#: includes/options.php:296
 #, php-format
 msgid "Each nonblank domain line is limited to %d bytes."
 msgstr ""
 
 #. translators: %d: Maximum nonblank lines allowed before removing duplicates or invalid domains.
-#: includes/options.php:304
+#: includes/options.php:306
 #, php-format
 msgid "Each domain list is limited to %d nonblank lines, including duplicates and invalid entries."
 msgstr ""
 
-#: includes/options.php:326
+#: includes/options.php:328
 msgid "Preconnect supports HTTPS port 443 only."
 msgstr ""
 
-#: includes/options.php:346
+#: includes/options.php:348
 msgid "Further rejected lines are not listed."
 msgstr ""
 
 #. translators: 1: Total number of rejected lines, 2: At most three reasons with their line numbers, each a complete sentence.
-#: includes/options.php:352
+#: includes/options.php:354
 #, php-format
 msgid "%1$d line was rejected. %2$s"
 msgid_plural "%1$d lines were rejected. %2$s"
@@ -263,13 +263,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:363
+#: includes/options.php:365
 #, php-format
 msgid "The preconnect list could not be fully accepted: %s"
 msgstr ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:375
+#: includes/options.php:377
 #, php-format
 msgid "The DNS prefetch list could not be fully accepted: %s"
 msgstr ""
@@ -315,81 +315,81 @@ msgstr ""
 msgid "Invalid domain name."
 msgstr ""
 
-#: uninstall.php:51
+#: uninstall.php:66
 msgid "Site Optimizer settings could not be fully removed. The plugin files were retained. Pause site and settings changes, then retry removal."
 msgstr ""
 
 #. translators: %s: Why the settings could not be removed.
-#: uninstall.php:60
+#: uninstall.php:75
 #, php-format
 msgid "Reason: %s"
 msgstr ""
 
-#: uninstall.php:75
-#: uninstall.php:81
-#: uninstall.php:160
+#: uninstall.php:90
+#: uninstall.php:96
+#: uninstall.php:175
 msgid "The list of network sites returned an invalid site ID."
 msgstr ""
 
-#: uninstall.php:98
-#: uninstall.php:130
-#: uninstall.php:181
-#: uninstall.php:460
+#: uninstall.php:113
+#: uninstall.php:145
+#: uninstall.php:195
+#: uninstall.php:465
 msgid "The WordPress database object is unavailable."
 msgstr ""
 
-#: uninstall.php:110
-#: uninstall.php:144
-#: uninstall.php:151
+#: uninstall.php:125
+#: uninstall.php:159
+#: uninstall.php:166
 msgid "The list of network sites could not be read."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:191
+#: uninstall.php:205
 #, php-format
 msgid "The current site changed while the settings of site %d were being deleted."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:208
+#: uninstall.php:221
 #, php-format
 msgid "The settings of site %d could not be verified as removed."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:219
+#: uninstall.php:231
 #, php-format
 msgid "The settings of site %d are still stored after deletion."
 msgstr ""
 
-#: uninstall.php:245
+#: uninstall.php:256
 msgid "The site-switch state could not be read."
 msgstr ""
 
-#: uninstall.php:281
-#: uninstall.php:287
-#: uninstall.php:294
+#: uninstall.php:291
+#: uninstall.php:297
+#: uninstall.php:304
 msgid "WordPress could not switch back to the original site."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:324
+#: uninstall.php:333
 #, php-format
 msgid "WordPress could not switch to site %d."
 msgstr ""
 
 #. translators: 1: Number of sites, 2: Comma-separated site IDs.
-#: uninstall.php:377
+#: uninstall.php:385
 #, php-format
 msgid "Settings could not be removed from %1$d site. Site ID: %2$s."
 msgid_plural "Settings could not be removed from %1$d sites. Site IDs, at most the first 20: %2$s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: uninstall.php:437
+#: uninstall.php:444
 msgid "A site was created during removal."
 msgstr ""
 
-#: uninstall.php:485
+#: uninstall.php:490
 msgid "Site Optimizer removal failed"
 msgstr ""

@@ -105,11 +105,12 @@ class AutomationTests(unittest.TestCase):
 
     def test_metadata_changes_only_authoritative_headers(self) -> None:
         findings = self.findings()
-        self.assertEqual(2, len(findings))
-        before = {name: (self.root / name).read_bytes() for name in ("README.md", ".private/review.md")}
-        self.assertEqual(
-            ["enginescript-site-optimizer.php", "readme.txt"], metadata.update_tested_up_to_entries(findings, "9.9")
-        )
+        self.assertEqual(1, len(findings))
+        before = {
+            name: (self.root / name).read_bytes()
+            for name in ("enginescript-site-optimizer.php", "README.md", ".private/review.md")
+        }
+        self.assertEqual(["readme.txt"], metadata.update_tested_up_to_entries(findings, "9.9"))
         self.assertEqual([], metadata.get_failures("9.9", self.findings()))
         for name, content in before.items():
             self.assertEqual(content, (self.root / name).read_bytes())
@@ -544,7 +545,7 @@ class AutomationTests(unittest.TestCase):
         self.write("bin/git", "#!/bin/sh\nexit 97\n")
         (self.root / "bin/git").chmod(0o700)
         with patch.dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}"):
-            self.assertEqual(2, len(self.findings()))
+            self.assertEqual(1, len(self.findings()))
             build, archive = self.create_package_fixture()
             with contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(9, package.validate_package(self.root, build, archive))
