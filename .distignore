@@ -65,6 +65,8 @@
 /package.json
 /package-lock.json
 /phpcs.xml
+/bandit.yml
+/biome.json
 /phpcs-wordpress.xml
 /phpmd.xml
 /phpmd-extra.xml
