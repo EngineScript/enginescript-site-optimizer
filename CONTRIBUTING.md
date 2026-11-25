@@ -101,6 +101,9 @@ enginescript-site-optimizer/
 |-- phpstan.neon                        # PHPStan configuration
 |-- phpmd.xml                           # PHPMD configuration (Codacy reads it with PHPMD 2)
 |-- phpmd-extra.xml                     # PHPMD 3 rules (composer phpmd and CI pass both files)
+|-- biome.json                          # Biome lint rules (npm run lint:biome, CI, Codacy)
+|-- .pylintrc                           # Pylint checks for .github/scripts (CI, Codacy)
+|-- bandit.yml                          # Bandit settings for .github/scripts (CI, Codacy)
 |-- psalm.xml                           # Psalm configuration
 |-- phpunit.xml                         # PHPUnit configuration
 |-- .distignore                         # Files left out of the release package
@@ -109,7 +112,7 @@ enginescript-site-optimizer/
 
 The release package holds the main plugin file, `uninstall.php`, `readme.txt`, `LICENSE`, `includes/`, and `languages/`. When you add a top-level file or directory, add it to `.distignore` and `.gitattributes` unless it must ship; `.github/scripts/check-plugin-package.py` fails when the package lists disagree.
 
-Codacy reads `phpcs.xml`, and `phpmd.xml`, but it installs no WordPress coding standards, no PHPCSExtra, and only PHPMD 2. Keep those files to what Codacy installs; the full configurations add the rest. After changing `phpcs-wordpress.xml`, or updating their packages, regenerate the Codacy copies with `python .github/scripts/codacy-configs.py phpcs`. CI fails when they are out of date.
+Codacy reads `phpcs.xml`, and `phpmd.xml`, but it installs no WordPress coding standards, no PHPCSExtra, and only PHPMD 2. Keep those files to what Codacy installs; the full configurations add the rest. After changing `phpcs-wordpress.xml`, or updating their packages, regenerate the Codacy copies with `python .github/scripts/codacy-configs.py phpcs`. CI fails when they are out of date. Codacy also reads `biome.json`, `.pylintrc`, and `bandit.yml`, and CI runs Biome (`npm run lint:biome`), Pylint, and Bandit with the same files, so a pull request gets every check Codacy runs before Codacy does.
 
 ## Making Changes
 
