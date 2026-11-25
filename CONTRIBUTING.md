@@ -96,9 +96,11 @@ enginescript-site-optimizer/
 |-- SECURITY.md                         # Security policy
 |-- LICENSE                             # GPL license
 |-- composer.json                       # PHP dependencies and check scripts
-|-- phpcs.xml                           # PHPCS configuration
+|-- phpcs-wordpress.xml                 # PHPCS configuration (composer phpcs, CI)
+|-- phpcs.xml                           # The part Codacy can run, generated from phpcs-wordpress.xml
 |-- phpstan.neon                        # PHPStan configuration
-|-- phpmd.xml                           # PHPMD configuration
+|-- phpmd.xml                           # PHPMD configuration (Codacy reads it with PHPMD 2)
+|-- phpmd-extra.xml                     # PHPMD 3 rules (composer phpmd and CI pass both files)
 |-- psalm.xml                           # Psalm configuration
 |-- phpunit.xml                         # PHPUnit configuration
 |-- .distignore                         # Files left out of the release package
@@ -106,6 +108,8 @@ enginescript-site-optimizer/
 ```
 
 The release package holds the main plugin file, `uninstall.php`, `readme.txt`, `LICENSE`, `includes/`, and `languages/`. When you add a top-level file or directory, add it to `.distignore` and `.gitattributes` unless it must ship; `.github/scripts/check-plugin-package.py` fails when the package lists disagree.
+
+Codacy reads `phpcs.xml`, and `phpmd.xml`, but it installs no WordPress coding standards, no PHPCSExtra, and only PHPMD 2. Keep those files to what Codacy installs; the full configurations add the rest. After changing `phpcs-wordpress.xml`, or updating their packages, regenerate the Codacy copies with `python .github/scripts/codacy-configs.py phpcs`. CI fails when they are out of date.
 
 ## Making Changes
 

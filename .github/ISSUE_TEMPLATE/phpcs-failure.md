@@ -32,7 +32,7 @@ If PHPCS reached analysis, inspect its output for violations of the configured s
 5. **PHPCompatibilityWP**: Rules configured for PHP 8.3 and later
 6. **Modernize and NormalizedArrays**: Selected modernization and array checks
 
-The root `phpcs.xml` is authoritative for exclusions and individual rules,
+The root `phpcs-wordpress.xml` is authoritative for exclusions and individual rules (`phpcs.xml`, which Codacy reads, is generated from it),
 including two PSR-2 declaration rules. This is not a full PSR-12 scan. The locked
 stable compatibility rules miss some newer APIs; inspect the workflow's
 compatibility-control diagnostics before drawing a PHP-minimum conclusion.
