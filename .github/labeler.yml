@@ -64,7 +64,9 @@ testing:
       - any-glob-to-any-file: tests/**/*
       - any-glob-to-any-file: phpunit.xml
       - any-glob-to-any-file: phpcs.xml
+      - any-glob-to-any-file: phpcs-wordpress.xml
       - any-glob-to-any-file: phpmd.xml
+      - any-glob-to-any-file: phpmd-extra.xml
       - any-glob-to-any-file: phpstan.neon
       - any-glob-to-any-file: psalm.xml
       - any-glob-to-any-file: rector.php

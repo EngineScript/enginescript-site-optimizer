@@ -263,7 +263,10 @@ jobs:
       - name: Run PHPCS
         id: run_phpcs
         run: |
-          vendor/bin/phpcs --standard=phpcs.xml
+          # phpcs-wordpress.xml is the full standard. phpcs.xml, which Codacy reads, copies the rules
+          # Codacy can run from it; fail when that copy is out of date.
+          vendor/bin/phpcs --standard=phpcs-wordpress.xml
+          python3 .github/scripts/codacy-configs.py phpcs --check
 
           # Static scanner controls; never execute these incompatible PHP fixtures.
           CONTROL_DIR="$RUNNER_TEMP/optimizer-compat-controls"
@@ -622,7 +625,7 @@ jobs:
         run: |
           # Use WordPress-specific PHPMD configuration (WordPress snake_case compatible)
           echo "Using WordPress-specific PHPMD configuration (WordPress snake_case compatible)..."
-          vendor/bin/phpmd analyze . --no-progress --format text --ruleset phpmd.xml --exclude vendor --exclude tests --exclude stubs --exclude .private --exclude node_modules
+          vendor/bin/phpmd analyze . --no-progress --format text --ruleset phpmd.xml --ruleset phpmd-extra.xml --exclude vendor --exclude tests --exclude stubs --exclude .private --exclude node_modules
 
       - name: Preserve diagnostic summary
         id: preserve_diagnostics

@@ -65,7 +65,9 @@
 /package.json
 /package-lock.json
 /phpcs.xml
+/phpcs-wordpress.xml
 /phpmd.xml
+/phpmd-extra.xml
 /phpstan.neon
 /phpunit.xml
 /psalm.xml
