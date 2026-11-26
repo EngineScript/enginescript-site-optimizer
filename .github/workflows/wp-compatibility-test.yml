@@ -1346,7 +1346,7 @@ jobs:
     env:
       # The unit suite must cover at least this percentage of the production lines. It is set a few
       # points below the measured value, so it stops a real drop without failing on small changes.
-      MINIMUM_LINE_COVERAGE: '72'
+      MINIMUM_LINE_COVERAGE: '94'
 
     steps:
       - name: Checkout code
