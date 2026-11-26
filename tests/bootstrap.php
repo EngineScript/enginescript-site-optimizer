@@ -36,7 +36,18 @@ function es_optimizer_test_reset(): void {
 		'doing'        => null,
 		'translations' => array(),
 		'domains'      => array(),
+		// Multisite state for the uninstall tests: the current site, the sites a switch to fails
+		// for, whether switching back fails or reports success without switching, a callback run on
+		// delete_option(), and cache flushes.
+		'multisite'    => false,
+		'blog_id'      => 1,
+		'fail_switch'  => array(),
+		'fail_restore' => false,
+		'restore_noop' => false,
+		'on_delete'    => null,
+		'flushes'      => 0,
 	);
+	unset( $GLOBALS['_wp_switched_stack'], $GLOBALS['switched'] );
 }
 
 /**
@@ -302,6 +313,12 @@ if ( ! function_exists( 'delete_option' ) ) {
 	 */
 	function delete_option( string $option ): bool {
 		global $es_optimizer_test_options;
+
+		$on_delete = $GLOBALS['es_optimizer_test']['on_delete'] ?? null;
+
+		if ( is_callable( $on_delete ) ) {
+			$on_delete( $option );
+		}
 
 		if ( ! is_array( $es_optimizer_test_options ) || ! array_key_exists( $option, $es_optimizer_test_options ) ) {
 			return false;
@@ -881,6 +898,210 @@ if ( ! function_exists( 'wp_deregister_style' ) ) {
 	 */
 	function wp_deregister_style( string $handle ): void {
 		$GLOBALS['es_optimizer_test']['styles'][] = array( 'deregister', $handle );
+	}
+}
+
+if ( ! class_exists( 'wpdb' ) ) {
+	/**
+	 * Minimal wpdb test double for the uninstall tests.
+	 *
+	 * A test sets $responder, which answers each query with a row count (or false) and may set the
+	 * value or column that get_var() and get_col() then return.
+	 */
+	class wpdb {
+		/**
+		 * Sites table.
+		 *
+		 * @var string
+		 */
+		public $blogs = 'wp_blogs';
+
+		/**
+		 * Options table of the current site.
+		 *
+		 * @var string
+		 */
+		public $options = 'wp_options';
+
+		/**
+		 * Answers a query: receives the SQL and this object, returns a row count or false.
+		 *
+		 * @var callable|null
+		 */
+		public $responder = null;
+
+		/**
+		 * Value that get_var() returns.
+		 *
+		 * @var mixed
+		 */
+		public $var = null;
+
+		/**
+		 * Column that get_col() returns.
+		 *
+		 * @var array<int, mixed>
+		 */
+		public $col = array();
+
+		/**
+		 * Every query run, in order.
+		 *
+		 * @var array<int, string>
+		 */
+		public $queries = array();
+
+		/**
+		 * Whether database errors are suppressed.
+		 *
+		 * @var bool
+		 */
+		public $suppressing = false;
+
+		/**
+		 * Fill a query's placeholders.
+		 *
+		 * @param string $query Query with %i, %d and %s placeholders.
+		 * @param mixed  ...$args Values.
+		 * @return string Query.
+		 */
+		public function prepare( string $query, mixed ...$args ): string {
+			return vsprintf( str_replace( '%i', '%s', $query ), $args );
+		}
+
+		/**
+		 * Run a query through the responder.
+		 *
+		 * @param string $query Query.
+		 * @return int|false Row count, or false on failure.
+		 */
+		public function query( string $query ): int|false {
+			$this->queries[] = $query;
+
+			return is_callable( $this->responder ) ? ( $this->responder )( $query, $this ) : 0;
+		}
+
+		/**
+		 * Return the value of the last query.
+		 *
+		 * @return mixed Value.
+		 */
+		public function get_var(): mixed {
+			return $this->var;
+		}
+
+		/**
+		 * Return the column of the last query.
+		 *
+		 * @return array<int, mixed> Column.
+		 */
+		public function get_col(): array {
+			return $this->col;
+		}
+
+		/**
+		 * Set whether errors are suppressed.
+		 *
+		 * @param bool $suppress New setting.
+		 * @return bool Previous setting.
+		 */
+		public function suppress_errors( bool $suppress = true ): bool {
+			$previous          = $this->suppressing;
+			$this->suppressing = $suppress;
+
+			return $previous;
+		}
+	}
+}
+
+if ( ! function_exists( 'is_multisite' ) ) {
+	/**
+	 * Whether the test runs as a network.
+	 *
+	 * @return bool Multisite flag.
+	 */
+	function is_multisite(): bool {
+		return (bool) $GLOBALS['es_optimizer_test']['multisite'];
+	}
+}
+
+if ( ! function_exists( 'get_current_blog_id' ) ) {
+	/**
+	 * Return the current site ID.
+	 *
+	 * @return int Site ID.
+	 */
+	function get_current_blog_id(): int {
+		return (int) $GLOBALS['es_optimizer_test']['blog_id'];
+	}
+}
+
+if ( ! function_exists( 'switch_to_blog' ) ) {
+	/**
+	 * Switch to a site, pushing the current one, as WordPress does.
+	 *
+	 * For a site in fail_switch the stack grows but the current site stays, so the caller sees the
+	 * switch fail.
+	 *
+	 * @param int $site_id Site to switch to.
+	 * @return true Always, as WordPress returns.
+	 */
+	function switch_to_blog( int $site_id ): bool {
+		$GLOBALS['_wp_switched_stack'][] = get_current_blog_id();
+		$GLOBALS['switched']             = true;
+
+		if ( ! in_array( $site_id, $GLOBALS['es_optimizer_test']['fail_switch'], true ) ) {
+			$GLOBALS['es_optimizer_test']['blog_id'] = $site_id;
+		}
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'restore_current_blog' ) ) {
+	/**
+	 * Switch back to the previous site.
+	 *
+	 * @return bool False when nothing is switched or the test makes it fail.
+	 */
+	function restore_current_blog(): bool {
+		if ( $GLOBALS['es_optimizer_test']['fail_restore'] || empty( $GLOBALS['_wp_switched_stack'] ) ) {
+			return false;
+		}
+
+		if ( $GLOBALS['es_optimizer_test']['restore_noop'] ) {
+			return true;
+		}
+
+		$GLOBALS['es_optimizer_test']['blog_id'] = array_pop( $GLOBALS['_wp_switched_stack'] );
+		$GLOBALS['switched']                     = ! empty( $GLOBALS['_wp_switched_stack'] );
+
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_supports' ) ) {
+	/**
+	 * Whether the object cache supports a feature.
+	 *
+	 * @param string $feature Feature name.
+	 * @return bool True for flush_runtime.
+	 */
+	function wp_cache_supports( string $feature ): bool {
+		return 'flush_runtime' === $feature;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_flush_runtime' ) ) {
+	/**
+	 * Count a runtime cache flush.
+	 *
+	 * @return bool True.
+	 */
+	function wp_cache_flush_runtime(): bool {
+		++$GLOBALS['es_optimizer_test']['flushes'];
+
+		return true;
 	}
 }
 
