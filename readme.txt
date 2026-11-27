@@ -3,7 +3,7 @@ Contributors: enginescript
 Tags: optimization, performance, cleanup
 Requires at least: 7.0
 Tested up to: 7.1
-Stable tag: 2.2.0
+Stable tag: 2.3.0
 Requires PHP: 8.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -67,7 +67,7 @@ No. The option removes WordPress's generator output from the page head and from 
 
 == Changelog ==
 
-= Unreleased =
+= 2.3.0 - 2026-11-26 =
 * Deprecate `es_optimizer_clear_options_cache()`, which has done nothing since WordPress took over option caching; calling it triggers WordPress's deprecation notice.
 * Write the plugin's PHP in PHP 8 forms (short arrays, an arrow function, first-class callables); behavior is unchanged.
 * Start Preconnect and DNS Prefetch lists empty and show optional, copyable domain suggestions below each field; preserve existing saved lists.
@@ -297,6 +297,9 @@ No. The option removes WordPress's generator output from the page head and from 
 * Improved documentation and code comments
 
 == Upgrade Notice ==
+
+= 2.3.0 =
+Requires WordPress 7.0 and PHP 8.3. Fixes multisite uninstall under WP-CLI and Jetpack promotion filters, and tightens domain validation. Saved resource hint lists are kept. Removes several unused functions; code that calls them directly must be updated.
 
 = 2.2.0 =
 Improves per-site settings, validation and multisite uninstall. Domain lists now have size limits; preconnect accepts HTTPS port 443 or no port. Oversized saved lists and legacy custom-port hints are skipped until corrected. Removes the obsolete Windows Live Writer setting.
