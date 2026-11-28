@@ -15,11 +15,13 @@ A WordPress plugin for disabling selected features and configuring resource hint
 
 ## Features
 
-- **Header Cleanup:** Remove generator output from the page head and feeds, RSD links from the page head, and shortlinks from the page head and the HTTP response header
-- **Script Optimization:** Disable WordPress emojis and remove jQuery Migrate
+- **Header Cleanup:** Remove generator output from the page head and feeds, RSD links from the page head, shortlinks and the REST API link from the page head and the HTTP response header, and oEmbed discovery and feed links from the page head
+- **Script Optimization:** Disable WordPress emojis, remove jQuery Migrate, and limit the Heartbeat (off on the front end, every 120 seconds on admin screens outside the editors)
 - **Style Optimization:** Remove inline styles from recent comments widget and disable classic theme styles
+- **Editor and Admin:** Stop loading patterns from the WordPress.org Pattern Directory, and turn off WordPress's AI support
 - **Resource Hints:** Configure DNS prefetch and preconnect for HTTPS domains used by your site
 - **Jetpack Promotions:** Disable Jetpack promotional messages and Blaze promotions
+- **Explained Settings:** Every setting says what it does, its effect on the site, and its performance gain or cost
 
 ## Installation
 

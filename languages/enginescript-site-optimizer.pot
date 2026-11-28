@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-28T02:27:37+00:00\n"
+"POT-Creation-Date: 2026-11-28T02:46:02+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -58,332 +58,425 @@ msgstr ""
 msgid "Disable Classic Theme Styles"
 msgstr ""
 
-#: includes/admin.php:113
-msgid "Remove WordPress Version"
+#: includes/admin.php:100
+msgid "Limit Heartbeat"
 msgstr ""
 
-#: includes/admin.php:114
-msgid "Remove RSD Link"
+#: includes/admin.php:101
+msgid "Disable Pattern Directory Patterns"
 msgstr ""
 
 #: includes/admin.php:115
-msgid "Remove Shortlink"
+msgid "Remove WordPress Version"
 msgstr ""
 
 #: includes/admin.php:116
+msgid "Remove RSD Link"
+msgstr ""
+
+#: includes/admin.php:117
+msgid "Remove Shortlink"
+msgstr ""
+
+#: includes/admin.php:118
 msgid "Remove Recent Comments Style"
 msgstr ""
 
-#: includes/admin.php:130
+#: includes/admin.php:119
+msgid "Remove REST API Link"
+msgstr ""
+
+#: includes/admin.php:120
+msgid "Remove oEmbed Discovery Links"
+msgstr ""
+
+#: includes/admin.php:121
+msgid "Remove Feed Links"
+msgstr ""
+
+#: includes/admin.php:135
 msgid "Disable Jetpack Promotions"
 msgstr ""
 
-#: includes/admin.php:131
+#: includes/admin.php:136
 msgid "Disable Post via Email"
 msgstr ""
 
-#: includes/admin.php:132
+#: includes/admin.php:137
+msgid "Disable WordPress AI Support"
+msgstr ""
+
+#: includes/admin.php:138
 msgid "Enable Preconnect"
 msgstr ""
 
-#: includes/admin.php:136
+#: includes/admin.php:142
 msgid "Preconnect Domains"
 msgstr ""
 
-#: includes/admin.php:137
+#: includes/admin.php:143
 msgid "Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations."
 msgstr ""
 
-#: includes/admin.php:139
+#: includes/admin.php:145
 msgid "Enable DNS Prefetch"
 msgstr ""
 
-#: includes/admin.php:143
+#: includes/admin.php:149
 msgid "DNS Prefetch Domains"
 msgstr ""
 
-#: includes/admin.php:144
+#: includes/admin.php:150
 msgid "DNS prefetch performs only a DNS lookup of the domain name; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations."
 msgstr ""
 
 #. translators: 1: Maximum bytes per domain list, 2: Maximum nonblank lines, 3: Maximum bytes per nonblank line.
-#: includes/admin.php:158
+#: includes/admin.php:164
 #, php-format
 msgid "Limits: %1$d bytes per list, %2$d nonblank lines, and %3$d bytes per nonblank line. Duplicate and invalid lines count toward the limit. Oversize submissions keep your previous list."
 msgstr ""
 
-#: includes/admin.php:216
+#: includes/admin.php:222
 msgid "Stops WordPress from adding its emoji detection script and emoji styles to every page, the admin area, and embedded posts, and from replacing emoji in feeds and emails with images from WordPress.org."
 msgstr ""
 
-#: includes/admin.php:217
+#: includes/admin.php:223
 msgid "Emoji still appear, drawn by the visitor's own device, which every current browser and operating system supports. On very old systems without emoji fonts, some emoji may show as empty boxes. Emoji in feeds and emails stay as characters instead of images."
 msgstr ""
 
-#: includes/admin.php:218
+#: includes/admin.php:224
 msgid "Removes a small inline script and its styles from every page, and the check that script runs in the browser: a small gain for visitors. No change on the server."
 msgstr ""
 
-#: includes/admin.php:221
+#: includes/admin.php:227
 msgid "Stops loading jQuery Migrate on the front end when a theme or plugin loads jQuery. jQuery Migrate restores functions that newer jQuery versions removed. The admin area is not changed."
 msgstr ""
 
-#: includes/admin.php:222
+#: includes/admin.php:228
 msgid "Front-end code written for old jQuery versions can stop working, which shows as broken sliders, menus, or forms and as errors in the browser console. Check the interactive parts of the site after turning this on. Pages that do not load jQuery are not affected."
 msgstr ""
 
-#: includes/admin.php:223
+#: includes/admin.php:229
 msgid "One script file fewer to download and run on every page that loads jQuery: a small gain for visitors. No change on the server."
 msgstr ""
 
-#: includes/admin.php:226
+#: includes/admin.php:232
 msgid "Removes the small classic-theme stylesheet that WordPress adds on the front end for themes without a theme.json file. It gives the Button and File blocks their default look. Block themes never load it, so on them this setting changes nothing. The editor is not changed."
 msgstr ""
 
-#: includes/admin.php:227
+#: includes/admin.php:233
 msgid "Buttons and File blocks in your content may lose their default spacing and colors if the theme does not style them itself. A stylesheet that another plugin loads on top of this one will not load either."
 msgstr ""
 
-#: includes/admin.php:228
+#: includes/admin.php:234
 msgid "Removes a few lines of CSS, usually printed inline in the page head, on classic themes: a very small gain for visitors. No change on the server."
 msgstr ""
 
-#: includes/admin.php:231
-msgid "Removes the generator tag that names your WordPress version from the page head and from your RSS, Atom, and other feeds. Version numbers on script and stylesheet addresses, and export files, are left as they are."
-msgstr ""
-
-#: includes/admin.php:232
-msgid "Hides the version from casual inspection and from scanners that read the tag. It is not real protection, because the version can be worked out in other ways; keeping WordPress up to date matters far more. Nothing on the site looks different."
-msgstr ""
-
-#: includes/admin.php:233
-msgid "Removes one line from each page and feed. No measurable speed change."
-msgstr ""
-
-#: includes/admin.php:236
-msgid "Removes the Really Simple Discovery (RSD) link from the page head. Old desktop blogging programs used it to find the site's XML-RPC address."
-msgstr ""
-
 #: includes/admin.php:237
-msgid "A blogging program that relies on this link may need the XML-RPC address entered by hand. XML-RPC itself keeps working; only the link is removed. Most sites notice no difference."
+msgid "Limits the Heartbeat, a script that keeps a page in touch with the server through regular background requests. On the front end it stops the script from loading; WordPress loads it there only when a theme or plugin asks for it. On admin screens it sends a request every 120 seconds instead of every 60. The post editor, the site editor, and the Customizer keep the usual timing."
 msgstr ""
 
 #: includes/admin.php:238
-msgid "Removes one line from each page. No measurable speed change."
+msgid "Front-end features that rely on the Heartbeat, such as live chat, live notifications, or front-end editing in some plugins, stop updating, and their scripts may not load. In the admin area, dashboard widgets that refresh through the Heartbeat update half as often, and the notice that your login has expired can appear up to two minutes later. Post locking and autosave in the editors are not changed."
 msgstr ""
 
-#: includes/admin.php:241
-msgid "Removes the shortlink, the short ?p=123 address of a post, from the page head and from the Link header that WordPress sends with each page."
+#: includes/admin.php:239
+msgid "Each Heartbeat request loads WordPress in full on the server and is never served from a page cache. Halving them on admin screens, and removing them from the front end, saves server work, which adds up when several people keep the admin area open. Visitors see no difference in page speed."
 msgstr ""
 
 #: includes/admin.php:242
-msgid "Shortlinks still work when someone uses them; they are only no longer advertised. A tool that reads the shortlink from the page uses the full address instead."
+msgid "Stops the block editor from loading patterns from the WordPress.org Pattern Directory: the general and featured patterns, and the directory patterns a theme asks for. Patterns that come with your theme, your plugins, or WordPress itself, and the patterns you create, stay available."
 msgstr ""
 
 #: includes/admin.php:243
-msgid "Removes one line from each page and one response header. No measurable speed change."
+msgid "The pattern inserter shows far fewer ready-made patterns, because most of the patterns it offers come from the directory. Patterns already used in your content are not changed."
 msgstr ""
 
-#: includes/admin.php:246
-msgid "Stops WordPress from printing a small inline style for the classic Recent Comments widget. WordPress prints it only on classic themes that support widgets."
+#: includes/admin.php:244
+msgid "Saves the requests the server makes to WordPress.org when the editor loads patterns, and the stored copies of their results, which are refreshed about every hour. The editor's pattern list can open faster. No change on the front end."
 msgstr ""
 
 #: includes/admin.php:247
-msgid "The widget's links may look slightly different if your theme relied on that style. Block themes and the Latest Comments block are not affected."
+msgid "Removes the generator tag that names your WordPress version from the page head and from your RSS, Atom, and other feeds. Version numbers on script and stylesheet addresses, and export files, are left as they are."
 msgstr ""
 
 #: includes/admin.php:248
-msgid "Removes a few bytes of CSS from pages that show the widget. No measurable speed change."
+msgid "Hides the version from casual inspection and from scanners that read the tag. It is not real protection, because the version can be worked out in other ways; keeping WordPress up to date matters far more. Nothing on the site looks different."
 msgstr ""
 
-#: includes/admin.php:251
-msgid "Turns off Jetpack's promotional notices, its Just-in-Time upgrade messages, and its Blaze prompts to advertise your posts. It does nothing unless Jetpack is installed."
+#: includes/admin.php:249
+msgid "Removes one line from each page and feed. No measurable speed change."
 msgstr ""
 
 #: includes/admin.php:252
-msgid "Jetpack keeps working; you no longer see its upgrade and advertising prompts in the admin area. Visitors see no difference."
+msgid "Removes the Really Simple Discovery (RSD) link from the page head. Old desktop blogging programs used it to find the site's XML-RPC address."
 msgstr ""
 
 #: includes/admin.php:253
-msgid "Jetpack skips loading and showing these messages, which saves a little work and some requests in the admin area. No change on the front end."
+msgid "A blogging program that relies on this link may need the XML-RPC address entered by hand. XML-RPC itself keeps working; only the link is removed. Most sites notice no difference."
 msgstr ""
 
-#: includes/admin.php:256
-msgid "Turns off publishing by email: the mail server settings disappear from Settings > Writing and can no longer be saved, and the wp-mail.php address that collects the mail refuses requests."
+#: includes/admin.php:254
+msgid "Removes one line from each page. No measurable speed change."
 msgstr ""
 
 #: includes/admin.php:257
-msgid "Nobody can publish posts by sending email to the configured mailbox. Existing posts are not affected. Leave this off if you post by email."
+msgid "Removes the shortlink, the short ?p=123 address of a post, from the page head and from the Link header that WordPress sends with each page."
 msgstr ""
 
 #: includes/admin.php:258
-msgid "No speed change. It closes a rarely used way into the site."
+msgid "Shortlinks still work when someone uses them; they are only no longer advertised. A tool that reads the shortlink from the page uses the full address instead."
 msgstr ""
 
-#: includes/admin.php:261
-msgid "Adds a preconnect hint to the page head for each domain in the Preconnect Domains list, so the browser opens a connection to those servers before it needs them. Front-end pages only; the admin area and the login page are skipped."
+#: includes/admin.php:259
+#: includes/admin.php:269
+msgid "Removes one line from each page and one response header. No measurable speed change."
 msgstr ""
 
 #: includes/admin.php:262
-msgid "Files from those domains, such as web fonts, can start downloading sooner. A listed domain that the page does not use wastes a connection."
+msgid "Stops WordPress from printing a small inline style for the classic Recent Comments widget. WordPress prints it only on classic themes that support widgets."
 msgstr ""
 
 #: includes/admin.php:263
-msgid "Can save one or more network round trips the first time each listed domain is used, which helps most on slow or distant connections. Each hint costs the browser a connection, so list only the few domains that serve files a page needs early. No measurable cost on the server."
+msgid "The widget's links may look slightly different if your theme relied on that style. Block themes and the Latest Comments block are not affected."
 msgstr ""
 
-#: includes/admin.php:266
-msgid "The domains that get a preconnect hint while Enable Preconnect is on."
+#: includes/admin.php:264
+msgid "Removes a few bytes of CSS from pages that show the widget. No measurable speed change."
 msgstr ""
 
 #: includes/admin.php:267
-msgid "Only the domains entered here get hints. The suggestions below are examples and are never added on their own."
+msgid "Removes the link to the site's REST API address from the page head and from the Link header that WordPress sends with each page."
 msgstr ""
 
 #: includes/admin.php:268
-msgid "Two or three domains are usually enough. More hints compete for the browser's connections and can slow down the files that matter most."
-msgstr ""
-
-#: includes/admin.php:271
-msgid "Adds a DNS prefetch hint to the page head for each domain in the DNS Prefetch Domains list, so the browser looks up those domain names before it needs them. Front-end pages only; the admin area and the login page are skipped."
+msgid "The REST API keeps working: the block editor, mobile apps, and plugins that use it are not affected. Only the advertised address is removed, which a few tools and services use to find the API on their own."
 msgstr ""
 
 #: includes/admin.php:272
-msgid "Requests to those domains start slightly sooner. Unlike preconnect, no connection is opened, so it suits domains that are used later or only on some pages."
+msgid "Removes the oEmbed discovery links from the page head of posts and pages. Other sites read them to show one of your posts as an embedded card when someone pastes its link."
 msgstr ""
 
 #: includes/admin.php:273
-msgid "Saves the name lookup, often a few tens of milliseconds, the first time each listed domain is used. It costs the browser very little, even for a domain that ends up unused. No measurable cost on the server."
+msgid "A link to one of your posts pasted into another WordPress site, or into some apps and services, shows as a plain link instead of a card. Embedding videos, posts, and other content from other sites in your own posts keeps working."
 msgstr ""
 
-#: includes/admin.php:276
-msgid "The domains that get a DNS prefetch hint while Enable DNS Prefetch is on."
+#: includes/admin.php:274
+msgid "Removes two lines from each post and page. No measurable speed change."
 msgstr ""
 
 #: includes/admin.php:277
-msgid "Only the domains entered here get hints. The suggestion below is an example and is never added on its own."
+msgid "Removes the links to the site's RSS feeds, for posts, comments, and categories, tags, or authors, from the page head."
 msgstr ""
 
 #: includes/admin.php:278
-msgid "Lookups are cheap, so a longer list does little harm, but each entry only helps if pages request files from that domain."
+msgid "The feeds keep working at their usual addresses, but browsers and feed readers can no longer find them from a page, so someone who subscribes by entering the site's address may need the feed's address instead. Leave this off if people follow the site in a feed reader."
+msgstr ""
+
+#: includes/admin.php:279
+msgid "Removes a few lines from each page. No measurable speed change."
+msgstr ""
+
+#: includes/admin.php:282
+msgid "Tells WordPress that AI features are not supported on this site. WordPress then does not register its built-in AI provider connectors, and refuses AI provider connectors from plugins."
+msgstr ""
+
+#: includes/admin.php:283
+msgid "AI features that rely on WordPress's AI support are unavailable, including those in plugins that check for it. Connectors that are not AI providers, such as Akismet, are not affected. Setting the WP_AI_SUPPORT constant to false in wp-config.php has the same effect."
+msgstr ""
+
+#: includes/admin.php:284
+msgid "No measurable speed change. WordPress only skips registering its AI provider connectors on each request."
+msgstr ""
+
+#: includes/admin.php:287
+msgid "Turns off Jetpack's promotional notices, its Just-in-Time upgrade messages, and its Blaze prompts to advertise your posts. It does nothing unless Jetpack is installed."
+msgstr ""
+
+#: includes/admin.php:288
+msgid "Jetpack keeps working; you no longer see its upgrade and advertising prompts in the admin area. Visitors see no difference."
+msgstr ""
+
+#: includes/admin.php:289
+msgid "Jetpack skips loading and showing these messages, which saves a little work and some requests in the admin area. No change on the front end."
+msgstr ""
+
+#: includes/admin.php:292
+msgid "Turns off publishing by email: the mail server settings disappear from Settings > Writing and can no longer be saved, and the wp-mail.php address that collects the mail refuses requests."
+msgstr ""
+
+#: includes/admin.php:293
+msgid "Nobody can publish posts by sending email to the configured mailbox. Existing posts are not affected. Leave this off if you post by email."
+msgstr ""
+
+#: includes/admin.php:294
+msgid "No speed change. It closes a rarely used way into the site."
 msgstr ""
 
 #: includes/admin.php:297
-msgid "What it does:"
+msgid "Adds a preconnect hint to the page head for each domain in the Preconnect Domains list, so the browser opens a connection to those servers before it needs them. Front-end pages only; the admin area and the login page are skipped."
 msgstr ""
 
 #: includes/admin.php:298
-msgid "Effect on your site:"
+msgid "Files from those domains, such as web fonts, can start downloading sooner. A listed domain that the page does not use wastes a connection."
 msgstr ""
 
 #: includes/admin.php:299
+msgid "Can save one or more network round trips the first time each listed domain is used, which helps most on slow or distant connections. Each hint costs the browser a connection, so list only the few domains that serve files a page needs early. No measurable cost on the server."
+msgstr ""
+
+#: includes/admin.php:302
+msgid "The domains that get a preconnect hint while Enable Preconnect is on."
+msgstr ""
+
+#: includes/admin.php:303
+msgid "Only the domains entered here get hints. The suggestions below are examples and are never added on their own."
+msgstr ""
+
+#: includes/admin.php:304
+msgid "Two or three domains are usually enough. More hints compete for the browser's connections and can slow down the files that matter most."
+msgstr ""
+
+#: includes/admin.php:307
+msgid "Adds a DNS prefetch hint to the page head for each domain in the DNS Prefetch Domains list, so the browser looks up those domain names before it needs them. Front-end pages only; the admin area and the login page are skipped."
+msgstr ""
+
+#: includes/admin.php:308
+msgid "Requests to those domains start slightly sooner. Unlike preconnect, no connection is opened, so it suits domains that are used later or only on some pages."
+msgstr ""
+
+#: includes/admin.php:309
+msgid "Saves the name lookup, often a few tens of milliseconds, the first time each listed domain is used. It costs the browser very little, even for a domain that ends up unused. No measurable cost on the server."
+msgstr ""
+
+#: includes/admin.php:312
+msgid "The domains that get a DNS prefetch hint while Enable DNS Prefetch is on."
+msgstr ""
+
+#: includes/admin.php:313
+msgid "Only the domains entered here get hints. The suggestion below is an example and is never added on its own."
+msgstr ""
+
+#: includes/admin.php:314
+msgid "Lookups are cheap, so a longer list does little harm, but each entry only helps if pages request files from that domain."
+msgstr ""
+
+#: includes/admin.php:333
+msgid "What it does:"
+msgstr ""
+
+#: includes/admin.php:334
+msgid "Effect on your site:"
+msgstr ""
+
+#: includes/admin.php:335
 msgid "Performance:"
 msgstr ""
 
-#: includes/admin.php:495
-#: includes/admin.php:514
+#: includes/admin.php:531
+#: includes/admin.php:550
 msgid "Site Optimizer Settings"
 msgstr ""
 
-#: includes/admin.php:496
+#: includes/admin.php:532
 msgid "Site Optimizer"
 msgstr ""
 
-#: includes/admin.php:510
+#: includes/admin.php:546
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: includes/admin.php:515
+#: includes/admin.php:551
 msgid "Select which optimizations you want to enable and customize the resource hint domains."
 msgstr ""
 
-#: includes/admin.php:521
+#: includes/admin.php:557
 msgid "Save Changes"
 msgstr ""
 
-#: includes/admin.php:527
+#: includes/admin.php:563
 msgid "This plugin is part of the EngineScript project."
 msgstr ""
 
-#: includes/admin.php:529
+#: includes/admin.php:565
 msgid "Visit the EngineScript GitHub page"
 msgstr ""
 
 #. translators: Hidden accessibility text.
-#: includes/admin.php:533
+#: includes/admin.php:569
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: includes/admin.php:594
+#: includes/admin.php:630
 msgid "This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it."
 msgstr ""
 
-#: includes/admin.php:596
+#: includes/admin.php:632
 msgid "Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared."
 msgstr ""
 
-#: includes/admin.php:602
+#: includes/admin.php:638
 msgid "Format:"
 msgstr ""
 
-#: includes/admin.php:604
+#: includes/admin.php:640
 msgid "Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints."
 msgstr ""
 
-#: includes/admin.php:623
+#: includes/admin.php:659
 msgid "Settings"
 msgstr ""
 
-#: includes/options.php:159
+#: includes/options.php:171
 msgid "The submitted settings have an invalid format. Your previous settings were retained."
 msgstr ""
 
-#: includes/options.php:181
+#: includes/options.php:193
 msgid "Enter domains as text. Your previous list was retained."
 msgstr ""
 
-#: includes/options.php:208
+#: includes/options.php:220
 msgid "Your previous list was retained."
 msgstr ""
 
 #. translators: 1: Line number in the submitted domain list, 2: Validation reason, a complete sentence without submitted text.
-#: includes/options.php:245
+#: includes/options.php:257
 #, php-format
 msgid "Line %1$d: %2$s"
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in one domain list.
-#: includes/options.php:273
+#: includes/options.php:285
 #, php-format
 msgid "Each domain list is limited to %d bytes."
 msgstr ""
 
-#: includes/options.php:281
+#: includes/options.php:293
 msgid "The domain list could not be read."
 msgstr ""
 
 #. translators: %d: Maximum raw bytes allowed in a nonblank domain line.
-#: includes/options.php:296
+#: includes/options.php:308
 #, php-format
 msgid "Each nonblank domain line is limited to %d bytes."
 msgstr ""
 
 #. translators: %d: Maximum nonblank lines allowed before removing duplicates or invalid domains.
-#: includes/options.php:306
+#: includes/options.php:318
 #, php-format
 msgid "Each domain list is limited to %d nonblank lines, including duplicates and invalid entries."
 msgstr ""
 
-#: includes/options.php:328
+#: includes/options.php:340
 msgid "Preconnect supports HTTPS port 443 only."
 msgstr ""
 
-#: includes/options.php:348
+#: includes/options.php:360
 msgid "Further rejected lines are not listed."
 msgstr ""
 
 #. translators: 1: Total number of rejected lines, 2: At most three reasons with their line numbers, each a complete sentence.
-#: includes/options.php:354
+#: includes/options.php:366
 #, php-format
 msgid "%1$d line was rejected. %2$s"
 msgid_plural "%1$d lines were rejected. %2$s"
@@ -391,55 +484,55 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:365
+#: includes/options.php:377
 #, php-format
 msgid "The preconnect list could not be fully accepted: %s"
 msgstr ""
 
 #. translators: %s: Safe validation reasons and line numbers, without submitted domains.
-#: includes/options.php:377
+#: includes/options.php:389
 #, php-format
 msgid "The DNS prefetch list could not be fully accepted: %s"
 msgstr ""
 
-#: includes/options.php:454
+#: includes/options.php:466
 msgid "Encoded characters, backslashes, markup, and control characters are not allowed."
 msgstr ""
 
-#: includes/options.php:461
+#: includes/options.php:473
 msgid "Empty domain."
 msgstr ""
 
-#: includes/options.php:467
-#: includes/options.php:486
+#: includes/options.php:479
+#: includes/options.php:498
 msgid "Invalid domain entry."
 msgstr ""
 
-#: includes/options.php:557
+#: includes/options.php:569
 msgid "HTTPS is required."
 msgstr ""
 
-#: includes/options.php:561
+#: includes/options.php:573
 msgid "No domain name found."
 msgstr ""
 
-#: includes/options.php:565
+#: includes/options.php:577
 msgid "File paths are not allowed; use domains only."
 msgstr ""
 
-#: includes/options.php:570
+#: includes/options.php:582
 msgid "Query parameters, fragments, and credentials are not allowed."
 msgstr ""
 
-#: includes/options.php:575
+#: includes/options.php:587
 msgid "Invalid port."
 msgstr ""
 
-#: includes/options.php:594
+#: includes/options.php:606
 msgid "IP addresses and private, local, or reserved domain names are not allowed."
 msgstr ""
 
-#: includes/options.php:599
+#: includes/options.php:611
 msgid "Invalid domain name."
 msgstr ""
 

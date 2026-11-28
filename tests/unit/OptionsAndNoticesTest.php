@@ -20,7 +20,7 @@ final class OptionsAndNoticesTest extends EsOptimizerTestCase {
 	public function test_defaults(): void {
 		$defaults = es_optimizer_get_default_options();
 
-		$this->assertCount( 13, $defaults );
+		$this->assertCount( 19, $defaults );
 		$this->assertSame( es_optimizer_get_boolean_option_keys(), array_keys( array_diff_key( $defaults, array_flip( array( 'preconnect_domains', 'dns_prefetch_domains' ) ) ) ) );
 		$this->assertSame( array( 0 ), array_values( array_unique( array_intersect_key( $defaults, array_flip( es_optimizer_get_boolean_option_keys() ) ) ) ) );
 		$this->assertSame( '', $defaults['preconnect_domains'] );

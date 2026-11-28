@@ -10,6 +10,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Heartbeat interval, in seconds, on admin screens other than the editors.
+ *
+ * @since 2.4.0
+ */
+const ES_SITE_OPTIMIZER_ADMIN_HEARTBEAT_INTERVAL = 120;
+
+/**
  * Determine whether frontend-only optimizations should run.
  *
  * The login screen prints resource hints from its own head action. It is not
@@ -117,25 +124,46 @@ function es_optimizer_disable_classic_theme_styles(): void {
  * es_optimizer_remove_feed_generator() for the one feed action it shares.
  *
  * @since 1.0.0
+ * @since 2.4.0 Also removes the REST API, oEmbed discovery, and feed links.
  */
 function es_optimizer_remove_header_items(): void {
-	if ( es_optimizer_is_option_enabled( 'remove_wp_version' ) ) {
-		remove_action( 'wp_head', 'wp_generator' );
+	foreach ( es_optimizer_get_header_removals() as $option_key => $callbacks ) {
+		if ( ! es_optimizer_is_option_enabled( $option_key ) ) {
+			continue;
+		}
 
-		// The feed actions that WordPress gives a generator tag, except the one an export file also runs.
-		foreach ( [ 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ] as $feed_action ) {
-			remove_action( $feed_action, 'the_generator' );
+		foreach ( $callbacks as [ $hook, $callback, $priority ] ) {
+			remove_action( $hook, $callback, $priority );
 		}
 	}
+}
 
-	if ( es_optimizer_is_option_enabled( 'remove_rsd_link' ) ) {
-		remove_action( 'wp_head', 'rsd_link' );
+/**
+ * Get the core callbacks that each header option removes.
+ *
+ * WordPress adds the oEmbed discovery links twice, at priorities 4 and 10,
+ * and the second registration unhooks itself once the first has run; both
+ * are removed. The RSS 2 generator is left to es_optimizer_remove_feed_generator().
+ *
+ * @since 2.4.0
+ * @return array<string, array<int, array{0: string, 1: string, 2: int}>> Hook, callback, and priority for each option.
+ */
+function es_optimizer_get_header_removals(): array {
+	$generator = [ [ 'wp_head', 'wp_generator', 10 ] ];
+
+	// The feed actions that WordPress gives a generator tag, except the one an export file also runs.
+	foreach ( [ 'commentsrss2_head', 'rss_head', 'rdf_header', 'atom_head', 'comments_atom_head', 'opml_head', 'app_head' ] as $feed_action ) {
+		$generator[] = [ $feed_action, 'the_generator', 10 ];
 	}
 
-	if ( es_optimizer_is_option_enabled( 'remove_shortlink' ) ) {
-		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10 );
-		remove_action( 'template_redirect', 'wp_shortlink_header', 11 );
-	}
+	return [
+		'remove_wp_version'    => $generator,
+		'remove_rsd_link'      => [ [ 'wp_head', 'rsd_link', 10 ] ],
+		'remove_shortlink'     => [ [ 'wp_head', 'wp_shortlink_wp_head', 10 ], [ 'template_redirect', 'wp_shortlink_header', 11 ] ],
+		'remove_rest_api_link' => [ [ 'wp_head', 'rest_output_link_wp_head', 10 ], [ 'template_redirect', 'rest_output_link_header', 11 ] ],
+		'remove_oembed_links'  => [ [ 'wp_head', 'wp_oembed_add_discovery_links', 4 ], [ 'wp_head', 'wp_oembed_add_discovery_links', 10 ] ],
+		'remove_feed_links'    => [ [ 'wp_head', 'feed_links', 2 ], [ 'wp_head', 'feed_links_extra', 3 ] ],
+	];
 }
 
 /**
@@ -323,4 +351,73 @@ function es_optimizer_disable_post_via_email(): void {
  */
 function es_optimizer_filter_post_via_email( mixed $enabled ): mixed {
 	return es_optimizer_is_option_enabled( 'disable_post_via_email' ) ? false : $enabled;
+}
+
+/**
+ * Apply the current site's policy for patterns from the WordPress.org pattern directory.
+ *
+ * @since 2.4.0
+ * @param mixed $should_load Incoming value from WordPress or another plugin.
+ * @return mixed False when disabled; otherwise the original value.
+ */
+function es_optimizer_filter_remote_patterns( mixed $should_load ): mixed {
+	return es_optimizer_is_option_enabled( 'disable_remote_patterns' ) ? false : $should_load;
+}
+
+/**
+ * Apply the current site's policy for WordPress's AI support.
+ *
+ * WordPress reads it from init on, when it registers its AI provider connectors.
+ *
+ * @since 2.4.0
+ * @param mixed $supported Incoming value from WordPress or another plugin.
+ * @return mixed False when disabled; otherwise the original value.
+ */
+function es_optimizer_filter_ai_support( mixed $supported ): mixed {
+	return es_optimizer_is_option_enabled( 'disable_ai_features' ) ? false : $supported;
+}
+
+/**
+ * Stop the Heartbeat script from loading on the front end.
+ *
+ * Core loads Heartbeat on the front end only when a theme or plugin asks for
+ * it. Scripts that list it as a dependency are then not loaded either.
+ *
+ * @since 2.4.0
+ */
+function es_optimizer_disable_frontend_heartbeat(): void {
+	if ( ! es_optimizer_is_option_enabled( 'heartbeat_control' ) || ! es_optimizer_is_frontend_request() ) {
+		return;
+	}
+
+	wp_deregister_script( 'heartbeat' );
+}
+
+/**
+ * Slow Heartbeat to every 120 seconds in the admin area, outside the editors.
+ *
+ * Core's interval is 60 seconds, and 120 seconds while the tab is hidden. The
+ * post, site, and Customizer editors keep core's interval, because post locks
+ * and changeset locks rely on it. A longer interval set by another plugin is kept.
+ *
+ * @since 2.4.0
+ * @global string $pagenow The admin page being loaded.
+ * @param mixed $settings Heartbeat settings from WordPress or another plugin.
+ * @return mixed Settings with the slower interval, or the incoming value when it is not changed.
+ */
+function es_optimizer_filter_heartbeat_settings( mixed $settings ): mixed {
+	global $pagenow;
+
+	if ( ! is_array( $settings ) || ! is_admin() || ! es_optimizer_is_option_enabled( 'heartbeat_control' ) ) {
+		return $settings;
+	}
+
+	if ( in_array( $pagenow, [ 'post.php', 'post-new.php', 'site-editor.php', 'customize.php' ], true ) ) {
+		return $settings;
+	}
+
+	$current              = isset( $settings['interval'] ) && is_numeric( $settings['interval'] ) ? (int) $settings['interval'] : 0;
+	$settings['interval'] = max( ES_SITE_OPTIMIZER_ADMIN_HEARTBEAT_INTERVAL, $current );
+
+	return $settings;
 }

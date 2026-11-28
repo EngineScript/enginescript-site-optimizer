@@ -51,6 +51,12 @@ function es_optimizer_get_default_options(): array {
 		'dns_prefetch_domains'         => '',
 		'disable_jetpack_ads'          => 0,
 		'disable_post_via_email'       => 0,
+		'remove_rest_api_link'         => 0,
+		'remove_oembed_links'          => 0,
+		'remove_feed_links'            => 0,
+		'disable_remote_patterns'      => 0,
+		'heartbeat_control'            => 0,
+		'disable_ai_features'          => 0,
 	];
 }
 
@@ -73,6 +79,12 @@ function es_optimizer_get_boolean_option_keys(): array {
 		'enable_dns_prefetch',
 		'disable_jetpack_ads',
 		'disable_post_via_email',
+		'remove_rest_api_link',
+		'remove_oembed_links',
+		'remove_feed_links',
+		'disable_remote_patterns',
+		'heartbeat_control',
+		'disable_ai_features',
 	];
 }
 
