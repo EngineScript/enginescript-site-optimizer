@@ -119,7 +119,7 @@ final class UninstallTest extends EsOptimizerTestCase {
 
 		$this->assertFalse( get_option( 'es_optimizer_options' ) );
 		$this->assertFalse( $database->suppressing );
-		$this->assertStringContainsString( "option_name = es_optimizer_options", $database->queries[0] );
+		$this->assertStringContainsString( 'option_name IN (es_optimizer_options, es_optimizer_autoload_changes, es_optimizer_autoload_recording, es_optimizer_autoload_usage)', $database->queries[0], 'One physical read proves every plugin option is gone.' );
 	}
 
 	public function test_single_site_fails_when_the_option_is_still_stored(): void {
@@ -166,6 +166,60 @@ final class UninstallTest extends EsOptimizerTestCase {
 		$this->assertFalse( $GLOBALS['switched'] );
 		$this->assertSame( 3, $GLOBALS['es_optimizer_test']['flushes'] );
 		$this->assertFalse( $database->suppressing );
+	}
+
+	/**
+	 * Switched-off options get their earlier setting back before the plugin's options are deleted.
+	 *
+	 * @return void
+	 */
+	public function test_single_site_restores_switched_off_options_first(): void {
+		$this->store_options( array() );
+		update_option( 'es_optimizer_autoload_changes', array( 'plugin_cache' => array( 'previous' => 'auto', 'time' => 1 ) ), false );
+		$database = self::database( static fn ( string $sql ): int => str_starts_with( $sql, 'UPDATE' ) ? 1 : 0 );
+
+		es_optimizer_uninstall_options();
+
+		$this->assertSame( "UPDATE wp_options SET autoload = auto WHERE option_name = plugin_cache AND autoload = 'off'", $database->queries[0], 'The restore runs before anything is deleted.' );
+		$this->assertStringContainsString( 'SELECT option_id', $database->queries[1] );
+		$this->assertFalse( get_option( 'es_optimizer_autoload_changes' ) );
+		$this->assertFalse( get_option( 'es_optimizer_options' ) );
+	}
+
+	/**
+	 * When an option cannot be restored, the uninstall stops and nothing on the site is deleted.
+	 *
+	 * @return void
+	 */
+	public function test_single_site_stops_when_an_option_cannot_be_restored(): void {
+		$this->store_options( array( 'disable_emojis' => 1 ) );
+		update_option( 'es_optimizer_autoload_changes', array( 'plugin_cache' => array( 'previous' => 'on', 'time' => 1 ) ), false );
+		self::database( static fn ( string $sql ): int|false => str_starts_with( $sql, 'UPDATE' ) ? false : 0 );
+
+		$this->assertSame(
+			'1 option that the plugin stopped from loading on every page could not be restored on site 1. Nothing was deleted on that site.',
+			$this->failure( 'es_optimizer_uninstall_options' )
+		);
+		$this->assertArrayHasKey( 'plugin_cache', get_option( 'es_optimizer_autoload_changes' ), 'The record of what to restore is kept.' );
+		$this->assertSame( 1, get_option( 'es_optimizer_options' )['disable_emojis'] );
+	}
+
+	/**
+	 * A network uninstall removes the network's list of sites with changes once every site is clean, and keeps it otherwise.
+	 *
+	 * @return void
+	 */
+	public function test_network_removes_the_list_of_sites_with_changes(): void {
+		$GLOBALS['es_optimizer_test']['site_options']['es_optimizer_autoload_sites'] = array( 2 );
+		$this->network( array( 1, 2 ) );
+		es_optimizer_uninstall_options();
+		$this->assertSame( array( 'es_optimizer_autoload_sites' ), $GLOBALS['es_optimizer_test']['site_options_deleted'] );
+
+		es_optimizer_test_reset();
+		$GLOBALS['es_optimizer_test']['site_options']['es_optimizer_autoload_sites'] = array( 2 );
+		$this->network( array( 1, 2 ), array( 2 => 1 ) );
+		$this->failure( 'es_optimizer_uninstall_options' );
+		$this->assertSame( array( 2 ), get_site_option( 'es_optimizer_autoload_sites' ), 'A site that was not cleaned keeps the list.' );
 	}
 
 	public function test_network_reads_sites_in_pages_of_one_hundred(): void {

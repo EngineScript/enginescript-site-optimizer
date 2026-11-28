@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- An Autoloaded Options tab on the Site Optimizer settings page:
+  - lists the options WordPress loads on every page, largest first, with each option's size, its autoload setting, and the plugin or theme it probably belongs to;
+  - stops loading the selected options on every page, and loads them again later with the exact setting each had before;
+  - changes only the autoload setting, never a value, and keeps options that WordPress and Site Optimizer need locked;
+  - shows when other code has loaded a switched-off option again or deleted it.
+- Evidence of who owns an option, which WordPress does not record:
+  - the guess matches installed plugins and themes by folder name and text domain;
+  - on request, a search of the installed plugins' and themes' PHP files shows which one uses each name on the page, and marks names found nowhere as probably left behind by a removed plugin;
+  - an optional recording, for 10 minutes or an hour, counts which options the pages loaded meanwhile read, and which plugin or theme read each one.
+- After options are switched off, the plugin loads the home page and the dashboard, and undoes the change at once if either answers with a server error.
+- WP-CLI commands `wp site-optimizer autoload list` and `wp site-optimizer autoload restore [<option>...] [--all]`. The restore also works on a site a plugin breaks, with every plugin and theme skipped (see the FAQ).
+- Deleting the plugin first restores every option it switched off, on every site of a network. Deactivating changes nothing. While changes exist, the Autoloaded Options tab and the plugin's row on the Plugins screen say so.
 - "Remove REST API Link": remove the REST API address from the page head and the Link response header. The REST API keeps working.
 - "Remove oEmbed Discovery Links": remove the links other sites read to embed your posts, at both priorities WordPress adds them.
 - "Remove Feed Links": remove the RSS feed links from the page head. The feeds keep working.

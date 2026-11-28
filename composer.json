@@ -31,7 +31,8 @@
     "automattic/vipwpcs": "^3.0.1",
     "z4kn4fein/php-semver": "^3.0",
     "rector/rector": "^2.6",
-    "slevomat/coding-standard": "^8.22.1"
+    "slevomat/coding-standard": "^8.22.1",
+    "php-stubs/wp-cli-stubs": "^2.12"
   },
   "scripts": {
     "phpcs": "phpcs --standard=phpcs-wordpress.xml",
