@@ -1901,8 +1901,8 @@ jobs:
                   $this->assertSame(get_plugin_data(ES_SITE_OPTIMIZER_FILE, false, false)['Version'], ES_SITE_OPTIMIZER_VERSION);
                   $this->assertSame(10, has_filter('wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints'));
                   $this->assertSame(10, has_filter('tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce'));
-                  $this->assertCount(13, es_optimizer_get_settings_fields());
-                  $this->assertCount(11, es_optimizer_get_boolean_option_keys());
+                  $this->assertCount(19, es_optimizer_get_settings_fields());
+                  $this->assertCount(17, es_optimizer_get_boolean_option_keys());
               }
 
               /**
