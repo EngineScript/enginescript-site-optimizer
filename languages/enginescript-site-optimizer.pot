@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-27T00:02:38+00:00\n"
+"POT-Creation-Date: 2026-11-28T02:27:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -46,163 +46,291 @@ msgstr ""
 msgid "Additional Features"
 msgstr ""
 
-#: includes/admin.php:100
+#: includes/admin.php:97
 msgid "Disable WordPress Emojis"
 msgstr ""
 
-#: includes/admin.php:101
-msgid "Remove WordPress emoji scripts and styles."
-msgstr ""
-
-#: includes/admin.php:106
+#: includes/admin.php:98
 msgid "Remove jQuery Migrate"
 msgstr ""
 
-#: includes/admin.php:107
-msgid "Remove the jQuery Migrate script. This may affect plugins or themes that depend on it."
-msgstr ""
-
-#: includes/admin.php:112
+#: includes/admin.php:99
 msgid "Disable Classic Theme Styles"
 msgstr ""
 
 #: includes/admin.php:113
-msgid "Remove the classic theme stylesheet added by WordPress."
-msgstr ""
-
-#: includes/admin.php:131
 msgid "Remove WordPress Version"
 msgstr ""
 
-#: includes/admin.php:132
-msgid "Remove the WordPress version from the document head and from feeds."
-msgstr ""
-
-#: includes/admin.php:137
+#: includes/admin.php:114
 msgid "Remove RSD Link"
 msgstr ""
 
-#: includes/admin.php:138
-msgid "Remove the Really Simple Discovery (RSD) link from the document head."
-msgstr ""
-
-#: includes/admin.php:143
+#: includes/admin.php:115
 msgid "Remove Shortlink"
 msgstr ""
 
-#: includes/admin.php:144
-msgid "Remove WordPress shortlink URLs from the document head and the HTTP response header."
-msgstr ""
-
-#: includes/admin.php:149
+#: includes/admin.php:116
 msgid "Remove Recent Comments Style"
 msgstr ""
 
-#: includes/admin.php:150
-msgid "Remove inline CSS from the recent comments widget."
-msgstr ""
-
-#: includes/admin.php:168
+#: includes/admin.php:130
 msgid "Disable Jetpack Promotions"
 msgstr ""
 
-#: includes/admin.php:169
-msgid "Disable Jetpack promotional messages and Blaze promotions."
-msgstr ""
-
-#: includes/admin.php:174
+#: includes/admin.php:131
 msgid "Disable Post via Email"
 msgstr ""
 
-#: includes/admin.php:175
-msgid "Disable WordPress post via email."
-msgstr ""
-
-#: includes/admin.php:180
+#: includes/admin.php:132
 msgid "Enable Preconnect"
 msgstr ""
 
-#: includes/admin.php:181
-msgid "Preconnect to external domains for faster resource loading."
-msgstr ""
-
-#: includes/admin.php:186
+#: includes/admin.php:136
 msgid "Preconnect Domains"
 msgstr ""
 
-#: includes/admin.php:187
+#: includes/admin.php:137
 msgid "Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations."
 msgstr ""
 
-#: includes/admin.php:192
+#: includes/admin.php:139
 msgid "Enable DNS Prefetch"
 msgstr ""
 
-#: includes/admin.php:193
-msgid "Resolve less critical external domains in DNS ahead of time."
-msgstr ""
-
-#: includes/admin.php:198
+#: includes/admin.php:143
 msgid "DNS Prefetch Domains"
 msgstr ""
 
-#: includes/admin.php:199
+#: includes/admin.php:144
 msgid "DNS prefetch performs only a DNS lookup of the domain name; ports do not affect the hint. Enter one HTTPS domain per line without file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations."
 msgstr ""
 
 #. translators: 1: Maximum bytes per domain list, 2: Maximum nonblank lines, 3: Maximum bytes per nonblank line.
-#: includes/admin.php:213
+#: includes/admin.php:158
 #, php-format
 msgid "Limits: %1$d bytes per list, %2$d nonblank lines, and %3$d bytes per nonblank line. Duplicate and invalid lines count toward the limit. Oversize submissions keep your previous list."
 msgstr ""
 
-#: includes/admin.php:417
-#: includes/admin.php:436
+#: includes/admin.php:216
+msgid "Stops WordPress from adding its emoji detection script and emoji styles to every page, the admin area, and embedded posts, and from replacing emoji in feeds and emails with images from WordPress.org."
+msgstr ""
+
+#: includes/admin.php:217
+msgid "Emoji still appear, drawn by the visitor's own device, which every current browser and operating system supports. On very old systems without emoji fonts, some emoji may show as empty boxes. Emoji in feeds and emails stay as characters instead of images."
+msgstr ""
+
+#: includes/admin.php:218
+msgid "Removes a small inline script and its styles from every page, and the check that script runs in the browser: a small gain for visitors. No change on the server."
+msgstr ""
+
+#: includes/admin.php:221
+msgid "Stops loading jQuery Migrate on the front end when a theme or plugin loads jQuery. jQuery Migrate restores functions that newer jQuery versions removed. The admin area is not changed."
+msgstr ""
+
+#: includes/admin.php:222
+msgid "Front-end code written for old jQuery versions can stop working, which shows as broken sliders, menus, or forms and as errors in the browser console. Check the interactive parts of the site after turning this on. Pages that do not load jQuery are not affected."
+msgstr ""
+
+#: includes/admin.php:223
+msgid "One script file fewer to download and run on every page that loads jQuery: a small gain for visitors. No change on the server."
+msgstr ""
+
+#: includes/admin.php:226
+msgid "Removes the small classic-theme stylesheet that WordPress adds on the front end for themes without a theme.json file. It gives the Button and File blocks their default look. Block themes never load it, so on them this setting changes nothing. The editor is not changed."
+msgstr ""
+
+#: includes/admin.php:227
+msgid "Buttons and File blocks in your content may lose their default spacing and colors if the theme does not style them itself. A stylesheet that another plugin loads on top of this one will not load either."
+msgstr ""
+
+#: includes/admin.php:228
+msgid "Removes a few lines of CSS, usually printed inline in the page head, on classic themes: a very small gain for visitors. No change on the server."
+msgstr ""
+
+#: includes/admin.php:231
+msgid "Removes the generator tag that names your WordPress version from the page head and from your RSS, Atom, and other feeds. Version numbers on script and stylesheet addresses, and export files, are left as they are."
+msgstr ""
+
+#: includes/admin.php:232
+msgid "Hides the version from casual inspection and from scanners that read the tag. It is not real protection, because the version can be worked out in other ways; keeping WordPress up to date matters far more. Nothing on the site looks different."
+msgstr ""
+
+#: includes/admin.php:233
+msgid "Removes one line from each page and feed. No measurable speed change."
+msgstr ""
+
+#: includes/admin.php:236
+msgid "Removes the Really Simple Discovery (RSD) link from the page head. Old desktop blogging programs used it to find the site's XML-RPC address."
+msgstr ""
+
+#: includes/admin.php:237
+msgid "A blogging program that relies on this link may need the XML-RPC address entered by hand. XML-RPC itself keeps working; only the link is removed. Most sites notice no difference."
+msgstr ""
+
+#: includes/admin.php:238
+msgid "Removes one line from each page. No measurable speed change."
+msgstr ""
+
+#: includes/admin.php:241
+msgid "Removes the shortlink, the short ?p=123 address of a post, from the page head and from the Link header that WordPress sends with each page."
+msgstr ""
+
+#: includes/admin.php:242
+msgid "Shortlinks still work when someone uses them; they are only no longer advertised. A tool that reads the shortlink from the page uses the full address instead."
+msgstr ""
+
+#: includes/admin.php:243
+msgid "Removes one line from each page and one response header. No measurable speed change."
+msgstr ""
+
+#: includes/admin.php:246
+msgid "Stops WordPress from printing a small inline style for the classic Recent Comments widget. WordPress prints it only on classic themes that support widgets."
+msgstr ""
+
+#: includes/admin.php:247
+msgid "The widget's links may look slightly different if your theme relied on that style. Block themes and the Latest Comments block are not affected."
+msgstr ""
+
+#: includes/admin.php:248
+msgid "Removes a few bytes of CSS from pages that show the widget. No measurable speed change."
+msgstr ""
+
+#: includes/admin.php:251
+msgid "Turns off Jetpack's promotional notices, its Just-in-Time upgrade messages, and its Blaze prompts to advertise your posts. It does nothing unless Jetpack is installed."
+msgstr ""
+
+#: includes/admin.php:252
+msgid "Jetpack keeps working; you no longer see its upgrade and advertising prompts in the admin area. Visitors see no difference."
+msgstr ""
+
+#: includes/admin.php:253
+msgid "Jetpack skips loading and showing these messages, which saves a little work and some requests in the admin area. No change on the front end."
+msgstr ""
+
+#: includes/admin.php:256
+msgid "Turns off publishing by email: the mail server settings disappear from Settings > Writing and can no longer be saved, and the wp-mail.php address that collects the mail refuses requests."
+msgstr ""
+
+#: includes/admin.php:257
+msgid "Nobody can publish posts by sending email to the configured mailbox. Existing posts are not affected. Leave this off if you post by email."
+msgstr ""
+
+#: includes/admin.php:258
+msgid "No speed change. It closes a rarely used way into the site."
+msgstr ""
+
+#: includes/admin.php:261
+msgid "Adds a preconnect hint to the page head for each domain in the Preconnect Domains list, so the browser opens a connection to those servers before it needs them. Front-end pages only; the admin area and the login page are skipped."
+msgstr ""
+
+#: includes/admin.php:262
+msgid "Files from those domains, such as web fonts, can start downloading sooner. A listed domain that the page does not use wastes a connection."
+msgstr ""
+
+#: includes/admin.php:263
+msgid "Can save one or more network round trips the first time each listed domain is used, which helps most on slow or distant connections. Each hint costs the browser a connection, so list only the few domains that serve files a page needs early. No measurable cost on the server."
+msgstr ""
+
+#: includes/admin.php:266
+msgid "The domains that get a preconnect hint while Enable Preconnect is on."
+msgstr ""
+
+#: includes/admin.php:267
+msgid "Only the domains entered here get hints. The suggestions below are examples and are never added on their own."
+msgstr ""
+
+#: includes/admin.php:268
+msgid "Two or three domains are usually enough. More hints compete for the browser's connections and can slow down the files that matter most."
+msgstr ""
+
+#: includes/admin.php:271
+msgid "Adds a DNS prefetch hint to the page head for each domain in the DNS Prefetch Domains list, so the browser looks up those domain names before it needs them. Front-end pages only; the admin area and the login page are skipped."
+msgstr ""
+
+#: includes/admin.php:272
+msgid "Requests to those domains start slightly sooner. Unlike preconnect, no connection is opened, so it suits domains that are used later or only on some pages."
+msgstr ""
+
+#: includes/admin.php:273
+msgid "Saves the name lookup, often a few tens of milliseconds, the first time each listed domain is used. It costs the browser very little, even for a domain that ends up unused. No measurable cost on the server."
+msgstr ""
+
+#: includes/admin.php:276
+msgid "The domains that get a DNS prefetch hint while Enable DNS Prefetch is on."
+msgstr ""
+
+#: includes/admin.php:277
+msgid "Only the domains entered here get hints. The suggestion below is an example and is never added on its own."
+msgstr ""
+
+#: includes/admin.php:278
+msgid "Lookups are cheap, so a longer list does little harm, but each entry only helps if pages request files from that domain."
+msgstr ""
+
+#: includes/admin.php:297
+msgid "What it does:"
+msgstr ""
+
+#: includes/admin.php:298
+msgid "Effect on your site:"
+msgstr ""
+
+#: includes/admin.php:299
+msgid "Performance:"
+msgstr ""
+
+#: includes/admin.php:495
+#: includes/admin.php:514
 msgid "Site Optimizer Settings"
 msgstr ""
 
-#: includes/admin.php:418
+#: includes/admin.php:496
 msgid "Site Optimizer"
 msgstr ""
 
-#: includes/admin.php:432
+#: includes/admin.php:510
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: includes/admin.php:437
+#: includes/admin.php:515
 msgid "Select which optimizations you want to enable and customize the resource hint domains."
 msgstr ""
 
-#: includes/admin.php:443
+#: includes/admin.php:521
 msgid "Save Changes"
 msgstr ""
 
-#: includes/admin.php:449
+#: includes/admin.php:527
 msgid "This plugin is part of the EngineScript project."
 msgstr ""
 
-#: includes/admin.php:451
+#: includes/admin.php:529
 msgid "Visit the EngineScript GitHub page"
 msgstr ""
 
 #. translators: Hidden accessibility text.
-#: includes/admin.php:455
+#: includes/admin.php:533
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: includes/admin.php:510
+#: includes/admin.php:594
 msgid "This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it."
 msgstr ""
 
-#: includes/admin.php:512
+#: includes/admin.php:596
 msgid "Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared."
 msgstr ""
 
-#: includes/admin.php:519
+#: includes/admin.php:602
+msgid "Format:"
+msgstr ""
+
+#: includes/admin.php:604
 msgid "Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints."
 msgstr ""
 
-#: includes/admin.php:538
+#: includes/admin.php:623
 msgid "Settings"
 msgstr ""
 

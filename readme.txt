@@ -67,6 +67,11 @@ No. The option removes WordPress's generator output from the page head and from 
 
 == Changelog ==
 
+= Unreleased =
+* On the settings page, only the checkbox now turns a setting on or off. A click on the setting's title or its description, or a drag across it to select the text, no longer changes the setting.
+* Explain every setting below its control: what it does, its effect on the site, and its performance gain or cost. The explanations replace the one-line descriptions.
+* Name each checkbox for screen readers by its title alone, with the explanation read as its description.
+
 = 2.3.0 - 2026-11-26 =
 * Deprecate `es_optimizer_clear_options_cache()`, which has done nothing since WordPress took over option caching; calling it triggers WordPress's deprecation notice.
 * Write the plugin's PHP in PHP 8 forms (short arrays, an arrow function, first-class callables); behavior is unchanged.
