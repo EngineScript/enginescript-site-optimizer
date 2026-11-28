@@ -527,13 +527,58 @@ function es_optimizer_register_textarea_field( string $page, string $section, st
  * @since 1.0.0
  */
 function es_optimizer_add_settings_page(): void {
-	add_options_page(
+	$hook = add_options_page(
 		esc_html__( 'Site Optimizer Settings', 'enginescript-site-optimizer' ),
 		esc_html__( 'Site Optimizer', 'enginescript-site-optimizer' ),
 		'manage_options',
 		'es-optimizer-settings',
 		'es_optimizer_settings_page'
 	);
+
+	// The Autoloaded Options tab posts its changes back to this page.
+	if ( is_string( $hook ) && '' !== $hook ) {
+		add_action( "load-{$hook}", 'es_optimizer_autoload_handle_request' );
+	}
+}
+
+/**
+ * Get the tab of the settings page that is shown.
+ *
+ * @since 2.5.0
+ * @SuppressWarnings("PHPMD.Superglobals") Reads only which tab to show, reduced to one of two known values.
+ * @return string 'settings' or 'autoload'.
+ */
+function es_optimizer_get_settings_tab(): string {
+	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only choice of tab.
+	return isset( $_GET['tab'] ) && is_string( $_GET['tab'] ) && 'autoload' === sanitize_key( wp_unslash( $_GET['tab'] ) ) ? 'autoload' : 'settings';
+}
+
+/**
+ * Print the tabs of the settings page.
+ *
+ * @since 2.5.0
+ * @param string $current Tab shown.
+ */
+function es_optimizer_render_settings_tabs( string $current ): void {
+	$tabs = [
+		'settings' => [ admin_url( 'options-general.php?page=es-optimizer-settings' ), __( 'Settings', 'enginescript-site-optimizer' ) ],
+		'autoload' => [ es_optimizer_autoload_page_url(), __( 'Autoloaded Options', 'enginescript-site-optimizer' ) ],
+	];
+
+	printf( '<nav class="nav-tab-wrapper" aria-label="%s">', esc_attr__( 'Site Optimizer sections', 'enginescript-site-optimizer' ) );
+
+	foreach ( $tabs as $key => [ $url, $label ] ) {
+		$active = $key === $current;
+		printf(
+			'<a href="%1$s" class="nav-tab%2$s"%3$s>%4$s</a>',
+			esc_url( $url ),
+			$active ? ' nav-tab-active' : '',
+			$active ? ' aria-current="page"' : '',
+			esc_html( $label )
+		);
+	}
+
+	echo '</nav>';
 }
 
 /**
@@ -545,18 +590,22 @@ function es_optimizer_settings_page(): void {
 	if ( ! current_user_can( 'manage_options' ) ) {
 		wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'enginescript-site-optimizer' ) );
 	}
+
+	$tab = es_optimizer_get_settings_tab();
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Site Optimizer Settings', 'enginescript-site-optimizer' ); ?></h1>
-		<p><?php esc_html_e( 'Select which optimizations you want to enable and customize the resource hint domains.', 'enginescript-site-optimizer' ); ?></p>
+		<?php
+		es_optimizer_render_settings_tabs( $tab );
 
-		<form method="post" action="options.php">
-			<?php
-			settings_fields( 'es_optimizer_settings' );
-			do_settings_sections( 'es-optimizer-settings' );
-			submit_button( __( 'Save Changes', 'enginescript-site-optimizer' ) );
-			?>
-		</form>
+		if ( 'autoload' === $tab ) {
+			es_optimizer_autoload_render_tab();
+		}
+
+		if ( 'settings' === $tab ) {
+			es_optimizer_render_settings_form();
+		}
+		?>
 
 		<hr>
 		<p>
@@ -572,6 +621,24 @@ function es_optimizer_settings_page(): void {
 			</a>
 		</p>
 	</div>
+	<?php
+}
+
+/**
+ * Print the settings form.
+ *
+ * @since 2.5.0
+ */
+function es_optimizer_render_settings_form(): void {
+	?>
+	<p><?php esc_html_e( 'Select which optimizations you want to enable and customize the resource hint domains.', 'enginescript-site-optimizer' ); ?></p>
+	<form method="post" action="options.php">
+		<?php
+		settings_fields( 'es_optimizer_settings' );
+		do_settings_sections( 'es-optimizer-settings' );
+		submit_button( __( 'Save Changes', 'enginescript-site-optimizer' ) );
+		?>
+	</form>
 	<?php
 }
 

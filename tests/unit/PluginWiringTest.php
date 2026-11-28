@@ -56,6 +56,7 @@ final class PluginWiringTest extends EsOptimizerTestCase {
 			array( 'wp_enqueue_scripts', 'es_optimizer_disable_frontend_heartbeat', 100, 1 ),
 			array( 'heartbeat_settings', 'es_optimizer_filter_heartbeat_settings', PHP_INT_MAX, 1 ),
 			array( 'plugin_action_links_enginescript-site-optimizer.php', 'es_optimizer_add_settings_link', 10, 1 ),
+			array( 'after_plugin_row_enginescript-site-optimizer.php', 'es_optimizer_autoload_plugin_row_notice', 10, 0 ),
 		);
 
 		$registered = array();

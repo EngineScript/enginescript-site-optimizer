@@ -21,6 +21,7 @@ A WordPress plugin for disabling selected features and configuring resource hint
 - **Editor and Admin:** Stop loading patterns from the WordPress.org Pattern Directory, and turn off WordPress's AI support
 - **Resource Hints:** Configure DNS prefetch and preconnect for HTTPS domains used by your site
 - **Jetpack Promotions:** Disable Jetpack promotional messages and Blaze promotions
+- **Autoloaded Options:** A tab on the settings page that lists the options WordPress loads on every page, largest first, with the plugin or theme each probably belongs to (from folder names, a search of the installed code, or a recording of which options pages read); stop loading the ones you select, with an automatic check that undoes a change that breaks the home page or the dashboard, and WP-CLI commands to restore everything
 - **Explained Settings:** Every setting says what it does, its effect on the site, and its performance gain or cost
 
 ## Installation
@@ -125,6 +126,28 @@ may need an operator-run uninstall with sufficient time and memory. If cleanup
 fails, the plugin files stay in place and the message gives the reason and, on
 a network, the IDs of the sites that could not be cleaned. Resolve the reported
 problem and retry removal.
+
+Options you stopped from loading on every page on the Autoloaded Options tab
+are loaded on every page again before anything is deleted, with the exact
+autoload setting each one had, on every site of a network. An option whose
+setting other code has changed since is left alone. If an option cannot be
+restored, nothing on that site is deleted and the uninstall stops. Deactivation
+changes nothing. While any option is switched off, the Autoloaded Options
+tab and the plugin's row on the Plugins screen say so.
+
+### What if switching an autoloaded option off breaks my site?
+
+It rarely does, because code that needs the option still gets it. After each
+change the plugin loads the home page and the dashboard, and undoes the change
+if either answers with a server error. To undo every change from the command
+line, run `wp site-optimizer autoload restore --all`. If a plugin keeps WP-CLI
+from starting, skip every plugin and theme and load only the command:
+
+```bash
+wp --skip-plugins --skip-themes \
+  --require=wp-content/plugins/enginescript-site-optimizer/includes/class-es-optimizer-autoload-command.php \
+  site-optimizer autoload restore --all
+```
 
 ## Development
 

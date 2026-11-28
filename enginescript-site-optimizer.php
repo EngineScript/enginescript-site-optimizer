@@ -30,6 +30,13 @@ if ( ! defined( 'ES_SITE_OPTIMIZER_FILE' ) ) {
 }
 
 require_once __DIR__ . '/includes/options.php';
+require_once __DIR__ . '/includes/autoload.php';
+require_once __DIR__ . '/includes/autoload-insight.php';
+require_once __DIR__ . '/includes/autoload-page.php';
 require_once __DIR__ . '/includes/admin.php';
 require_once __DIR__ . '/includes/frontend.php';
 require_once __DIR__ . '/includes/bootstrap.php';
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+	require_once __DIR__ . '/includes/class-es-optimizer-autoload-command.php';
+}

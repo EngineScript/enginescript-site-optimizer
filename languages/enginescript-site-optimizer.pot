@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-28T02:46:02+00:00\n"
+"POT-Creation-Date: 2026-11-28T07:08:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -362,69 +362,454 @@ msgid "Lookups are cheap, so a longer list does little harm, but each entry only
 msgstr ""
 
 #: includes/admin.php:333
+#: includes/autoload-page.php:551
 msgid "What it does:"
 msgstr ""
 
 #: includes/admin.php:334
+#: includes/autoload-page.php:552
 msgid "Effect on your site:"
 msgstr ""
 
 #: includes/admin.php:335
+#: includes/autoload-page.php:553
 msgid "Performance:"
 msgstr ""
 
 #: includes/admin.php:531
-#: includes/admin.php:550
+#: includes/admin.php:597
 msgid "Site Optimizer Settings"
 msgstr ""
 
 #: includes/admin.php:532
+#: includes/autoload.php:925
 msgid "Site Optimizer"
 msgstr ""
 
-#: includes/admin.php:546
-msgid "You do not have sufficient permissions to access this page."
-msgstr ""
-
-#: includes/admin.php:551
-msgid "Select which optimizations you want to enable and customize the resource hint domains."
-msgstr ""
-
-#: includes/admin.php:557
-msgid "Save Changes"
-msgstr ""
-
-#: includes/admin.php:563
-msgid "This plugin is part of the EngineScript project."
+#: includes/admin.php:564
+#: includes/admin.php:726
+msgid "Settings"
 msgstr ""
 
 #: includes/admin.php:565
+msgid "Autoloaded Options"
+msgstr ""
+
+#: includes/admin.php:568
+msgid "Site Optimizer sections"
+msgstr ""
+
+#: includes/admin.php:591
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: includes/admin.php:612
+msgid "This plugin is part of the EngineScript project."
+msgstr ""
+
+#: includes/admin.php:614
 msgid "Visit the EngineScript GitHub page"
 msgstr ""
 
 #. translators: Hidden accessibility text.
-#: includes/admin.php:569
+#: includes/admin.php:618
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: includes/admin.php:630
+#: includes/admin.php:634
+msgid "Select which optimizations you want to enable and customize the resource hint domains."
+msgstr ""
+
+#: includes/admin.php:639
+msgid "Save Changes"
+msgstr ""
+
+#: includes/admin.php:697
 msgid "This saved list exceeds a size limit. It remains displayed here but adds no resource hints until you shorten and save it."
 msgstr ""
 
-#: includes/admin.php:632
+#: includes/admin.php:699
 msgid "Some saved preconnect entries use unsupported ports. They remain displayed here but are skipped in page hints. Saving removes invalid entries; if none are valid, the list is cleared."
 msgstr ""
 
-#: includes/admin.php:638
+#: includes/admin.php:705
 msgid "Format:"
 msgstr ""
 
-#: includes/admin.php:640
+#: includes/admin.php:707
 msgid "Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints."
 msgstr ""
 
-#: includes/admin.php:659
-msgid "Settings"
+#: includes/autoload-page.php:59
+msgid "You do not have sufficient permissions to change autoloaded options."
+msgstr ""
+
+#: includes/autoload-page.php:83
+msgid "Unknown action."
+msgstr ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:263
+#, php-format
+msgid "%d locked option was left as it is: WordPress or this plugin reads it on every page."
+msgid_plural "%d locked options were left as they are: WordPress or this plugin reads them on every page."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:265
+#, php-format
+msgid "%d option no longer exists."
+msgid_plural "%d options no longer exist."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:267
+#, php-format
+msgid "%d option was already not loaded on every page."
+msgid_plural "%d options were already not loaded on every page."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:269
+#, php-format
+msgid "%d option could not be changed; it was left as it was."
+msgid_plural "%d options could not be changed; they were left as they were."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of entries.
+#: includes/autoload-page.php:271
+#, php-format
+msgid "%d entry was not a valid option name or was over the limit of 100 options per change."
+msgid_plural "%d entries were not valid option names or were over the limit of 100 options per change."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:273
+#, php-format
+msgid "%d option was not switched off by Site Optimizer, so it was left as it is."
+msgid_plural "%d options were not switched off by Site Optimizer, so they were left as they are."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:275
+#, php-format
+msgid "%d option had already been changed or deleted by other code; it was taken off the list without a change."
+msgid_plural "%d options had already been changed or deleted by other code; they were taken off the list without a change."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/autoload-page.php:276
+msgid "The list of changes could not be saved. Reload the page to see the current state."
+msgstr ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:362
+#, php-format
+msgid "%d option is loaded on every page again, with the setting it had before."
+msgid_plural "%d options are loaded on every page again, with the settings they had before."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:364
+#, php-format
+msgid "%d option is no longer loaded on every page."
+msgid_plural "%d options are no longer loaded on every page."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/autoload-page.php:380
+msgid "Nothing was selected, so nothing was changed."
+msgstr ""
+
+#: includes/autoload-page.php:411
+msgid "The home page and the dashboard still load."
+msgstr ""
+
+#. translators: %d: Number of options.
+#: includes/autoload-page.php:413
+#, php-format
+msgid "After the change, the home page or the dashboard answered with a server error, so the change was undone: %d option is loaded on every page again."
+msgid_plural "After the change, the home page or the dashboard answered with a server error, so the change was undone: %d options are loaded on every page again."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/autoload-page.php:414
+msgid "The site could not be checked after the change, because it did not answer a request from itself. Open the home page and the dashboard to check them yourself."
+msgstr ""
+
+#: includes/autoload-page.php:428
+msgid "Recording started. Load the pages you want to measure, on the front end and in the dashboard. Pages served from a page cache do not run WordPress, so they are not counted."
+msgstr ""
+
+#: includes/autoload-page.php:429
+msgid "Recording stopped. The results are kept until you clear them or start a new recording."
+msgstr ""
+
+#: includes/autoload-page.php:430
+msgid "The recorded results were cleared."
+msgstr ""
+
+#: includes/autoload-page.php:431
+msgid "The recording could not be changed. Reload the page to see the current state."
+msgstr ""
+
+#: includes/autoload-page.php:466
+msgid "Lists the options that WordPress loads from the database on every page, largest first, and lets you stop loading the ones you select on every page. Only the option's autoload setting changes; its value stays in the database, and WordPress still reads it when code asks for it. WordPress does not record which plugin or theme created an option, so the \"Probably from\" column is an informed guess. To firm it up, search the installed code for the names on a page, or record which options pages actually read and which code reads them."
+msgstr ""
+
+#: includes/autoload-page.php:467
+msgid "Code that needs a switched-off option still gets it, so a site rarely breaks; after each change the plugin loads your home page and the dashboard, and undoes the change at once if either answers with a server error. The best candidates are large options that no recorded page reads, or that no installed plugin or theme contains: those were usually left behind by a removed plugin. A plugin can switch an option back on when it saves it, and the second list shows when that has happened. Options that WordPress and this plugin need are locked. If a site still breaks, WP-CLI can undo every change, even with all plugins skipped: see the plugin's FAQ."
+msgstr ""
+
+#: includes/autoload-page.php:468
+msgid "Every page loads all of these options in one query, and with a persistent object cache, such as Redis, they are kept together in one cache entry, which a very large total can push past the cache server's size limit. A smaller total makes that load faster and lighter on memory. Each option you switch off that a page still needs costs that page one extra small query when no persistent object cache is in use. Recording adds a little work to each page while it runs, and the code search reads many files once, when you ask for it."
+msgstr ""
+
+#: includes/autoload-page.php:538
+msgid "When you delete Site Optimizer, it first loads every option it switched off on every page again, with the setting each one had before. Deactivating the plugin changes nothing."
+msgstr ""
+
+#: includes/autoload-page.php:574
+msgid "Loaded on every page"
+msgstr ""
+
+#. translators: %d: Number of options switched off by the plugin.
+#: includes/autoload-page.php:576
+#, php-format
+msgid "Switched off by Site Optimizer (%d)"
+msgstr ""
+
+#: includes/autoload-page.php:580
+msgid "Autoloaded option lists"
+msgstr ""
+
+#: includes/autoload-page.php:621
+msgid "A persistent object cache is in use."
+msgstr ""
+
+#: includes/autoload-page.php:622
+msgid "No persistent object cache is in use."
+msgstr ""
+
+#. translators: 1: Number of options, 2: Total size such as "412 KB", 3: Site Health's limit such as "781 KB".
+#: includes/autoload-page.php:629
+#, php-format
+msgid "%1$d option is loaded on every page, %2$s in total. WordPress's Site Health check warns above %3$s."
+msgid_plural "%1$d options are loaded on every page, %2$s in total. WordPress's Site Health check warns above %3$s."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/autoload-page.php:659
+msgid "Select all options on this page"
+msgstr ""
+
+#. translators: %s: Option name.
+#: includes/autoload-page.php:685
+#, php-format
+msgid "Select %s"
+msgstr ""
+
+#: includes/autoload-page.php:739
+#: includes/autoload-page.php:1034
+msgid "Option"
+msgstr ""
+
+#: includes/autoload-page.php:740
+#: includes/autoload-page.php:1035
+msgid "Size"
+msgstr ""
+
+#: includes/autoload-page.php:741
+msgid "Autoload setting"
+msgstr ""
+
+#: includes/autoload-page.php:745
+msgid "Read on"
+msgstr ""
+
+#: includes/autoload-page.php:748
+msgid "Probably from"
+msgstr ""
+
+#: includes/autoload-page.php:752
+msgid "No autoloaded options match."
+msgstr ""
+
+#: includes/autoload-page.php:763
+msgid "Stop loading the selected options on every page"
+msgstr ""
+
+#. translators: 1: Current page number, 2: Number of pages, 3: Number of matching options.
+#: includes/autoload-page.php:768
+#, php-format
+msgid "Page %1$d of %2$d (%3$d options)."
+msgstr ""
+
+#: includes/autoload-page.php:802
+msgid "(locked)"
+msgstr ""
+
+#: includes/autoload-page.php:824
+msgid "No recorded page"
+msgstr ""
+
+#. translators: 1: Pages that read the option, 2: Pages recorded.
+#: includes/autoload-page.php:828
+#, php-format
+msgid "%1$d of %2$d recorded page"
+msgid_plural "%1$d of %2$d recorded pages"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/autoload-page.php:843
+msgid "Search option names"
+msgstr ""
+
+#: includes/autoload-page.php:845
+msgid "Search"
+msgstr ""
+
+#: includes/autoload-page.php:867
+msgid "Search installed plugins and themes for the options on this page"
+msgstr ""
+
+#: includes/autoload-page.php:868
+msgid "Reads their PHP files to find which one uses each option name, for up to 20 seconds. Results are kept for a day."
+msgstr ""
+
+#: includes/autoload-page.php:887
+msgid "The installed plugins and themes were searched for the options on this page."
+msgstr ""
+
+#: includes/autoload-page.php:888
+msgid "The search stopped after 20 seconds; the options it found are marked. Search again to continue with the rest."
+msgstr ""
+
+#. translators: 1: Time the recording ends, 2: Pages recorded so far.
+#: includes/autoload-page.php:910
+#, php-format
+msgid "Recording which options pages read until %1$s: %2$d page so far."
+msgid_plural "Recording which options pages read until %1$s: %2$d pages so far."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/autoload-page.php:916
+msgid "Stop recording"
+msgstr ""
+
+#: includes/autoload-page.php:922
+msgid "Record which options pages read, and which plugin or theme reads each one: while recording, every page loaded on the front end or in the dashboard is noted, at a small cost per page."
+msgstr ""
+
+#: includes/autoload-page.php:923
+msgid "Record for 10 minutes"
+msgstr ""
+
+#: includes/autoload-page.php:924
+msgid "Record for 1 hour"
+msgstr ""
+
+#: includes/autoload-page.php:927
+msgid "Clear the recorded results"
+msgstr ""
+
+#: includes/autoload-page.php:992
+msgid "Previous page"
+msgstr ""
+
+#: includes/autoload-page.php:996
+msgid "Next page"
+msgstr ""
+
+#: includes/autoload-page.php:1009
+msgid "Not loaded on every page"
+msgstr ""
+
+#: includes/autoload-page.php:1010
+msgid "Loaded on every page again by other code"
+msgstr ""
+
+#: includes/autoload-page.php:1011
+msgid "Deleted by other code"
+msgstr ""
+
+#: includes/autoload-page.php:1012
+msgid "Setting changed by other code"
+msgstr ""
+
+#: includes/autoload-page.php:1025
+msgid "The current settings of these options could not be read. Reload the page to try again."
+msgstr ""
+
+#: includes/autoload-page.php:1036
+msgid "Setting before"
+msgstr ""
+
+#: includes/autoload-page.php:1037
+msgid "Now"
+msgstr ""
+
+#: includes/autoload-page.php:1038
+msgid "Switched off"
+msgstr ""
+
+#: includes/autoload-page.php:1043
+msgid "Site Optimizer has not switched off any option."
+msgstr ""
+
+#: includes/autoload-page.php:1061
+msgid "Load the selected options on every page again"
+msgstr ""
+
+#: includes/autoload-page.php:1084
+msgid "Site Optimizer has stopped some options from loading on every page. Deleting the plugin loads them on every page again, with the settings they had before. Deactivating it changes nothing."
+msgstr ""
+
+#: includes/autoload.php:904
+msgid "Not found in any installed plugin or theme: probably left behind by one that was removed"
+msgstr ""
+
+#: includes/autoload.php:910
+msgid "Unknown, possibly a removed plugin or theme"
+msgstr ""
+
+#: includes/autoload.php:929
+msgid "WordPress"
+msgstr ""
+
+#: includes/autoload.php:933
+msgid "Temporary cached data (transient)"
+msgstr ""
+
+#. translators: %s: Theme name.
+#: includes/autoload.php:959
+#, php-format
+msgid "%s (active theme)"
+msgstr ""
+
+#. translators: %s: Theme name.
+#: includes/autoload.php:961
+#, php-format
+msgid "%s (inactive theme)"
+msgstr ""
+
+#. translators: %s: Plugin name.
+#: includes/autoload.php:963
+#, php-format
+msgid "%s (active plugin)"
+msgstr ""
+
+#. translators: %s: Plugin name.
+#: includes/autoload.php:965
+#, php-format
+msgid "%s (inactive plugin)"
 msgstr ""
 
 #: includes/options.php:171
@@ -536,81 +921,89 @@ msgstr ""
 msgid "Invalid domain name."
 msgstr ""
 
-#: uninstall.php:66
+#: uninstall.php:69
 msgid "Site Optimizer settings could not be fully removed. The plugin files were retained. Pause site and settings changes, then retry removal."
 msgstr ""
 
 #. translators: %s: Why the settings could not be removed.
-#: uninstall.php:75
+#: uninstall.php:78
 #, php-format
 msgid "Reason: %s"
 msgstr ""
 
-#: uninstall.php:90
-#: uninstall.php:96
-#: uninstall.php:175
+#: uninstall.php:93
+#: uninstall.php:99
+#: uninstall.php:178
 msgid "The list of network sites returned an invalid site ID."
 msgstr ""
 
-#: uninstall.php:113
-#: uninstall.php:145
-#: uninstall.php:195
-#: uninstall.php:465
+#: uninstall.php:116
+#: uninstall.php:148
+#: uninstall.php:203
+#: uninstall.php:494
 msgid "The WordPress database object is unavailable."
 msgstr ""
 
-#: uninstall.php:125
-#: uninstall.php:159
-#: uninstall.php:166
+#: uninstall.php:128
+#: uninstall.php:162
+#: uninstall.php:169
 msgid "The list of network sites could not be read."
 msgstr ""
 
+#. translators: 1: Number of options, 2: Site ID.
+#: uninstall.php:215
+#, php-format
+msgid "%1$d option that the plugin stopped from loading on every page could not be restored on site %2$d. Nothing was deleted on that site."
+msgid_plural "%1$d options that the plugin stopped from loading on every page could not be restored on site %2$d. Nothing was deleted on that site."
+msgstr[0] ""
+msgstr[1] ""
+
 #. translators: %d: Site ID.
-#: uninstall.php:205
+#: uninstall.php:231
 #, php-format
 msgid "The current site changed while the settings of site %d were being deleted."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:221
+#: uninstall.php:247
 #, php-format
 msgid "The settings of site %d could not be verified as removed."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:231
+#: uninstall.php:257
 #, php-format
 msgid "The settings of site %d are still stored after deletion."
 msgstr ""
 
-#: uninstall.php:256
+#: uninstall.php:282
 msgid "The site-switch state could not be read."
 msgstr ""
 
-#: uninstall.php:291
-#: uninstall.php:297
-#: uninstall.php:304
+#: uninstall.php:317
+#: uninstall.php:323
+#: uninstall.php:330
 msgid "WordPress could not switch back to the original site."
 msgstr ""
 
 #. translators: %d: Site ID.
-#: uninstall.php:333
+#: uninstall.php:359
 #, php-format
 msgid "WordPress could not switch to site %d."
 msgstr ""
 
 #. translators: 1: Number of sites, 2: Comma-separated site IDs.
-#: uninstall.php:385
+#: uninstall.php:411
 #, php-format
 msgid "Settings could not be removed from %1$d site. Site ID: %2$s."
 msgid_plural "Settings could not be removed from %1$d sites. Site IDs, at most the first 20: %2$s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: uninstall.php:444
+#: uninstall.php:470
 msgid "A site was created during removal."
 msgstr ""
 
-#: uninstall.php:490
+#: uninstall.php:519
 msgid "Site Optimizer removal failed"
 msgstr ""

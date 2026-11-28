@@ -2795,6 +2795,318 @@ jobs:
               }
 
               /**
+               * Store an option with an exact autoload flag, as core or another plugin may leave it.
+               *
+               * @since 2.5.0
+               * @param string $name  Option name.
+               * @param string $value Option value.
+               * @param string $flag  Stored autoload flag.
+               * @return void
+               */
+              private function option_with_flag(string $name, string $value, string $flag): void {
+                  global $wpdb;
+                  delete_option($name);
+                  add_option($name, $value, '', true);
+                  $wpdb->update($wpdb->options, array('autoload' => $flag), array('option_name' => $name));
+                  wp_cache_delete($name, 'options');
+                  wp_cache_delete('alloptions', 'options');
+              }
+
+              /**
+               * Read an option's stored autoload flag from the table, past every cache.
+               *
+               * @since 2.5.0
+               * @param string $name Option name.
+               * @return string|null Stored flag, or null when the option does not exist.
+               */
+              private function stored_flag(string $name): ?string {
+                  global $wpdb;
+                  $flag = $wpdb->get_var($wpdb->prepare('SELECT autoload FROM %i WHERE option_name = %s', $wpdb->options, $name));
+                  return null === $flag ? null : (string) $flag;
+              }
+
+              /**
+               * Switching off keeps each value readable and out of alloptions; switching on restores each exact earlier flag.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_round_trip_keeps_each_exact_flag(): void {
+                  $flags = array('es_t_on' => 'on', 'es_t_auto' => 'auto', 'es_t_auto_on' => 'auto-on', 'es_t_yes' => 'yes');
+                  foreach ($flags as $name => $flag) {
+                      $this->option_with_flag($name, 'value of ' . $name, $flag);
+                  }
+                  $this->assertArrayHasKey('es_t_auto', wp_load_alloptions(true), 'Control: core loads every one of these flags.');
+
+                  $result = es_optimizer_autoload_switch_off(array_keys($flags));
+                  $this->assertSame(array_keys($flags), $result['changed']);
+                  $this->assertSame(array(), $result['skipped']);
+                  $cached = wp_load_alloptions();
+                  $fresh  = wp_load_alloptions(true);
+                  foreach ($flags as $name => $flag) {
+                      $this->assertArrayNotHasKey($name, $cached, "{$name} left the cached alloptions.");
+                      $this->assertArrayNotHasKey($name, $fresh, "{$name} is not loaded from the table either.");
+                      $this->assertSame('off', $this->stored_flag($name));
+                      $this->assertSame('value of ' . $name, get_option($name), 'The value is still read on demand.');
+                      $this->assertSame($flag, es_optimizer_autoload_get_log()[$name]['previous']);
+                  }
+                  $this->assertSame('off', $this->stored_flag('es_optimizer_autoload_changes'), 'The log itself is never autoloaded.');
+
+                  $result = es_optimizer_autoload_switch_on(array_keys($flags));
+                  $this->assertSame(array_keys($flags), $result['changed']);
+                  foreach ($flags as $name => $flag) {
+                      $this->assertSame($flag, $this->stored_flag($name), "{$name} has its exact earlier flag.");
+                      $this->assertArrayHasKey($name, wp_load_alloptions());
+                  }
+                  $this->assertNull($this->stored_flag('es_optimizer_autoload_changes'), 'An empty log is deleted.');
+              }
+
+              /**
+               * Names with LIKE wildcards, quotes, or multibyte text match exactly; locked and missing names are refused.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_special_names_and_locked_options(): void {
+                  $names = array('es_t_100%', 'es_t_1_0', "es_t_quote'\"", 'es_t_ünï 🚀', str_repeat('e', 191));
+                  foreach (array_merge($names, array('es_t_100', 'es_t_1x0')) as $name) {
+                      $this->option_with_flag($name, 'v', 'on');
+                  }
+
+                  $percent = es_optimizer_autoload_get_page(1, 't_100%');
+                  $this->assertSame(array('es_t_100%'), array_column($percent['rows'], 'name'), 'A literal % in the search matches only itself.');
+                  $underscore = es_optimizer_autoload_get_page(1, 't_1_0');
+                  $this->assertSame(array('es_t_1_0'), array_column($underscore['rows'], 'name'), 'A literal _ in the search matches only itself.');
+
+                  $siteurl = $this->stored_flag('siteurl');
+                  $result  = es_optimizer_autoload_switch_off(array_merge($names, array('siteurl', 'es_t_missing', 'alloptions')));
+                  $this->assertSame($names, $result['changed']);
+                  $this->assertSame(array('locked' => 2, 'missing' => 1), $result['skipped']);
+                  foreach ($names as $name) {
+                      $this->assertSame('off', $this->stored_flag($name), $name);
+                  }
+                  $this->assertSame('on', $this->stored_flag('es_t_100'), 'A name that only matches as a LIKE pattern is untouched.');
+                  $this->assertSame('on', $this->stored_flag('es_t_1x0'));
+                  $this->assertSame($siteurl, $this->stored_flag('siteurl'));
+
+                  $this->assertSame($names, es_optimizer_autoload_switch_on($names)['changed']);
+                  foreach ($names as $name) {
+                      $this->assertSame('on', $this->stored_flag($name), $name);
+                  }
+              }
+
+              /**
+               * An option core already keeps out of alloptions is skipped; once loaded, switching it off shrinks the total.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_large_option_and_the_total(): void {
+                  delete_option('es_t_large');
+                  add_option('es_t_large', str_repeat('x', 200000));
+                  $this->assertSame('auto-off', $this->stored_flag('es_t_large'), 'Control: core keeps a new option over 150 KB out of alloptions.');
+                  $this->assertSame(array('not_autoloaded' => 1), es_optimizer_autoload_switch_off(array('es_t_large'))['skipped']);
+
+                  update_option('es_t_large', str_repeat('y', 200000), true);
+                  $this->assertSame('on', $this->stored_flag('es_t_large'));
+                  $before = es_optimizer_autoload_get_summary();
+                  $this->assertSame(count(wp_load_alloptions(true)), $before['count'], 'The total counts what core loads.');
+
+                  $this->assertSame(array('es_t_large'), es_optimizer_autoload_switch_off(array('es_t_large'))['changed']);
+                  $after = es_optimizer_autoload_get_summary();
+                  $this->assertSame($before['count'] - 1, $after['count']);
+                  $this->assertSame($before['bytes'] - 200000, $after['bytes']);
+              }
+
+              /**
+               * A flag that other code changes after the switch-off is reported, and switching on leaves it as that code set it.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_change_by_other_code_is_reported_and_left_alone(): void {
+                  $this->option_with_flag('es_t_plugin', 'a', 'auto');
+                  $this->option_with_flag('es_t_gone', 'a', 'on');
+                  es_optimizer_autoload_switch_off(array('es_t_plugin', 'es_t_gone'));
+
+                  update_option('es_t_plugin', 'b', true);
+                  delete_option('es_t_gone');
+                  $states = array_column(es_optimizer_autoload_get_logged_rows(), 'state', 'name');
+                  $this->assertEquals(array('es_t_plugin' => 'reenabled', 'es_t_gone' => 'deleted'), $states, 'Compared without regard to order: both share a timestamp.');
+
+                  $result = es_optimizer_autoload_switch_on(array('es_t_plugin', 'es_t_gone'));
+                  $this->assertSame(array(), $result['changed']);
+                  $this->assertSame(array('changed_elsewhere' => 2), $result['skipped']);
+                  $this->assertSame('on', $this->stored_flag('es_t_plugin'), 'Left as the other code set it.');
+                  $this->assertSame(array(), es_optimizer_autoload_get_log());
+              }
+
+              /**
+               * Uninstall restores the earlier flags first, leaves a flag other code changed, and removes both plugin options.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_uninstall_restores_switched_off_options(): void {
+                  global $wpdb;
+                  $this->option_with_flag('es_t_u1', 'v', 'auto');
+                  $this->option_with_flag('es_t_u2', 'v', 'on');
+                  es_optimizer_autoload_switch_off(array('es_t_u1', 'es_t_u2'));
+                  $wpdb->update($wpdb->options, array('autoload' => 'auto-off'), array('option_name' => 'es_t_u2'));
+                  update_option('es_optimizer_options', array('disable_emojis' => 1));
+
+                  es_optimizer_uninstall_current_site_options();
+
+                  $this->assertSame('auto', $this->stored_flag('es_t_u1'));
+                  $this->assertSame('auto-off', $this->stored_flag('es_t_u2'), 'A flag changed by other code is left alone.');
+                  $this->assertNull($this->stored_flag('es_optimizer_autoload_changes'));
+                  $this->assertSame(0, $this->option_rows());
+                  $this->assertArrayHasKey('es_t_u1', wp_load_alloptions());
+              }
+
+              /**
+               * A network uninstall restores every site's options and removes the network's list of sites.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_network_uninstall_restores_every_site(): void {
+                  $this->require_multisite();
+                  $sites = array(get_current_blog_id(), self::factory()->blog->create(), self::factory()->blog->create());
+                  foreach ($sites as $site) {
+                      switch_to_blog($site);
+                      $this->option_with_flag('es_t_net', 'v' . $site, 'auto');
+                      es_optimizer_autoload_switch_off(array('es_t_net'));
+                      restore_current_blog();
+                  }
+                  $this->assertEqualsCanonicalizing($sites, get_site_option('es_optimizer_autoload_sites'));
+
+                  switch_to_blog($sites[1]);
+                  es_optimizer_autoload_switch_on(array('es_t_net'));
+                  $this->assertSame('auto', $this->stored_flag('es_t_net'));
+                  restore_current_blog();
+                  switch_to_blog($sites[2]);
+                  $this->assertSame('off', $this->stored_flag('es_t_net'), 'A change on one site leaves the other sites alone.');
+                  restore_current_blog();
+                  $this->assertEqualsCanonicalizing(array($sites[0], $sites[2]), get_site_option('es_optimizer_autoload_sites'));
+
+                  es_optimizer_uninstall_options();
+
+                  foreach ($sites as $site) {
+                      switch_to_blog($site);
+                      $this->assertSame('auto', $this->stored_flag('es_t_net'), "Site {$site}");
+                      $this->assertNull($this->stored_flag('es_optimizer_autoload_changes'), "Site {$site}");
+                      restore_current_blog();
+                  }
+                  $this->assertFalse(get_site_option('es_optimizer_autoload_sites'));
+              }
+
+              /**
+               * The form handler needs manage_options and a valid nonce before it changes anything.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_request_needs_capability_and_nonce(): void {
+                  $this->option_with_flag('es_t_req', 'v', 'on');
+                  $_SERVER['REQUEST_METHOD'] = 'POST';
+                  $_POST = array('es_optimizer_autoload_action' => 'switch_off', 'option_names' => array('es_t_req'));
+                  $ok = static fn () => array('headers' => array(), 'body' => '', 'response' => array('code' => 200, 'message' => 'OK'), 'cookies' => array(), 'filename' => null);
+                  add_filter('pre_http_request', $ok);
+                  try {
+                      wp_set_current_user(self::factory()->user->create(array('role' => 'editor')));
+                      $_REQUEST['_wpnonce'] = wp_create_nonce('es_optimizer_autoload');
+                      try {
+                          es_optimizer_autoload_process_request();
+                          $this->fail('An editor changed an autoload flag.');
+                      } catch (WPDieException $error) {
+                          $this->assertStringContainsString('permissions', $error->getMessage());
+                      }
+
+                      wp_set_current_user(self::factory()->user->create(array('role' => 'administrator')));
+                      if (is_multisite()) {
+                          grant_super_admin(get_current_user_id());
+                      }
+                      $_REQUEST['_wpnonce'] = 'not-a-nonce';
+                      try {
+                          es_optimizer_autoload_process_request();
+                          $this->fail('A request without a valid nonce changed an autoload flag.');
+                      } catch (WPDieException $error) {
+                          $this->assertSame('on', $this->stored_flag('es_t_req'));
+                      }
+
+                      $_REQUEST['_wpnonce'] = wp_create_nonce('es_optimizer_autoload');
+                      $url = es_optimizer_autoload_process_request();
+                      $this->assertStringContainsString('es_changed=1', (string) $url);
+                      $this->assertSame('off', $this->stored_flag('es_t_req'));
+                  } finally {
+                      remove_filter('pre_http_request', $ok);
+                      unset($_SERVER['REQUEST_METHOD'], $_REQUEST['_wpnonce']);
+                      $_POST = array();
+                  }
+              }
+
+              /**
+               * A server error from the site after a switch-off undoes the change on the real database.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_failed_check_undoes_the_change(): void {
+                  $this->option_with_flag('es_t_check', 'v', 'auto');
+                  wp_set_current_user(self::factory()->user->create(array('role' => 'administrator')));
+                  if (is_multisite()) {
+                      grant_super_admin(get_current_user_id());
+                  }
+                  $answer = static fn ($pre, $args, $url) => array('headers' => array(), 'body' => '', 'response' => array('code' => str_contains($url, 'es-optimizer-check') ? 500 : 200, 'message' => ''), 'cookies' => array(), 'filename' => null);
+                  add_filter('pre_http_request', $answer, 10, 3);
+                  $_SERVER['REQUEST_METHOD'] = 'POST';
+                  $_POST = array('es_optimizer_autoload_action' => 'switch_off', 'option_names' => array('es_t_check'));
+                  $_REQUEST['_wpnonce'] = wp_create_nonce('es_optimizer_autoload');
+                  try {
+                      $url = (string) es_optimizer_autoload_process_request();
+                  } finally {
+                      remove_filter('pre_http_request', $answer, 10);
+                      unset($_SERVER['REQUEST_METHOD'], $_REQUEST['_wpnonce']);
+                      $_POST = array();
+                  }
+                  $this->assertStringContainsString('es_check=failed&es_undone=1', $url);
+                  $this->assertSame('auto', $this->stored_flag('es_t_check'), 'The exact earlier flag is back.');
+                  $this->assertSame(array(), es_optimizer_autoload_get_log());
+                  $this->assertArrayHasKey('es_t_check', wp_load_alloptions());
+              }
+
+              /**
+               * A recording counts the options a page reads through core's real filter, and keeps the results unautoloaded.
+               *
+               * @since 2.5.0
+               * @return void
+               */
+              public function test_autoload_recording_with_core_filters(): void {
+                  $this->assertTrue(es_optimizer_autoload_start_recording(10));
+                  $this->assertSame('on', $this->stored_flag('es_optimizer_autoload_recording'), 'The end time is autoloaded, so checking it costs no query.');
+                  wp_cache_delete('alloptions', 'options');
+                  es_optimizer_autoload_init_recording();
+                  $this->assertSame(10, has_filter('pre_option', 'es_optimizer_autoload_record_read'));
+                  get_option('blogname');
+                  get_option('es_t_never_stored');
+                  es_optimizer_autoload_save_reads();
+                  remove_filter('pre_option', 'es_optimizer_autoload_record_read', 10);
+                  remove_action('shutdown', 'es_optimizer_autoload_save_reads');
+
+                  $usage = es_optimizer_autoload_get_usage();
+                  $this->assertSame(1, $usage['pages']);
+                  $this->assertSame(1, $usage['options']['blogname']['pages']);
+                  $this->assertArrayHasKey('es_t_never_stored', $usage['options']);
+                  $this->assertSame('off', $this->stored_flag('es_optimizer_autoload_usage'));
+
+                  $this->assertTrue(es_optimizer_autoload_stop_recording());
+                  $this->assertNull($this->stored_flag('es_optimizer_autoload_recording'));
+                  es_optimizer_uninstall_current_site_options();
+                  $this->assertNull($this->stored_flag('es_optimizer_autoload_usage'), 'Uninstall removes the results too.');
+              }
+
+              /**
                * Create sites and give each site, the current one first, a stored option.
                *
                * @param int $count Number of sites to create.

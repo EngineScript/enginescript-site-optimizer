@@ -40,6 +40,7 @@ abstract class EsOptimizerTestCase extends TestCase {
 	private function reset(): void {
 		es_optimizer_test_reset();
 		delete_option( 'es_optimizer_options' );
+		delete_option( 'es_optimizer_autoload_changes' );
 		$GLOBALS['wp_settings_errors'] = array();
 		unset( $GLOBALS['es_optimizer_field_descriptions'] );
 	}

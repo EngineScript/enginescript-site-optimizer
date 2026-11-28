@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.6.0
  */
 function es_optimizer_init_plugin(): void {
+	es_optimizer_autoload_init_recording();
 	es_optimizer_init_admin();
 	es_optimizer_init_frontend_optimizations();
 	es_optimizer_init_plugin_links();
@@ -65,6 +66,7 @@ function es_optimizer_init_frontend_optimizations(): void {
 function es_optimizer_init_plugin_links(): void {
 	$plugin_basename = plugin_basename( ES_SITE_OPTIMIZER_FILE );
 	add_filter( "plugin_action_links_{$plugin_basename}", 'es_optimizer_add_settings_link' );
+	add_action( "after_plugin_row_{$plugin_basename}", 'es_optimizer_autoload_plugin_row_notice', 10, 0 );
 }
 
 add_action( 'plugins_loaded', 'es_optimizer_init_plugin' );

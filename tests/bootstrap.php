@@ -294,7 +294,12 @@ if ( ! function_exists( 'update_option' ) ) {
 	function update_option( string $option, mixed $value, bool|string|null $autoload = null ): bool {
 		global $es_optimizer_test_options;
 
-		unset( $autoload );
+		$GLOBALS['es_optimizer_test']['option_autoload'][ $option ] = $autoload;
+
+		// A test lists an option in 'fail_update' to make its write fail, as a database error would.
+		if ( in_array( $option, $GLOBALS['es_optimizer_test']['fail_update'] ?? array(), true ) ) {
+			return false;
+		}
 
 		if ( ! is_array( $es_optimizer_test_options ) ) {
 			$es_optimizer_test_options = array();
@@ -979,6 +984,11 @@ if ( ! class_exists( 'wpdb' ) ) {
 		 * @return string Query.
 		 */
 		public function prepare( string $query, mixed ...$args ): string {
+			// Like WordPress, accept the values as one array.
+			if ( 1 === count( $args ) && is_array( $args[0] ) ) {
+				$args = $args[0];
+			}
+
 			return vsprintf( str_replace( '%i', '%s', $query ), $args );
 		}
 
@@ -1010,6 +1020,65 @@ if ( ! class_exists( 'wpdb' ) ) {
 		 */
 		public function get_col(): array {
 			return $this->col;
+		}
+
+		/**
+		 * Table prefix.
+		 *
+		 * @var string
+		 */
+		public $prefix = 'wp_';
+
+		/**
+		 * Rows that get_results() returns: an array, or null for a failed read.
+		 *
+		 * @var array<int, array<string, mixed>>|null
+		 */
+		public $results = array();
+
+		/**
+		 * Row that get_row() returns.
+		 *
+		 * @var array<string, mixed>|null
+		 */
+		public $row = null;
+
+		/**
+		 * Run a query through the responder and return the prepared rows.
+		 *
+		 * @param string $query  Query.
+		 * @param string $output Output type; only ARRAY_A is used.
+		 * @return array<int, array<string, mixed>>|null Rows.
+		 */
+		public function get_results( string $query, string $output = 'OBJECT' ): ?array {
+			unset( $output );
+			$this->query( $query );
+
+			return $this->results;
+		}
+
+		/**
+		 * Run a query through the responder and return the prepared row.
+		 *
+		 * @param string $query  Query.
+		 * @param string $output Output type; only ARRAY_A is used.
+		 * @return array<string, mixed>|null Row.
+		 */
+		public function get_row( string $query, string $output = 'OBJECT' ): ?array {
+			unset( $output );
+			$this->query( $query );
+
+			return $this->row;
+		}
+
+		/**
+		 * Escape LIKE wildcards, as WordPress does.
+		 *
+		 * @param string $text Text.
+		 * @return string Escaped text.
+		 */
+		public function esc_like( string $text ): string {
+			return addcslashes( $text, '_%\\' );
 		}
 
 		/**
@@ -1118,6 +1187,7 @@ if ( ! function_exists( 'wp_cache_flush_runtime' ) ) {
 	}
 }
 
+require __DIR__ . '/doubles-autoload.php';
 require dirname( __DIR__ ) . '/enginescript-site-optimizer.php';
 
 // What loading the plugin file registered, before any test changes the record.

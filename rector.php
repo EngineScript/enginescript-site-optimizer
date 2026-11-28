@@ -8,7 +8,9 @@
  * @package EngineScript_Site_Optimizer
  */
 
+use Rector\CodeQuality\Rector\BooleanNot\SimplifyDeMorganBinaryRector;
 use Rector\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector;
+use Rector\CodeQuality\Rector\Expression\InlineIfToExplicitIfRector;
 use Rector\CodeQuality\Rector\If_\ExplicitNullableObjectInstanceRector;
 use Rector\Config\RectorConfig;
 use Rector\DeadCode\Rector\Property\RemoveUselessVarTagRector;
@@ -45,5 +47,8 @@ return RectorConfig::configure()
 			// A plain null check reads better than a negated instanceof.
 			ExplicitNullableObjectInstanceRector::class,
 			FlipNegatedTernaryInstanceofRector::class,
+			// Plugin Check accepts the direct-access guard of the WP-CLI command file only as `defined( 'ABSPATH' ) || exit`.
+			InlineIfToExplicitIfRector::class   => [ __DIR__ . '/includes/class-es-optimizer-autoload-command.php' ],
+			SimplifyDeMorganBinaryRector::class => [ __DIR__ . '/includes/class-es-optimizer-autoload-command.php' ],
 		]
 	);

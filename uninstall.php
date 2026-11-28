@@ -15,6 +15,9 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
+// WordPress runs this file without loading the plugin; the autoload restore lives in one place.
+require_once __DIR__ . '/includes/autoload.php';
+
 /**
  * Exception code that marks a failure raised by this file.
  *
@@ -183,10 +186,15 @@ function es_optimizer_uninstall_get_site_ids( int $last_id, int $maximum_id ): a
 }
 
 /**
- * Delete and physically verify the current site's fixed option.
+ * Restore the current site's switched-off options, then delete and physically verify its plugin options.
+ *
+ * The options whose autoloading the plugin switched off get their earlier
+ * setting back first. When one cannot be restored, nothing on the site is
+ * deleted, so the record of what to restore is kept for a later attempt.
  *
  * @since 2.2.0
- * @throws RuntimeException If the site changes, verification fails or the row remains.
+ * @since 2.5.0 Restores switched-off options and deletes their log.
+ * @throws RuntimeException If an option cannot be restored, the site changes, verification fails or a row remains.
  */
 function es_optimizer_uninstall_current_site_options(): void {
 	global $wpdb;
@@ -195,8 +203,26 @@ function es_optimizer_uninstall_current_site_options(): void {
 		es_optimizer_uninstall_fail( esc_html__( 'The WordPress database object is unavailable.', 'enginescript-site-optimizer' ) );
 	}
 
-	$site_id = get_current_blog_id();
+	// The checked object: the calls below may run other code, so the global is not trusted again.
+	$database   = $wpdb;
+	$site_id    = get_current_blog_id();
+	$unrestored = es_optimizer_autoload_restore_all();
+
+	if ( [] !== $unrestored ) {
+		es_optimizer_uninstall_fail(
+			sprintf(
+				/* translators: 1: Number of options, 2: Site ID. */
+				esc_html( _n( '%1$d option that the plugin stopped from loading on every page could not be restored on site %2$d. Nothing was deleted on that site.', '%1$d options that the plugin stopped from loading on every page could not be restored on site %2$d. Nothing was deleted on that site.', count( $unrestored ), 'enginescript-site-optimizer' ) ),
+				count( $unrestored ),
+				$site_id
+			)
+		);
+	}
+
 	delete_option( 'es_optimizer_options' );
+	delete_option( ES_SITE_OPTIMIZER_AUTOLOAD_RECORDING_OPTION );
+	delete_option( ES_SITE_OPTIMIZER_AUTOLOAD_USAGE_OPTION );
+	delete_transient( 'es_optimizer_autoload_code' );
 
 	if ( get_current_blog_id() !== $site_id ) {
 		es_optimizer_uninstall_fail(
@@ -210,8 +236,8 @@ function es_optimizer_uninstall_current_site_options(): void {
 
 	// delete_option can mark notoptions even after a failed DELETE; bypass that cache.
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Only a successful physical read proves absence after native deletion.
-	$rows = $wpdb->query(
-		(string) $wpdb->prepare( 'SELECT option_id FROM %i WHERE option_name = %s LIMIT 1', $wpdb->options, 'es_optimizer_options' )
+	$rows = $database->query(
+		(string) $database->prepare( 'SELECT option_id FROM %i WHERE option_name IN (%s, %s, %s, %s) LIMIT 1', $database->options, 'es_optimizer_options', ES_SITE_OPTIMIZER_AUTOLOAD_LOG_OPTION, ES_SITE_OPTIMIZER_AUTOLOAD_RECORDING_OPTION, ES_SITE_OPTIMIZER_AUTOLOAD_USAGE_OPTION )
 	);
 
 	if ( ! is_int( $rows ) ) {
@@ -450,6 +476,9 @@ function es_optimizer_uninstall_network_options(): void {
 			$first_error
 		);
 	}
+
+	// Every site is restored and cleaned, so the network's list of sites with changes goes too.
+	delete_site_option( ES_SITE_OPTIMIZER_AUTOLOAD_SITES_OPTION );
 }
 
 /**

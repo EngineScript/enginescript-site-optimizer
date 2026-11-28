@@ -64,6 +64,22 @@ Validation rejects IP literals, localhost and configured reserved domain name su
 
 Deactivation retains settings. Deleting the plugin through WordPress runs uninstall cleanup, including separate site settings across multisite networks. Pause site creation and settings changes during removal. Large installations may need an operator-run uninstall with sufficient time and memory. If cleanup fails, the plugin files stay in place and the message gives the reason and, on a network, the IDs of the sites that could not be cleaned. Resolve the reported problem and retry removal.
 
+= What happens to options I stopped from loading on every page when I delete the plugin? =
+
+Deleting the plugin loads them on every page again first, with the exact autoload setting each one had before, on every site of a network. An option whose setting other code has changed since is left as that code set it. If an option cannot be restored, nothing on that site is deleted and the uninstall stops, so you can retry. Deactivating the plugin changes nothing. While any option is switched off, the Autoloaded Options tab and the plugin's row on the Plugins screen say so. To keep an option switched off for good after removing the plugin, switch it off again with another tool or WP-CLI (`wp option set-autoload <name> off`).
+
+= How do I find out which plugin an autoloaded option belongs to? =
+
+WordPress does not record it. The Autoloaded Options tab guesses from the name, matching installed plugins' and themes' folder names and text domains. For firmer answers, search the installed code for the options on a page: it names the plugin or theme whose PHP files use each name, and marks a name found nowhere as probably left behind by a removed plugin. You can also record, for 10 minutes or an hour, which options the pages you load actually read, and which plugin or theme reads each one. Options that no recorded page reads and no installed code uses are the safest to switch off.
+
+= What if switching an option off breaks my site? =
+
+It rarely does, because code that needs the option still gets it. After each change the plugin loads your home page and the dashboard, and undoes the change at once if either answers with a server error. If a problem still appears, restore every change with WP-CLI: `wp site-optimizer autoload restore --all`. If a plugin keeps WP-CLI from starting too, skip every plugin and theme and load only the restore command:
+
+`wp --skip-plugins --skip-themes --require=wp-content/plugins/enginescript-site-optimizer/includes/class-es-optimizer-autoload-command.php site-optimizer autoload restore --all`
+
+If the plugin's files are gone, list the changes with `wp option get es_optimizer_autoload_changes --format=json --skip-plugins --skip-themes`, and switch each option back on with `wp option set-autoload <name> on --skip-plugins --skip-themes`.
+
 = Does hiding the WordPress version fix security issues? =
 
 No. The option removes WordPress's generator output from the page head and from feeds; other version indicators, such as version arguments on asset URLs, can remain. Keep WordPress, themes and plugins updated.
@@ -72,6 +88,14 @@ No. The option removes WordPress's generator output from the page head and from 
 == Changelog ==
 
 = Unreleased =
+* Add an Autoloaded Options tab to the Site Optimizer settings page:
+  * it lists the options WordPress loads on every page, largest first, with each option's size, its autoload setting, and the plugin or theme it probably belongs to;
+  * it stops loading the selected options on every page, and loads them again later with the exact setting each had before;
+  * it changes only the autoload setting, never a value, and keeps options that WordPress and Site Optimizer need locked.
+* Show who owns an option, which WordPress does not record: a guess from plugin and theme folder names and text domains; on request, a search of the installed code, which also marks names found nowhere as probably left behind; and an optional recording of which options pages read, and which plugin or theme reads each one.
+* After options are switched off, load the home page and the dashboard, and undo the change at once if either answers with a server error.
+* Add WP-CLI commands `wp site-optimizer autoload list` and `wp site-optimizer autoload restore`, which also work with every plugin and theme skipped.
+* Deleting the plugin first restores every option it switched off, on every site of a network. Deactivating changes nothing. While changes exist, the Autoloaded Options tab and the plugin's row on the Plugins screen say so.
 * Add "Remove REST API Link": remove the REST API address from the page head and the Link response header. The REST API keeps working.
 * Add "Remove oEmbed Discovery Links": remove the links other sites read to embed your posts, at both priorities WordPress adds them.
 * Add "Remove Feed Links": remove the RSS feed links from the page head. The feeds keep working.
