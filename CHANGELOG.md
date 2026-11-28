@@ -5,6 +5,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- "Remove REST API Link": remove the REST API address from the page head and the Link response header. The REST API keeps working.
+- "Remove oEmbed Discovery Links": remove the links other sites read to embed your posts, at both priorities WordPress adds them.
+- "Remove Feed Links": remove the RSS feed links from the page head. The feeds keep working.
+- "Limit Heartbeat": stop the Heartbeat script on the front end, and send it every 120 seconds instead of 60 on admin screens other than the post editor, the site editor, and the Customizer. A slower interval set by another plugin is kept.
+- "Disable Pattern Directory Patterns": stop the block editor from loading patterns from the WordPress.org Pattern Directory.
+- "Disable WordPress AI Support": answer `false` to WordPress 7's `wp_supports_ai` filter.
+
 ### Fixed
 
 - On the settings page, only the checkbox now turns a setting on or off. A click on the setting's title or its description, or a drag across it to select the text, no longer changes the setting.

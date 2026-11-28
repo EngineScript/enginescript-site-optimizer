@@ -29,6 +29,7 @@ function es_optimizer_test_reset(): void {
 		'sections'     => array(),
 		'fields'       => array(),
 		'styles'       => array(),
+		'scripts'      => array(),
 		'capabilities' => array( 'manage_options' ),
 		'is_admin'     => false,
 		'ajax'         => false,
@@ -47,7 +48,7 @@ function es_optimizer_test_reset(): void {
 		'on_delete'    => null,
 		'flushes'      => 0,
 	);
-	unset( $GLOBALS['_wp_switched_stack'], $GLOBALS['switched'] );
+	unset( $GLOBALS['_wp_switched_stack'], $GLOBALS['switched'], $GLOBALS['pagenow'] );
 }
 
 /**
@@ -898,6 +899,18 @@ if ( ! function_exists( 'wp_deregister_style' ) ) {
 	 */
 	function wp_deregister_style( string $handle ): void {
 		$GLOBALS['es_optimizer_test']['styles'][] = array( 'deregister', $handle );
+	}
+}
+
+if ( ! function_exists( 'wp_deregister_script' ) ) {
+	/**
+	 * Record a deregistered script.
+	 *
+	 * @param string $handle Script handle.
+	 * @return void
+	 */
+	function wp_deregister_script( string $handle ): void {
+		$GLOBALS['es_optimizer_test']['scripts'][] = array( 'deregister', $handle );
 	}
 }
 

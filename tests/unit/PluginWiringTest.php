@@ -51,6 +51,10 @@ final class PluginWiringTest extends EsOptimizerTestCase {
 			array( 'wp_resource_hints', 'es_optimizer_add_preconnect_resource_hints', 10, 2 ),
 			array( 'wp_resource_hints', 'es_optimizer_add_dns_prefetch_resource_hints', 10, 2 ),
 			array( 'tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce', 10, 1 ),
+			array( 'should_load_remote_block_patterns', 'es_optimizer_filter_remote_patterns', PHP_INT_MAX, 1 ),
+			array( 'wp_supports_ai', 'es_optimizer_filter_ai_support', PHP_INT_MAX, 1 ),
+			array( 'wp_enqueue_scripts', 'es_optimizer_disable_frontend_heartbeat', 100, 1 ),
+			array( 'heartbeat_settings', 'es_optimizer_filter_heartbeat_settings', PHP_INT_MAX, 1 ),
 			array( 'plugin_action_links_enginescript-site-optimizer.php', 'es_optimizer_add_settings_link', 10, 1 ),
 		);
 

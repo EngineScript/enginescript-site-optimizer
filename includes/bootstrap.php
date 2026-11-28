@@ -51,6 +51,10 @@ function es_optimizer_init_frontend_optimizations(): void {
 	add_filter( 'wp_resource_hints', 'es_optimizer_add_dns_prefetch_resource_hints', 10, 2 );
 	add_filter( 'tiny_mce_plugins', 'es_optimizer_disable_emojis_tinymce' );
 	add_action( 'init', 'es_optimizer_disable_post_via_email' );
+	add_filter( 'should_load_remote_block_patterns', 'es_optimizer_filter_remote_patterns', PHP_INT_MAX );
+	add_filter( 'wp_supports_ai', 'es_optimizer_filter_ai_support', PHP_INT_MAX );
+	add_action( 'wp_enqueue_scripts', 'es_optimizer_disable_frontend_heartbeat', 100 );
+	add_filter( 'heartbeat_settings', 'es_optimizer_filter_heartbeat_settings', PHP_INT_MAX );
 }
 
 /**

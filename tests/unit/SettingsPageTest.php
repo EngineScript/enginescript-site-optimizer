@@ -95,9 +95,9 @@ final class SettingsPageTest extends EsOptimizerTestCase {
 			$this->assertSame( array( 'option' => $field['id'], 'class' => 'es-optimizer-field' ), $field['args'], $field['id'] );
 			$this->assertSame( 'es_optimizer_render_checkbox_field', $field['callback'], $field['id'] );
 		}
-		$this->assertSame( array( 'disable_emojis', 'remove_jquery_migrate', 'disable_classic_theme_styles' ), $by_section['es_optimizer_performance'] );
-		$this->assertSame( array( 'remove_wp_version', 'remove_rsd_link', 'remove_shortlink', 'remove_recent_comments_style' ), $by_section['es_optimizer_header_cleanup'] );
-		$this->assertSame( array( 'disable_jetpack_ads', 'disable_post_via_email', 'enable_preconnect', 'preconnect_domains', 'enable_dns_prefetch', 'dns_prefetch_domains' ), $by_section['es_optimizer_additional_features'] );
+		$this->assertSame( array( 'disable_emojis', 'remove_jquery_migrate', 'disable_classic_theme_styles', 'heartbeat_control', 'disable_remote_patterns' ), $by_section['es_optimizer_performance'] );
+		$this->assertSame( array( 'remove_wp_version', 'remove_rsd_link', 'remove_shortlink', 'remove_recent_comments_style', 'remove_rest_api_link', 'remove_oembed_links', 'remove_feed_links' ), $by_section['es_optimizer_header_cleanup'] );
+		$this->assertSame( array( 'disable_jetpack_ads', 'disable_post_via_email', 'disable_ai_features', 'enable_preconnect', 'preconnect_domains', 'enable_dns_prefetch', 'dns_prefetch_domains' ), $by_section['es_optimizer_additional_features'] );
 	}
 
 	/**
@@ -147,7 +147,7 @@ final class SettingsPageTest extends EsOptimizerTestCase {
 		$this->assertStringContainsString( '<h1>Site Optimizer Settings</h1>', $page );
 		$this->assertStringContainsString( '<form method="post" action="options.php">', $page );
 		$this->assertStringContainsString( 'name="option_page" value="es_optimizer_settings"', $page );
-		$this->assertSame( 11, substr_count( $page, 'type="checkbox"' ) );
+		$this->assertSame( 17, substr_count( $page, 'type="checkbox"' ) );
 		$this->assertSame( 2, substr_count( $page, '<textarea ' ) );
 		$this->assertStringContainsString( 'value="Save Changes"', $page );
 		$this->assertMatchesRegularExpression(

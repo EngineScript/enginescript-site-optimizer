@@ -19,10 +19,14 @@ Key features:
 * Disable WordPress emojis
 * Remove jQuery Migrate
 * Disable classic theme styles
-* Remove selected header output (version, RSD, shortlinks, recent comments style)
+* Remove selected header output (version, RSD, shortlinks, REST API link, oEmbed discovery links, feed links, recent comments style)
+* Limit the Heartbeat: off on the front end, every 120 seconds on admin screens outside the editors
+* Stop loading patterns from the WordPress.org Pattern Directory
+* Turn off WordPress's AI support
 * DNS prefetch and preconnect management
 * Disable Jetpack promotional messages and Blaze promotions
 * Disable post via email
+* Every setting explains what it does, its effect on your site, and its performance gain or cost
 
 == Installation ==
 
@@ -68,6 +72,12 @@ No. The option removes WordPress's generator output from the page head and from 
 == Changelog ==
 
 = Unreleased =
+* Add "Remove REST API Link": remove the REST API address from the page head and the Link response header. The REST API keeps working.
+* Add "Remove oEmbed Discovery Links": remove the links other sites read to embed your posts, at both priorities WordPress adds them.
+* Add "Remove Feed Links": remove the RSS feed links from the page head. The feeds keep working.
+* Add "Limit Heartbeat": stop the Heartbeat script on the front end, and send it every 120 seconds instead of 60 on admin screens other than the post editor, the site editor, and the Customizer. A slower interval set by another plugin is kept.
+* Add "Disable Pattern Directory Patterns": stop the block editor from loading patterns from the WordPress.org Pattern Directory.
+* Add "Disable WordPress AI Support": answer `false` to WordPress 7's `wp_supports_ai` filter.
 * On the settings page, only the checkbox now turns a setting on or off. A click on the setting's title or its description, or a drag across it to select the text, no longer changes the setting.
 * Explain every setting below its control: what it does, its effect on the site, and its performance gain or cost. The explanations replace the one-line descriptions.
 * Name each checkbox for screen readers by its title alone, with the explanation read as its description.

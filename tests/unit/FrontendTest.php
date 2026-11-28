@@ -151,6 +151,90 @@ final class FrontendTest extends EsOptimizerTestCase {
 		$this->store_options( array( 'remove_shortlink' => 1 ) );
 		es_optimizer_remove_header_items();
 		$this->assertSame( array( 'wp_head wp_shortlink_wp_head 10', 'template_redirect wp_shortlink_header 11' ), $this->removals() );
+
+		es_optimizer_test_reset();
+		$this->store_options( array( 'remove_rest_api_link' => 1 ) );
+		es_optimizer_remove_header_items();
+		$this->assertSame( array( 'wp_head rest_output_link_wp_head 10', 'template_redirect rest_output_link_header 11' ), $this->removals() );
+
+		es_optimizer_test_reset();
+		$this->store_options( array( 'remove_oembed_links' => 1 ) );
+		es_optimizer_remove_header_items();
+		$this->assertSame( array( 'wp_head wp_oembed_add_discovery_links 4', 'wp_head wp_oembed_add_discovery_links 10' ), $this->removals(), 'WordPress hooks the discovery links twice.' );
+
+		es_optimizer_test_reset();
+		$this->store_options( array( 'remove_feed_links' => 1 ) );
+		es_optimizer_remove_header_items();
+		$this->assertSame( array( 'wp_head feed_links 2', 'wp_head feed_links_extra 3' ), $this->removals() );
+	}
+
+	/**
+	 * The pattern-directory and AI filters answer false when their option is on, and pass the value through when it is off.
+	 *
+	 * @return void
+	 */
+	public function test_remote_patterns_and_ai_support_filters(): void {
+		foreach ( array( true, null, 'foreign' ) as $incoming ) {
+			$this->assertSame( $incoming, es_optimizer_filter_remote_patterns( $incoming ) );
+			$this->assertSame( $incoming, es_optimizer_filter_ai_support( $incoming ) );
+		}
+
+		$this->store_options( array( 'disable_remote_patterns' => 1 ) );
+		$this->assertFalse( es_optimizer_filter_remote_patterns( true ) );
+		$this->assertTrue( es_optimizer_filter_ai_support( true ), 'Each filter follows its own option.' );
+
+		$this->store_options( array( 'disable_ai_features' => 1 ) );
+		$this->assertFalse( es_optimizer_filter_ai_support( true ) );
+		$this->assertTrue( es_optimizer_filter_remote_patterns( true ) );
+	}
+
+	/**
+	 * Heartbeat is deregistered on the front end only, with the option on.
+	 *
+	 * @return void
+	 */
+	public function test_frontend_heartbeat(): void {
+		es_optimizer_disable_frontend_heartbeat();
+		$this->assertSame( array(), $GLOBALS['es_optimizer_test']['scripts'], 'Option off.' );
+
+		$this->store_options( array( 'heartbeat_control' => 1 ) );
+		$GLOBALS['es_optimizer_test']['is_admin'] = true;
+		es_optimizer_disable_frontend_heartbeat();
+		$this->assertSame( array(), $GLOBALS['es_optimizer_test']['scripts'], 'Not in the admin area.' );
+
+		$GLOBALS['es_optimizer_test']['is_admin'] = false;
+		es_optimizer_disable_frontend_heartbeat();
+		$this->assertSame( array( array( 'deregister', 'heartbeat' ) ), $GLOBALS['es_optimizer_test']['scripts'] );
+	}
+
+	/**
+	 * In the admin area, outside the editors, Heartbeat slows to 120 seconds; a slower setting is kept.
+	 *
+	 * @return void
+	 */
+	public function test_admin_heartbeat_interval(): void {
+		global $pagenow;
+
+		$GLOBALS['es_optimizer_test']['is_admin'] = true;
+		$pagenow                                  = 'index.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- The test sets the admin page WordPress would set.
+
+		$this->assertSame( array( 'nonce' => 'n' ), es_optimizer_filter_heartbeat_settings( array( 'nonce' => 'n' ) ), 'Option off.' );
+
+		$this->store_options( array( 'heartbeat_control' => 1 ) );
+		$this->assertSame( array( 'nonce' => 'n', 'interval' => 120 ), es_optimizer_filter_heartbeat_settings( array( 'nonce' => 'n' ) ) );
+		$this->assertSame( array( 'interval' => 120 ), es_optimizer_filter_heartbeat_settings( array( 'interval' => 15 ) ) );
+		$this->assertSame( array( 'interval' => 300 ), es_optimizer_filter_heartbeat_settings( array( 'interval' => 300 ) ), 'A slower interval from another plugin is kept.' );
+		$this->assertSame( array( 'interval' => 120 ), es_optimizer_filter_heartbeat_settings( array( 'interval' => 'fast' ) ) );
+		$this->assertNull( es_optimizer_filter_heartbeat_settings( null ), 'A foreign non-array passes through.' );
+
+		foreach ( array( 'post.php', 'post-new.php', 'site-editor.php', 'customize.php' ) as $editor ) {
+			$pagenow = $editor; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- The test sets the admin page WordPress would set.
+			$this->assertSame( array( 'interval' => 15 ), es_optimizer_filter_heartbeat_settings( array( 'interval' => 15 ) ), $editor );
+		}
+
+		$GLOBALS['es_optimizer_test']['is_admin'] = false;
+		$pagenow                                  = 'index.php'; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- The test sets the admin page WordPress would set.
+		$this->assertSame( array(), es_optimizer_filter_heartbeat_settings( array() ), 'The front end is handled by deregistering the script.' );
 	}
 
 	/**

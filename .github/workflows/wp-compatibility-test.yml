@@ -2725,6 +2725,76 @@ jobs:
               }
 
               /**
+               * The REST API, oEmbed discovery, and feed link options remove core's own registrations.
+               *
+               * @since 2.4.0
+               * @return void
+               */
+              public function test_link_removals_match_core_registrations(): void {
+                  $core = array(
+                      array('wp_head', 'rest_output_link_wp_head', 10),
+                      array('template_redirect', 'rest_output_link_header', 11),
+                      array('wp_head', 'wp_oembed_add_discovery_links', 4),
+                      array('wp_head', 'feed_links', 2),
+                      array('wp_head', 'feed_links_extra', 3),
+                  );
+                  foreach ($core as $row) {
+                      $this->assertSame($row[2], has_action($row[0], $row[1]), 'Control: core registers ' . $row[1] . '.');
+                  }
+                  update_option('es_optimizer_options', array('remove_rest_api_link' => 0, 'remove_oembed_links' => 0, 'remove_feed_links' => 0));
+                  es_optimizer_remove_header_items();
+                  $this->assertSame(10, has_action('wp_head', 'rest_output_link_wp_head'), 'Options off: nothing is removed.');
+                  update_option('es_optimizer_options', array('remove_rest_api_link' => 1, 'remove_oembed_links' => 1, 'remove_feed_links' => 1));
+                  es_optimizer_remove_header_items();
+                  foreach ($core as $row) {
+                      $this->assertFalse(has_action($row[0], $row[1]), $row[1] . ' is removed.');
+                  }
+                  $this->assertNotFalse(has_action('rest_api_init', 'create_initial_rest_routes'), 'The REST API itself stays.');
+              }
+
+              /**
+               * The pattern-directory, AI, and Heartbeat options act through core's own APIs.
+               *
+               * @since 2.4.0
+               * @return void
+               */
+              public function test_patterns_ai_and_heartbeat_with_core(): void {
+                  $ai_by_constant = !defined('WP_AI_SUPPORT') || WP_AI_SUPPORT;
+                  update_option('es_optimizer_options', array('disable_remote_patterns' => 0, 'disable_ai_features' => 0, 'heartbeat_control' => 0));
+                  $this->assertTrue(apply_filters('should_load_remote_block_patterns', true));
+                  $this->assertSame($ai_by_constant, wp_supports_ai());
+                  update_option('es_optimizer_options', array('disable_remote_patterns' => 1, 'disable_ai_features' => 1, 'heartbeat_control' => 1));
+                  $this->assertFalse(apply_filters('should_load_remote_block_patterns', true));
+                  $this->assertFalse(wp_supports_ai());
+
+                  $this->assertTrue(wp_script_is('heartbeat', 'registered'), 'Control: core registers Heartbeat.');
+                  es_optimizer_disable_frontend_heartbeat();
+                  $this->assertFalse(wp_script_is('heartbeat', 'registered'), 'Deregistered on the front end.');
+                  unset($GLOBALS['wp_scripts']);
+
+                  // is_admin() asks the current screen; a minimal admin screen avoids loading admin files.
+                  $previous_page = $GLOBALS['pagenow'] ?? null;
+                  $GLOBALS['current_screen'] = new class() {
+                      public function in_admin($admin = null): bool {
+                          return true;
+                      }
+                  };
+                  try {
+                      $this->assertTrue(is_admin());
+                      $GLOBALS['pagenow'] = 'index.php';
+                      $this->assertSame(120, apply_filters('heartbeat_settings', array())['interval']);
+                      $this->assertSame(300, apply_filters('heartbeat_settings', array('interval' => 300))['interval'], 'A slower interval is kept.');
+                      $GLOBALS['pagenow'] = 'post.php';
+                      $this->assertArrayNotHasKey('interval', apply_filters('heartbeat_settings', array()), 'The post editor keeps core timing.');
+                  } finally {
+                      $GLOBALS['pagenow'] = $previous_page;
+                      unset($GLOBALS['current_screen']);
+                  }
+                  $this->assertFalse(is_admin());
+                  $this->assertArrayNotHasKey('interval', apply_filters('heartbeat_settings', array()), 'Not in the admin area.');
+              }
+
+              /**
                * Create sites and give each site, the current one first, a stored option.
                *
                * @param int $count Number of sites to create.

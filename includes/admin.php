@@ -97,6 +97,8 @@ function es_optimizer_get_performance_settings_fields(): array {
 		es_optimizer_get_checkbox_field_definition( $section, 'disable_emojis', __( 'Disable WordPress Emojis', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_checkbox_field_definition( $section, 'remove_jquery_migrate', __( 'Remove jQuery Migrate', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_checkbox_field_definition( $section, 'disable_classic_theme_styles', __( 'Disable Classic Theme Styles', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'heartbeat_control', __( 'Limit Heartbeat', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'disable_remote_patterns', __( 'Disable Pattern Directory Patterns', 'enginescript-site-optimizer' ) ),
 	];
 }
 
@@ -114,6 +116,9 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 		es_optimizer_get_checkbox_field_definition( $section, 'remove_rsd_link', __( 'Remove RSD Link', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_checkbox_field_definition( $section, 'remove_shortlink', __( 'Remove Shortlink', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_checkbox_field_definition( $section, 'remove_recent_comments_style', __( 'Remove Recent Comments Style', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_rest_api_link', __( 'Remove REST API Link', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_oembed_links', __( 'Remove oEmbed Discovery Links', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_feed_links', __( 'Remove Feed Links', 'enginescript-site-optimizer' ) ),
 	];
 }
 
@@ -129,6 +134,7 @@ function es_optimizer_get_additional_settings_fields(): array {
 	return [
 		es_optimizer_get_checkbox_field_definition( $section, 'disable_jetpack_ads', __( 'Disable Jetpack Promotions', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_checkbox_field_definition( $section, 'disable_post_via_email', __( 'Disable Post via Email', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'disable_ai_features', __( 'Disable WordPress AI Support', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_checkbox_field_definition( $section, 'enable_preconnect', __( 'Enable Preconnect', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_textarea_field_definition(
 			$section,
@@ -227,6 +233,16 @@ function es_optimizer_get_option_help(): array {
 			'effect'      => __( 'Buttons and File blocks in your content may lose their default spacing and colors if the theme does not style them itself. A stylesheet that another plugin loads on top of this one will not load either.', 'enginescript-site-optimizer' ),
 			'performance' => __( 'Removes a few lines of CSS, usually printed inline in the page head, on classic themes: a very small gain for visitors. No change on the server.', 'enginescript-site-optimizer' ),
 		],
+		'heartbeat_control'            => [
+			'what'        => __( 'Limits the Heartbeat, a script that keeps a page in touch with the server through regular background requests. On the front end it stops the script from loading; WordPress loads it there only when a theme or plugin asks for it. On admin screens it sends a request every 120 seconds instead of every 60. The post editor, the site editor, and the Customizer keep the usual timing.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Front-end features that rely on the Heartbeat, such as live chat, live notifications, or front-end editing in some plugins, stop updating, and their scripts may not load. In the admin area, dashboard widgets that refresh through the Heartbeat update half as often, and the notice that your login has expired can appear up to two minutes later. Post locking and autosave in the editors are not changed.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Each Heartbeat request loads WordPress in full on the server and is never served from a page cache. Halving them on admin screens, and removing them from the front end, saves server work, which adds up when several people keep the admin area open. Visitors see no difference in page speed.', 'enginescript-site-optimizer' ),
+		],
+		'disable_remote_patterns'      => [
+			'what'        => __( 'Stops the block editor from loading patterns from the WordPress.org Pattern Directory: the general and featured patterns, and the directory patterns a theme asks for. Patterns that come with your theme, your plugins, or WordPress itself, and the patterns you create, stay available.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'The pattern inserter shows far fewer ready-made patterns, because most of the patterns it offers come from the directory. Patterns already used in your content are not changed.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Saves the requests the server makes to WordPress.org when the editor loads patterns, and the stored copies of their results, which are refreshed about every hour. The editor\'s pattern list can open faster. No change on the front end.', 'enginescript-site-optimizer' ),
+		],
 		'remove_wp_version'            => [
 			'what'        => __( 'Removes the generator tag that names your WordPress version from the page head and from your RSS, Atom, and other feeds. Version numbers on script and stylesheet addresses, and export files, are left as they are.', 'enginescript-site-optimizer' ),
 			'effect'      => __( 'Hides the version from casual inspection and from scanners that read the tag. It is not real protection, because the version can be worked out in other ways; keeping WordPress up to date matters far more. Nothing on the site looks different.', 'enginescript-site-optimizer' ),
@@ -246,6 +262,26 @@ function es_optimizer_get_option_help(): array {
 			'what'        => __( 'Stops WordPress from printing a small inline style for the classic Recent Comments widget. WordPress prints it only on classic themes that support widgets.', 'enginescript-site-optimizer' ),
 			'effect'      => __( 'The widget\'s links may look slightly different if your theme relied on that style. Block themes and the Latest Comments block are not affected.', 'enginescript-site-optimizer' ),
 			'performance' => __( 'Removes a few bytes of CSS from pages that show the widget. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'remove_rest_api_link'         => [
+			'what'        => __( 'Removes the link to the site\'s REST API address from the page head and from the Link header that WordPress sends with each page.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'The REST API keeps working: the block editor, mobile apps, and plugins that use it are not affected. Only the advertised address is removed, which a few tools and services use to find the API on their own.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes one line from each page and one response header. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'remove_oembed_links'          => [
+			'what'        => __( 'Removes the oEmbed discovery links from the page head of posts and pages. Other sites read them to show one of your posts as an embedded card when someone pastes its link.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'A link to one of your posts pasted into another WordPress site, or into some apps and services, shows as a plain link instead of a card. Embedding videos, posts, and other content from other sites in your own posts keeps working.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes two lines from each post and page. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'remove_feed_links'            => [
+			'what'        => __( 'Removes the links to the site\'s RSS feeds, for posts, comments, and categories, tags, or authors, from the page head.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'The feeds keep working at their usual addresses, but browsers and feed readers can no longer find them from a page, so someone who subscribes by entering the site\'s address may need the feed\'s address instead. Leave this off if people follow the site in a feed reader.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes a few lines from each page. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'disable_ai_features'          => [
+			'what'        => __( 'Tells WordPress that AI features are not supported on this site. WordPress then does not register its built-in AI provider connectors, and refuses AI provider connectors from plugins.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'AI features that rely on WordPress\'s AI support are unavailable, including those in plugins that check for it. Connectors that are not AI providers, such as Akismet, are not affected. Setting the WP_AI_SUPPORT constant to false in wp-config.php has the same effect.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'No measurable speed change. WordPress only skips registering its AI provider connectors on each request.', 'enginescript-site-optimizer' ),
 		],
 		'disable_jetpack_ads'          => [
 			'what'        => __( 'Turns off Jetpack\'s promotional notices, its Just-in-Time upgrade messages, and its Blaze prompts to advertise your posts. It does nothing unless Jetpack is installed.', 'enginescript-site-optimizer' ),
