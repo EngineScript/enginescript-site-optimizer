@@ -226,6 +226,41 @@ final class AutoloadInsightTest extends EsOptimizerTestCase {
 	}
 
 	/**
+	 * Stored results that are malformed read as empty, and short names are not searched.
+	 *
+	 * @return void
+	 */
+	public function test_stored_evidence_is_read_defensively(): void {
+		update_option( ES_SITE_OPTIMIZER_AUTOLOAD_USAGE_OPTION, 'not an array', false );
+		$this->assertSame( array( 'pages' => 0, 'options' => array() ), es_optimizer_autoload_get_usage() );
+
+		update_option( ES_SITE_OPTIMIZER_AUTOLOAD_USAGE_OPTION, array( 'pages' => '4', 'options' => array( 'good' => array( 'pages' => 2 ), 'bad' => 'x' ) ), false );
+		$this->assertSame( array( 'pages' => 4, 'options' => array( 'good' => array( 'pages' => 2, 'reader' => 'core' ) ) ), es_optimizer_autoload_get_usage() );
+
+		$this->assertNull( es_optimizer_autoload_code_entry( 'x' ) );
+		$this->assertNull( es_optimizer_autoload_code_entry( array( 'found' => 'x' ) ) );
+		$this->assertSame( array( 'found' => array( 'plugin:a' ), 'searched' => false ), es_optimizer_autoload_code_entry( array( 'found' => array( 'plugin:a', 3 ) ) ) );
+
+		$this->assertSame( array( 'results' => array(), 'complete' => true ), es_optimizer_autoload_find_in_code( array( 'abc', '' ), array() ), 'Names under four characters match too much code to mean anything.' );
+	}
+
+	/**
+	 * Each check result and recording action has its own message.
+	 *
+	 * @return void
+	 */
+	public function test_check_and_notice_messages(): void {
+		$this->assertSame( 'The home page and the dashboard still load.', es_optimizer_autoload_get_check_message( 'ok', 0 ) );
+		$this->assertStringEndsWith( 'so the change was undone: 3 options are loaded on every page again.', es_optimizer_autoload_get_check_message( 'failed', 3 ) );
+		$this->assertStringStartsWith( 'The site could not be checked', es_optimizer_autoload_get_check_message( 'unchecked', 0 ) );
+		$this->assertSame( '', es_optimizer_autoload_get_check_message( 'none', 0 ) );
+
+		$this->assertStringStartsWith( 'Recording stopped.', es_optimizer_autoload_get_notice_message( 'recording_stopped' ) );
+		$this->assertSame( 'The recorded results were cleared.', es_optimizer_autoload_get_notice_message( 'results_cleared' ) );
+		$this->assertStringStartsWith( 'The recording could not be changed.', es_optimizer_autoload_get_notice_message( 'anything else' ) );
+	}
+
+	/**
 	 * The code search finds quoted names in PHP files, skips what it must, and stops at its time limit.
 	 *
 	 * @return void
