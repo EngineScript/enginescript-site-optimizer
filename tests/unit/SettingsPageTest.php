@@ -85,10 +85,15 @@ final class SettingsPageTest extends EsOptimizerTestCase {
 		$by_section = array();
 		foreach ( $fields as $field ) {
 			$by_section[ $field['section'] ][] = $field['id'];
-			$this->assertSame( 'es_optimizer_field_' . $field['id'], $field['args']['label_for'] );
-			$this->assertSame( 'es-optimizer-field', $field['args']['class'] );
-			$expected_callback = str_ends_with( $field['id'], '_domains' ) ? 'es_optimizer_render_textarea_field' : 'es_optimizer_render_checkbox_field';
-			$this->assertSame( $expected_callback, $field['callback'], $field['id'] );
+			if ( str_ends_with( $field['id'], '_domains' ) ) {
+				// A text area's title is its label: a click on it only puts the cursor in the box.
+				$this->assertSame( array( 'label_for' => 'es_optimizer_field_' . $field['id'], 'class' => 'es-optimizer-field' ), $field['args'] );
+				$this->assertSame( 'es_optimizer_render_textarea_field', $field['callback'] );
+				continue;
+			}
+			// A checkbox's title is plain text, so a click on it cannot toggle the setting.
+			$this->assertSame( array( 'option' => $field['id'], 'class' => 'es-optimizer-field' ), $field['args'], $field['id'] );
+			$this->assertSame( 'es_optimizer_render_checkbox_field', $field['callback'], $field['id'] );
 		}
 		$this->assertSame( array( 'disable_emojis', 'remove_jquery_migrate', 'disable_classic_theme_styles' ), $by_section['es_optimizer_performance'] );
 		$this->assertSame( array( 'remove_wp_version', 'remove_rsd_link', 'remove_shortlink', 'remove_recent_comments_style' ), $by_section['es_optimizer_header_cleanup'] );
@@ -160,7 +165,7 @@ final class SettingsPageTest extends EsOptimizerTestCase {
 	public function test_page_escapes_every_translated_string(): void {
 		$payload                                      = '<img src=x onerror=alert(1)>';
 		$GLOBALS['es_optimizer_test']['translations'] = array_fill_keys(
-			array( 'Site Optimizer Settings', 'Select which optimizations you want to enable and customize the resource hint domains.', 'Save Changes', 'This plugin is part of the EngineScript project.', 'Visit the EngineScript GitHub page', '(opens in a new tab)', 'Remove WordPress emoji scripts and styles.', 'Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints.' ),
+			array( 'Site Optimizer Settings', 'Select which optimizations you want to enable and customize the resource hint domains.', 'Save Changes', 'This plugin is part of the EngineScript project.', 'Visit the EngineScript GitHub page', '(opens in a new tab)', 'What it does:', 'Format:', 'Removes one line from each page. No measurable speed change.', 'Disable WordPress Emojis', 'Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints.' ),
 			$payload
 		);
 		es_optimizer_init_settings();
@@ -177,12 +182,11 @@ final class SettingsPageTest extends EsOptimizerTestCase {
 	 */
 	public function test_checkbox_reflects_the_stored_flag(): void {
 		es_optimizer_init_settings();
-		$args = array( 'label_for' => 'es_optimizer_field_remove_rsd_link' );
+		$args = array( 'option' => 'remove_rsd_link' );
 
 		$off = $this->capture( static fn () => es_optimizer_render_checkbox_field( $args ) );
 		$this->assertStringContainsString( 'id="es_optimizer_field_remove_rsd_link" type="checkbox" name="es_optimizer_options[remove_rsd_link]" value="1"', $off );
 		$this->assertStringNotContainsString( 'checked', $off );
-		$this->assertStringContainsString( 'Remove the Really Simple Discovery (RSD) link from the document head.', $off );
 
 		$this->store_options( array( 'remove_rsd_link' => 1 ) );
 		$this->assertStringContainsString( "checked='checked'", $this->capture( static fn () => es_optimizer_render_checkbox_field( $args ) ) );
@@ -197,12 +201,75 @@ final class SettingsPageTest extends EsOptimizerTestCase {
 	 * @return void
 	 */
 	public function test_fields_ignore_unknown_arguments(): void {
-		foreach ( array( array(), array( 'label_for' => 'other_field' ), array( 'label_for' => 'es_optimizer_field_unknown' ) ) as $args ) {
+		foreach ( array( array(), array( 'label_for' => 'other_field' ), array( 'label_for' => 'es_optimizer_field_unknown' ), array( 'option' => 'unknown' ), array( 'option' => array( 'remove_rsd_link' ) ) ) as $args ) {
 			$this->assertSame( '', $this->capture( static fn () => es_optimizer_render_checkbox_field( $args ) ) );
 			$this->assertSame( '', $this->capture( static fn () => es_optimizer_render_textarea_field( $args ) ) );
 		}
+		$this->assertSame( '', $this->capture( static fn () => es_optimizer_render_checkbox_field( array( 'option' => 'preconnect_domains' ) ) ), 'A text-area option is not a checkbox.' );
+		$this->assertSame( 'remove_rsd_link', es_optimizer_get_option_name_from_field_args( array( 'option' => 'remove_rsd_link' ) ) );
 		$this->assertSame( 'remove_rsd_link', es_optimizer_get_option_name_from_field_args( array( 'label_for' => 'es_optimizer_field_remove_rsd_link' ) ) );
 		$this->assertSame( '', es_optimizer_get_option_name_from_field_args( array( 'label_for' => 'field_remove_rsd_link' ) ) );
+	}
+
+	/**
+	 * Only the checkbox toggles a setting: its one label is for screen readers, and the help is plain text tied to it.
+	 *
+	 * @return void
+	 */
+	public function test_only_the_checkbox_toggles_a_setting(): void {
+		es_optimizer_init_settings();
+
+		// The title row is WordPress's own markup: test_sections_and_fields_cover_every_option checks
+		// that checkboxes register no label_for, which is what makes WordPress print the title as text.
+		foreach ( es_optimizer_get_boolean_option_keys() as $option ) {
+			$id     = 'es_optimizer_field_' . $option;
+			$output = $this->capture( static fn () => es_optimizer_render_checkbox_field( array( 'option' => $option ) ) );
+
+			$this->assertSame( 1, substr_count( $output, '<label' ), $option );
+			$this->assertStringContainsString( '<label for="' . $id . '" class="screen-reader-text">' . esc_html( es_optimizer_get_field_title( $option ) ) . '</label>', $output );
+			$this->assertStringContainsString( 'aria-describedby="' . $id . '_description"', $output );
+			$this->assertMatchesRegularExpression( '#/>\s*<div id="' . $id . '_description" class="description">\s*<p><strong>What it does:</strong> #', $output, 'The help follows the checkbox, outside any label.' );
+		}
+	}
+
+	/**
+	 * Every setting explains what it does, its effect, and its performance, in that order.
+	 *
+	 * @return void
+	 */
+	public function test_every_setting_has_three_part_help(): void {
+		$help = es_optimizer_get_option_help();
+
+		$expected = array_keys( es_optimizer_get_default_options() );
+		$actual   = array_keys( $help );
+		sort( $expected );
+		sort( $actual );
+		$this->assertSame( $expected, $actual, 'One entry per option.' );
+		foreach ( $help as $option => $parts ) {
+			$this->assertSame( array( 'what', 'effect', 'performance' ), array_keys( $parts ), $option );
+			foreach ( $parts as $part => $text ) {
+				$this->assertNotSame( '', trim( $text ), "{$option} {$part}" );
+			}
+		}
+
+		$output = $this->capture( static fn () => es_optimizer_render_option_help( 'disable_emojis' ) );
+		$this->assertSame( 3, substr_count( $output, '<p><strong>' ) );
+		$this->assertStringContainsString( '<p><strong>Effect on your site:</strong> ', $output );
+		$this->assertStringContainsString( '<p><strong>Performance:</strong> ', $output );
+		$this->assertSame( '', $this->capture( static fn () => es_optimizer_render_option_help( 'unknown' ) ) );
+		$this->assertSame( '', es_optimizer_get_field_title( 'unknown' ) );
+	}
+
+	/**
+	 * A text area shows the three-part help, then its format rules.
+	 *
+	 * @return void
+	 */
+	public function test_textarea_shows_help_then_format(): void {
+		es_optimizer_init_settings();
+		$output = $this->capture( static fn () => es_optimizer_render_textarea_field( array( 'label_for' => 'es_optimizer_field_dns_prefetch_domains' ) ) );
+
+		$this->assertMatchesRegularExpression( '#<p><strong>What it does:</strong> .*<p><strong>Effect on your site:</strong> .*<p><strong>Performance:</strong> .*<p><strong>Format:</strong> DNS prefetch performs only a DNS lookup#s', $output );
 	}
 
 	/**

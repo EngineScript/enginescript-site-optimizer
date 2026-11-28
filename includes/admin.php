@@ -52,7 +52,7 @@ function es_optimizer_register_settings_sections(): void {
 			continue;
 		}
 
-		es_optimizer_register_checkbox_field( $page, $field['section'], $field['option'], $field['title'], $field['description'] );
+		es_optimizer_register_checkbox_field( $page, $field['section'], $field['option'], $field['title'] );
 	}
 }
 
@@ -94,24 +94,9 @@ function es_optimizer_get_performance_settings_fields(): array {
 	$section = 'es_optimizer_performance';
 
 	return [
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'disable_emojis',
-			__( 'Disable WordPress Emojis', 'enginescript-site-optimizer' ),
-			__( 'Remove WordPress emoji scripts and styles.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'remove_jquery_migrate',
-			__( 'Remove jQuery Migrate', 'enginescript-site-optimizer' ),
-			__( 'Remove the jQuery Migrate script. This may affect plugins or themes that depend on it.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'disable_classic_theme_styles',
-			__( 'Disable Classic Theme Styles', 'enginescript-site-optimizer' ),
-			__( 'Remove the classic theme stylesheet added by WordPress.', 'enginescript-site-optimizer' )
-		),
+		es_optimizer_get_checkbox_field_definition( $section, 'disable_emojis', __( 'Disable WordPress Emojis', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_jquery_migrate', __( 'Remove jQuery Migrate', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'disable_classic_theme_styles', __( 'Disable Classic Theme Styles', 'enginescript-site-optimizer' ) ),
 	];
 }
 
@@ -125,30 +110,10 @@ function es_optimizer_get_header_cleanup_settings_fields(): array {
 	$section = 'es_optimizer_header_cleanup';
 
 	return [
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'remove_wp_version',
-			__( 'Remove WordPress Version', 'enginescript-site-optimizer' ),
-			__( 'Remove the WordPress version from the document head and from feeds.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'remove_rsd_link',
-			__( 'Remove RSD Link', 'enginescript-site-optimizer' ),
-			__( 'Remove the Really Simple Discovery (RSD) link from the document head.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'remove_shortlink',
-			__( 'Remove Shortlink', 'enginescript-site-optimizer' ),
-			__( 'Remove WordPress shortlink URLs from the document head and the HTTP response header.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'remove_recent_comments_style',
-			__( 'Remove Recent Comments Style', 'enginescript-site-optimizer' ),
-			__( 'Remove inline CSS from the recent comments widget.', 'enginescript-site-optimizer' )
-		),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_wp_version', __( 'Remove WordPress Version', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_rsd_link', __( 'Remove RSD Link', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_shortlink', __( 'Remove Shortlink', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'remove_recent_comments_style', __( 'Remove Recent Comments Style', 'enginescript-site-optimizer' ) ),
 	];
 }
 
@@ -162,36 +127,16 @@ function es_optimizer_get_additional_settings_fields(): array {
 	$section = 'es_optimizer_additional_features';
 
 	return [
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'disable_jetpack_ads',
-			__( 'Disable Jetpack Promotions', 'enginescript-site-optimizer' ),
-			__( 'Disable Jetpack promotional messages and Blaze promotions.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'disable_post_via_email',
-			__( 'Disable Post via Email', 'enginescript-site-optimizer' ),
-			__( 'Disable WordPress post via email.', 'enginescript-site-optimizer' )
-		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'enable_preconnect',
-			__( 'Enable Preconnect', 'enginescript-site-optimizer' ),
-			__( 'Preconnect to external domains for faster resource loading.', 'enginescript-site-optimizer' )
-		),
+		es_optimizer_get_checkbox_field_definition( $section, 'disable_jetpack_ads', __( 'Disable Jetpack Promotions', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'disable_post_via_email', __( 'Disable Post via Email', 'enginescript-site-optimizer' ) ),
+		es_optimizer_get_checkbox_field_definition( $section, 'enable_preconnect', __( 'Enable Preconnect', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_textarea_field_definition(
 			$section,
 			'preconnect_domains',
 			__( 'Preconnect Domains', 'enginescript-site-optimizer' ),
 			__( 'Use preconnect for domains that host critical resources. Enter one HTTPS domain per line, with no port or port 443 only. Do not include file paths, query parameters, fragments, or credentials. Invalid lines are removed on save; an all-invalid list is cleared. Domain checks do not verify DNS destinations.', 'enginescript-site-optimizer' ) . ' ' . es_optimizer_get_domain_list_limits_description()
 		),
-		es_optimizer_get_checkbox_field_definition(
-			$section,
-			'enable_dns_prefetch',
-			__( 'Enable DNS Prefetch', 'enginescript-site-optimizer' ),
-			__( 'Resolve less critical external domains in DNS ahead of time.', 'enginescript-site-optimizer' )
-		),
+		es_optimizer_get_checkbox_field_definition( $section, 'enable_dns_prefetch', __( 'Enable DNS Prefetch', 'enginescript-site-optimizer' ) ),
 		es_optimizer_get_textarea_field_definition(
 			$section,
 			'dns_prefetch_domains',
@@ -240,17 +185,140 @@ function es_optimizer_get_domain_suggestions( string $option_name ): array {
 }
 
 /**
+ * Get the title of a settings field.
+ *
+ * @since 2.4.0
+ * @param string $option_name Option name.
+ * @return string Field title, or an empty string for an unknown option.
+ */
+function es_optimizer_get_field_title( string $option_name ): string {
+	foreach ( es_optimizer_get_settings_fields() as $field ) {
+		if ( $field['option'] === $option_name ) {
+			return $field['title'];
+		}
+	}
+
+	return '';
+}
+
+/**
+ * Get the help text shown under each setting.
+ *
+ * Every setting explains what it does, its effect on the site, and its
+ * performance gain or cost, so that the person changing it can decide well.
+ *
+ * @since 2.4.0
+ * @return array<string, array{what: string, effect: string, performance: string}> Help text keyed by option name.
+ */
+function es_optimizer_get_option_help(): array {
+	return [
+		'disable_emojis'               => [
+			'what'        => __( 'Stops WordPress from adding its emoji detection script and emoji styles to every page, the admin area, and embedded posts, and from replacing emoji in feeds and emails with images from WordPress.org.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Emoji still appear, drawn by the visitor\'s own device, which every current browser and operating system supports. On very old systems without emoji fonts, some emoji may show as empty boxes. Emoji in feeds and emails stay as characters instead of images.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes a small inline script and its styles from every page, and the check that script runs in the browser: a small gain for visitors. No change on the server.', 'enginescript-site-optimizer' ),
+		],
+		'remove_jquery_migrate'        => [
+			'what'        => __( 'Stops loading jQuery Migrate on the front end when a theme or plugin loads jQuery. jQuery Migrate restores functions that newer jQuery versions removed. The admin area is not changed.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Front-end code written for old jQuery versions can stop working, which shows as broken sliders, menus, or forms and as errors in the browser console. Check the interactive parts of the site after turning this on. Pages that do not load jQuery are not affected.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'One script file fewer to download and run on every page that loads jQuery: a small gain for visitors. No change on the server.', 'enginescript-site-optimizer' ),
+		],
+		'disable_classic_theme_styles' => [
+			'what'        => __( 'Removes the small classic-theme stylesheet that WordPress adds on the front end for themes without a theme.json file. It gives the Button and File blocks their default look. Block themes never load it, so on them this setting changes nothing. The editor is not changed.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Buttons and File blocks in your content may lose their default spacing and colors if the theme does not style them itself. A stylesheet that another plugin loads on top of this one will not load either.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes a few lines of CSS, usually printed inline in the page head, on classic themes: a very small gain for visitors. No change on the server.', 'enginescript-site-optimizer' ),
+		],
+		'remove_wp_version'            => [
+			'what'        => __( 'Removes the generator tag that names your WordPress version from the page head and from your RSS, Atom, and other feeds. Version numbers on script and stylesheet addresses, and export files, are left as they are.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Hides the version from casual inspection and from scanners that read the tag. It is not real protection, because the version can be worked out in other ways; keeping WordPress up to date matters far more. Nothing on the site looks different.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes one line from each page and feed. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'remove_rsd_link'              => [
+			'what'        => __( 'Removes the Really Simple Discovery (RSD) link from the page head. Old desktop blogging programs used it to find the site\'s XML-RPC address.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'A blogging program that relies on this link may need the XML-RPC address entered by hand. XML-RPC itself keeps working; only the link is removed. Most sites notice no difference.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes one line from each page. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'remove_shortlink'             => [
+			'what'        => __( 'Removes the shortlink, the short ?p=123 address of a post, from the page head and from the Link header that WordPress sends with each page.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Shortlinks still work when someone uses them; they are only no longer advertised. A tool that reads the shortlink from the page uses the full address instead.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes one line from each page and one response header. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'remove_recent_comments_style' => [
+			'what'        => __( 'Stops WordPress from printing a small inline style for the classic Recent Comments widget. WordPress prints it only on classic themes that support widgets.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'The widget\'s links may look slightly different if your theme relied on that style. Block themes and the Latest Comments block are not affected.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Removes a few bytes of CSS from pages that show the widget. No measurable speed change.', 'enginescript-site-optimizer' ),
+		],
+		'disable_jetpack_ads'          => [
+			'what'        => __( 'Turns off Jetpack\'s promotional notices, its Just-in-Time upgrade messages, and its Blaze prompts to advertise your posts. It does nothing unless Jetpack is installed.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Jetpack keeps working; you no longer see its upgrade and advertising prompts in the admin area. Visitors see no difference.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Jetpack skips loading and showing these messages, which saves a little work and some requests in the admin area. No change on the front end.', 'enginescript-site-optimizer' ),
+		],
+		'disable_post_via_email'       => [
+			'what'        => __( 'Turns off publishing by email: the mail server settings disappear from Settings > Writing and can no longer be saved, and the wp-mail.php address that collects the mail refuses requests.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Nobody can publish posts by sending email to the configured mailbox. Existing posts are not affected. Leave this off if you post by email.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'No speed change. It closes a rarely used way into the site.', 'enginescript-site-optimizer' ),
+		],
+		'enable_preconnect'            => [
+			'what'        => __( 'Adds a preconnect hint to the page head for each domain in the Preconnect Domains list, so the browser opens a connection to those servers before it needs them. Front-end pages only; the admin area and the login page are skipped.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Files from those domains, such as web fonts, can start downloading sooner. A listed domain that the page does not use wastes a connection.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Can save one or more network round trips the first time each listed domain is used, which helps most on slow or distant connections. Each hint costs the browser a connection, so list only the few domains that serve files a page needs early. No measurable cost on the server.', 'enginescript-site-optimizer' ),
+		],
+		'preconnect_domains'           => [
+			'what'        => __( 'The domains that get a preconnect hint while Enable Preconnect is on.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Only the domains entered here get hints. The suggestions below are examples and are never added on their own.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Two or three domains are usually enough. More hints compete for the browser\'s connections and can slow down the files that matter most.', 'enginescript-site-optimizer' ),
+		],
+		'enable_dns_prefetch'          => [
+			'what'        => __( 'Adds a DNS prefetch hint to the page head for each domain in the DNS Prefetch Domains list, so the browser looks up those domain names before it needs them. Front-end pages only; the admin area and the login page are skipped.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Requests to those domains start slightly sooner. Unlike preconnect, no connection is opened, so it suits domains that are used later or only on some pages.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Saves the name lookup, often a few tens of milliseconds, the first time each listed domain is used. It costs the browser very little, even for a domain that ends up unused. No measurable cost on the server.', 'enginescript-site-optimizer' ),
+		],
+		'dns_prefetch_domains'         => [
+			'what'        => __( 'The domains that get a DNS prefetch hint while Enable DNS Prefetch is on.', 'enginescript-site-optimizer' ),
+			'effect'      => __( 'Only the domains entered here get hints. The suggestion below is an example and is never added on its own.', 'enginescript-site-optimizer' ),
+			'performance' => __( 'Lookups are cheap, so a longer list does little harm, but each entry only helps if pages request files from that domain.', 'enginescript-site-optimizer' ),
+		],
+	];
+}
+
+/**
+ * Print the three-part help text of a setting.
+ *
+ * @since 2.4.0
+ * @param string $option_name Option name.
+ */
+function es_optimizer_render_option_help( string $option_name ): void {
+	$help = es_optimizer_get_option_help()[ $option_name ] ?? null;
+
+	if ( null === $help ) {
+		return;
+	}
+
+	$labels = [
+		'what'        => __( 'What it does:', 'enginescript-site-optimizer' ),
+		'effect'      => __( 'Effect on your site:', 'enginescript-site-optimizer' ),
+		'performance' => __( 'Performance:', 'enginescript-site-optimizer' ),
+	];
+
+	foreach ( $labels as $part => $label ) {
+		printf( '<p><strong>%1$s</strong> %2$s</p>', esc_html( $label ), esc_html( $help[ $part ] ) );
+	}
+}
+
+/**
  * Build a checkbox settings field definition.
  *
+ * A checkbox has no one-line description: its help text comes from
+ * es_optimizer_get_option_help().
+ *
  * @since 2.0.0
+ * @since 2.4.0 The description parameter was removed.
  * @param string $section     Settings section ID.
  * @param string $option_name Option name.
  * @param string $title       Field title.
- * @param string $description Field description.
  * @return array{type: string, section: string, option: string, title: string, description: string}
  */
-function es_optimizer_get_checkbox_field_definition( string $section, string $option_name, string $title, string $description ): array {
-	return es_optimizer_get_field_definition( 'checkbox', $section, $option_name, $title, $description );
+function es_optimizer_get_checkbox_field_definition( string $section, string $option_name, string $title ): array {
+	return es_optimizer_get_field_definition( 'checkbox', $section, $option_name, $title, '' );
 }
 
 /**
@@ -340,11 +408,19 @@ function es_optimizer_get_field_id( string $option_name ): string {
 /**
  * Get an option name from Settings API field arguments.
  *
+ * Checkbox fields name their option directly; text areas carry it in the
+ * field ID that WordPress uses for their label.
+ *
  * @since 2.0.0
- * @param array{label_for?: string, class?: string} $args Field arguments.
+ * @since 2.4.0 Reads the `option` argument first.
+ * @param array{option?: mixed, label_for?: string, class?: string} $args Field arguments.
  * @return string Option name.
  */
 function es_optimizer_get_option_name_from_field_args( array $args ): string {
+	if ( isset( $args['option'] ) && is_string( $args['option'] ) ) {
+		return $args['option'];
+	}
+
 	$field_id = $args['label_for'] ?? '';
 	$prefix   = 'es_optimizer_field_';
 
@@ -358,16 +434,18 @@ function es_optimizer_get_option_name_from_field_args( array $args ): string {
 /**
  * Register a checkbox settings field.
  *
+ * The field is registered without `label_for`, so WordPress prints its title
+ * as plain text rather than as a label. A click on the title or the help text
+ * then cannot toggle the setting; only the checkbox itself does.
+ *
  * @since 2.0.0
+ * @since 2.4.0 The description parameter was removed; the title is no longer a label.
  * @param string $page        Settings page slug.
  * @param string $section     Settings section ID.
  * @param string $option_name Option name.
  * @param string $title       Field title.
- * @param string $description Field description.
  */
-function es_optimizer_register_checkbox_field( string $page, string $section, string $option_name, string $title, string $description ): void {
-	es_optimizer_register_field_description( $option_name, $description );
-
+function es_optimizer_register_checkbox_field( string $page, string $section, string $option_name, string $title ): void {
 	add_settings_field(
 		$option_name,
 		esc_html( $title ),
@@ -375,8 +453,8 @@ function es_optimizer_register_checkbox_field( string $page, string $section, st
 		$page,
 		$section,
 		[
-			'label_for' => es_optimizer_get_field_id( $option_name ),
-			'class'     => 'es-optimizer-field',
+			'option' => $option_name,
+			'class'  => 'es-optimizer-field',
 		]
 	);
 }
@@ -464,24 +542,30 @@ function es_optimizer_settings_page(): void {
 /**
  * Render a checkbox option field.
  *
+ * Only the checkbox toggles the setting. Its label is for screen readers only
+ * and takes no space on screen; the help text below is plain text, tied to the
+ * checkbox as its description.
+ *
  * @since 1.0.0
- * @param array{label_for?: string, class?: string} $args Field arguments.
+ * @since 2.4.0 Prints the three-part help text, and no visible label.
+ * @param array{option?: mixed, label_for?: string, class?: string} $args Field arguments.
  */
 function es_optimizer_render_checkbox_field( array $args ): void {
 	$options     = es_optimizer_get_options();
 	$option_name = es_optimizer_get_option_name_from_field_args( $args );
 
-	if ( ! array_key_exists( $option_name, es_optimizer_get_default_options() ) ) {
+	if ( ! in_array( $option_name, es_optimizer_get_boolean_option_keys(), true ) ) {
 		return;
 	}
 
-	$field_id    = es_optimizer_get_field_id( $option_name );
-	$description = es_optimizer_get_field_description( $option_name );
+	$field_id       = es_optimizer_get_field_id( $option_name );
+	$description_id = $field_id . '_description';
 	?>
-	<label>
-		<input id="<?php echo esc_attr( $field_id ); ?>" type="checkbox" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" value="1" <?php checked( 1, (int) ( $options[ $option_name ] ?? 0 ) ); ?> />
-		<?php echo esc_html( $description ); ?>
-	</label>
+	<label for="<?php echo esc_attr( $field_id ); ?>" class="screen-reader-text"><?php echo esc_html( es_optimizer_get_field_title( $option_name ) ); ?></label>
+	<input id="<?php echo esc_attr( $field_id ); ?>" type="checkbox" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" value="1" aria-describedby="<?php echo esc_attr( $description_id ); ?>" <?php checked( 1, (int) ( $options[ $option_name ] ?? 0 ) ); ?> />
+	<div id="<?php echo esc_attr( $description_id ); ?>" class="description">
+		<?php es_optimizer_render_option_help( $option_name ); ?>
+	</div>
 	<?php
 }
 
@@ -514,7 +598,8 @@ function es_optimizer_render_textarea_field( array $args ): void {
 	?>
 	<textarea id="<?php echo esc_attr( $field_id ); ?>" name="<?php echo esc_attr( "es_optimizer_options[{$option_name}]" ); ?>" aria-describedby="<?php echo esc_attr( $description_id ); ?>" rows="5" cols="50" class="large-text code"><?php echo esc_textarea( $textarea_value ); ?></textarea>
 	<div id="<?php echo esc_attr( $description_id ); ?>" class="description">
-		<p><?php echo esc_html( $description ); ?></p>
+		<?php es_optimizer_render_option_help( $option_name ); ?>
+		<p><strong><?php esc_html_e( 'Format:', 'enginescript-site-optimizer' ); ?></strong> <?php echo esc_html( $description ); ?></p>
 		<?php if ( [] !== $suggestions ) : ?>
 			<p><?php esc_html_e( 'Optional suggestions: copy only the domains your site uses into the field above, one per line. This list starts empty; suggestions are not enabled automatically. Enable the setting and save your list to add hints.', 'enginescript-site-optimizer' ); ?></p>
 			<pre><?php echo esc_html( implode( "\n", $suggestions ) ); ?></pre>

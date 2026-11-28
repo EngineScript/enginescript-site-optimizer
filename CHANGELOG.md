@@ -3,6 +3,17 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- On the settings page, only the checkbox now turns a setting on or off. A click on the setting's title or its description, or a drag across it to select the text, no longer changes the setting.
+
+### Changed
+
+- Explain every setting below its control: what it does, its effect on the site, and its performance gain or cost. The explanations replace the one-line descriptions.
+- Name each checkbox for screen readers by its title alone, with the explanation read as its description.
+
 ## [2.3.0] - 2026-11-26
 
 ### Fixed
