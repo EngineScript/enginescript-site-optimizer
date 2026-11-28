@@ -135,6 +135,8 @@ $es_optimizer_test_doubles = array(
 foreach ( $es_optimizer_test_doubles as $es_optimizer_test_name => $es_optimizer_test_double ) {
 	if ( ! function_exists( $es_optimizer_test_name ) ) {
 		$GLOBALS['es_optimizer_test_double_functions'][ $es_optimizer_test_name ] = $es_optimizer_test_double;
+		// The name comes from the table above, not from input.
+		// nosemgrep: php_eval_rule-eval-use, php.lang.security.eval-use.eval-use, gitlab.phpcs_security_audit.PHPCS_SecurityAudit.BadFunctions.NoEvals.NoEvals
 		eval( "function {$es_optimizer_test_name}( ...\$args ) { return \$GLOBALS['es_optimizer_test_double_functions']['{$es_optimizer_test_name}']( ...\$args ); }" ); // phpcs:ignore Squiz.PHP.Eval.Discouraged -- Defines plain test doubles from the table above.
 	}
 }

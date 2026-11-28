@@ -12,10 +12,8 @@
  * @package EngineScript_Site_Optimizer
  */
 
-// Loaded by WP-CLI, possibly before WordPress itself; never by a web request.
-if ( ! defined( 'ABSPATH' ) && ! defined( 'WP_CLI' ) ) {
-	exit;
-}
+// Loaded by WP-CLI, possibly before WordPress defines ABSPATH (as with --require); never by a web request.
+defined( 'WP_CLI' ) || defined( 'ABSPATH' ) || exit;
 
 // PHP declares the class below when it compiles this file, so the guard tests WP-CLI only;
 // require_once keeps the plugin and --require from loading the file twice.

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-28T06:02:21+00:00\n"
+"POT-Creation-Date: 2026-11-28T07:08:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: enginescript-site-optimizer\n"
@@ -362,17 +362,17 @@ msgid "Lookups are cheap, so a longer list does little harm, but each entry only
 msgstr ""
 
 #: includes/admin.php:333
-#: includes/autoload-page.php:535
+#: includes/autoload-page.php:551
 msgid "What it does:"
 msgstr ""
 
 #: includes/admin.php:334
-#: includes/autoload-page.php:536
+#: includes/autoload-page.php:552
 msgid "Effect on your site:"
 msgstr ""
 
 #: includes/admin.php:335
-#: includes/autoload-page.php:537
+#: includes/autoload-page.php:553
 msgid "Performance:"
 msgstr ""
 
@@ -572,203 +572,203 @@ msgstr ""
 msgid "Every page loads all of these options in one query, and with a persistent object cache, such as Redis, they are kept together in one cache entry, which a very large total can push past the cache server's size limit. A smaller total makes that load faster and lighter on memory. Each option you switch off that a page still needs costs that page one extra small query when no persistent object cache is in use. Recording adds a little work to each page while it runs, and the code search reads many files once, when you ask for it."
 msgstr ""
 
-#: includes/autoload-page.php:522
+#: includes/autoload-page.php:538
 msgid "When you delete Site Optimizer, it first loads every option it switched off on every page again, with the setting each one had before. Deactivating the plugin changes nothing."
 msgstr ""
 
-#: includes/autoload-page.php:558
+#: includes/autoload-page.php:574
 msgid "Loaded on every page"
 msgstr ""
 
 #. translators: %d: Number of options switched off by the plugin.
-#: includes/autoload-page.php:560
+#: includes/autoload-page.php:576
 #, php-format
 msgid "Switched off by Site Optimizer (%d)"
 msgstr ""
 
-#: includes/autoload-page.php:574
+#: includes/autoload-page.php:580
 msgid "Autoloaded option lists"
 msgstr ""
 
-#: includes/autoload-page.php:601
+#: includes/autoload-page.php:621
 msgid "A persistent object cache is in use."
 msgstr ""
 
-#: includes/autoload-page.php:602
+#: includes/autoload-page.php:622
 msgid "No persistent object cache is in use."
 msgstr ""
 
 #. translators: 1: Number of options, 2: Total size such as "412 KB", 3: Site Health's limit such as "781 KB".
-#: includes/autoload-page.php:609
+#: includes/autoload-page.php:629
 #, php-format
 msgid "%1$d option is loaded on every page, %2$s in total. WordPress's Site Health check warns above %3$s."
 msgid_plural "%1$d options are loaded on every page, %2$s in total. WordPress's Site Health check warns above %3$s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/autoload-page.php:639
+#: includes/autoload-page.php:659
 msgid "Select all options on this page"
 msgstr ""
 
 #. translators: %s: Option name.
-#: includes/autoload-page.php:665
+#: includes/autoload-page.php:685
 #, php-format
 msgid "Select %s"
 msgstr ""
 
-#: includes/autoload-page.php:719
-#: includes/autoload-page.php:1014
+#: includes/autoload-page.php:739
+#: includes/autoload-page.php:1034
 msgid "Option"
 msgstr ""
 
-#: includes/autoload-page.php:720
-#: includes/autoload-page.php:1015
+#: includes/autoload-page.php:740
+#: includes/autoload-page.php:1035
 msgid "Size"
 msgstr ""
 
-#: includes/autoload-page.php:721
+#: includes/autoload-page.php:741
 msgid "Autoload setting"
 msgstr ""
 
-#: includes/autoload-page.php:725
+#: includes/autoload-page.php:745
 msgid "Read on"
 msgstr ""
 
-#: includes/autoload-page.php:728
+#: includes/autoload-page.php:748
 msgid "Probably from"
 msgstr ""
 
-#: includes/autoload-page.php:732
+#: includes/autoload-page.php:752
 msgid "No autoloaded options match."
 msgstr ""
 
-#: includes/autoload-page.php:743
+#: includes/autoload-page.php:763
 msgid "Stop loading the selected options on every page"
 msgstr ""
 
 #. translators: 1: Current page number, 2: Number of pages, 3: Number of matching options.
-#: includes/autoload-page.php:748
+#: includes/autoload-page.php:768
 #, php-format
 msgid "Page %1$d of %2$d (%3$d options)."
 msgstr ""
 
-#: includes/autoload-page.php:782
+#: includes/autoload-page.php:802
 msgid "(locked)"
 msgstr ""
 
-#: includes/autoload-page.php:804
+#: includes/autoload-page.php:824
 msgid "No recorded page"
 msgstr ""
 
 #. translators: 1: Pages that read the option, 2: Pages recorded.
-#: includes/autoload-page.php:808
+#: includes/autoload-page.php:828
 #, php-format
 msgid "%1$d of %2$d recorded page"
 msgid_plural "%1$d of %2$d recorded pages"
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/autoload-page.php:823
+#: includes/autoload-page.php:843
 msgid "Search option names"
 msgstr ""
 
-#: includes/autoload-page.php:825
+#: includes/autoload-page.php:845
 msgid "Search"
 msgstr ""
 
-#: includes/autoload-page.php:847
+#: includes/autoload-page.php:867
 msgid "Search installed plugins and themes for the options on this page"
 msgstr ""
 
-#: includes/autoload-page.php:848
+#: includes/autoload-page.php:868
 msgid "Reads their PHP files to find which one uses each option name, for up to 20 seconds. Results are kept for a day."
 msgstr ""
 
-#: includes/autoload-page.php:867
+#: includes/autoload-page.php:887
 msgid "The installed plugins and themes were searched for the options on this page."
 msgstr ""
 
-#: includes/autoload-page.php:868
+#: includes/autoload-page.php:888
 msgid "The search stopped after 20 seconds; the options it found are marked. Search again to continue with the rest."
 msgstr ""
 
 #. translators: 1: Time the recording ends, 2: Pages recorded so far.
-#: includes/autoload-page.php:890
+#: includes/autoload-page.php:910
 #, php-format
 msgid "Recording which options pages read until %1$s: %2$d page so far."
 msgid_plural "Recording which options pages read until %1$s: %2$d pages so far."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/autoload-page.php:896
+#: includes/autoload-page.php:916
 msgid "Stop recording"
 msgstr ""
 
-#: includes/autoload-page.php:902
+#: includes/autoload-page.php:922
 msgid "Record which options pages read, and which plugin or theme reads each one: while recording, every page loaded on the front end or in the dashboard is noted, at a small cost per page."
 msgstr ""
 
-#: includes/autoload-page.php:903
+#: includes/autoload-page.php:923
 msgid "Record for 10 minutes"
 msgstr ""
 
-#: includes/autoload-page.php:904
+#: includes/autoload-page.php:924
 msgid "Record for 1 hour"
 msgstr ""
 
-#: includes/autoload-page.php:907
+#: includes/autoload-page.php:927
 msgid "Clear the recorded results"
 msgstr ""
 
-#: includes/autoload-page.php:972
+#: includes/autoload-page.php:992
 msgid "Previous page"
 msgstr ""
 
-#: includes/autoload-page.php:976
+#: includes/autoload-page.php:996
 msgid "Next page"
 msgstr ""
 
-#: includes/autoload-page.php:989
+#: includes/autoload-page.php:1009
 msgid "Not loaded on every page"
 msgstr ""
 
-#: includes/autoload-page.php:990
+#: includes/autoload-page.php:1010
 msgid "Loaded on every page again by other code"
 msgstr ""
 
-#: includes/autoload-page.php:991
+#: includes/autoload-page.php:1011
 msgid "Deleted by other code"
 msgstr ""
 
-#: includes/autoload-page.php:992
+#: includes/autoload-page.php:1012
 msgid "Setting changed by other code"
 msgstr ""
 
-#: includes/autoload-page.php:1005
+#: includes/autoload-page.php:1025
 msgid "The current settings of these options could not be read. Reload the page to try again."
 msgstr ""
 
-#: includes/autoload-page.php:1016
+#: includes/autoload-page.php:1036
 msgid "Setting before"
 msgstr ""
 
-#: includes/autoload-page.php:1017
+#: includes/autoload-page.php:1037
 msgid "Now"
 msgstr ""
 
-#: includes/autoload-page.php:1018
+#: includes/autoload-page.php:1038
 msgid "Switched off"
 msgstr ""
 
-#: includes/autoload-page.php:1023
+#: includes/autoload-page.php:1043
 msgid "Site Optimizer has not switched off any option."
 msgstr ""
 
-#: includes/autoload-page.php:1041
+#: includes/autoload-page.php:1061
 msgid "Load the selected options on every page again"
 msgstr ""
 
-#: includes/autoload-page.php:1064
+#: includes/autoload-page.php:1084
 msgid "Site Optimizer has stopped some options from loading on every page. Deleting the plugin loads them on every page again, with the settings they had before. Deactivating it changes nothing."
 msgstr ""
 

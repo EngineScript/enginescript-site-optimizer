@@ -460,6 +460,61 @@ final class AutoloadTest extends EsOptimizerTestCase {
 	}
 
 	/**
+	 * The second list shows each switched-off option with its state, offers to load them again, and says when it cannot read them.
+	 *
+	 * @return void
+	 */
+	public function test_changed_list_markup(): void {
+		$this->database( array( $this->row( 'still_off', 'off', 2048 ), $this->row( 'back_on', 'on' ), $this->row( 'other', 'auto-off' ) ) );
+		$this->store_log(
+			array(
+				'still_off'  => array( 'previous' => 'auto', 'time' => 30 ),
+				'back_on'    => array( 'previous' => 'on', 'time' => 10 ),
+				'other'      => array( 'previous' => 'on', 'time' => 20 ),
+				'<b>gone</b>' => array( 'previous' => 'yes', 'time' => 40 ),
+			)
+		);
+		$_GET = array( 'page' => 'es-optimizer-settings', 'tab' => 'autoload', 'view' => 'changed' );
+
+		$page = $this->capture( 'es_optimizer_settings_page' );
+
+		$this->assertStringContainsString( 'name="es_optimizer_autoload_action" value="switch_on"', $page );
+		$this->assertStringContainsString( 'view=changed', $page );
+		$this->assertStringContainsString( '<td class="column-name"><code>still_off</code></td><td class="column-size">2048 B</td><td class="column-previous">auto</td><td class="column-state">Not loaded on every page</td>', $page );
+		$this->assertStringContainsString( 'Loaded on every page again by other code', $page );
+		$this->assertStringContainsString( 'Setting changed by other code', $page );
+		$this->assertStringContainsString( '<code>&lt;b&gt;gone&lt;/b&gt;</code>', $page );
+		$this->assertStringContainsString( 'Deleted by other code', $page );
+		$this->assertSame( 4, substr_count( $page, 'name="option_names[]"' ) );
+		$this->assertStringContainsString( 'Load the selected options on every page again', $page );
+
+		$this->store_log( array() );
+		$this->assertStringContainsString( 'Site Optimizer has not switched off any option.', $this->capture( 'es_optimizer_settings_page' ) );
+
+		$this->database( null );
+		$this->store_log( array( 'x' => array( 'previous' => 'on', 'time' => 1 ) ) );
+		$this->assertStringContainsString( 'The current settings of these options could not be read.', $this->capture( 'es_optimizer_settings_page' ) );
+	}
+
+	/**
+	 * Page links go back and forward within the range, and keep the search.
+	 *
+	 * @return void
+	 */
+	public function test_page_links(): void {
+		$middle = $this->capture( static fn () => es_optimizer_autoload_render_page_links( 2, 3, 'cache' ) );
+
+		$this->assertStringContainsString( 'paged=1', $middle );
+		$this->assertStringContainsString( '>Previous page</a>', $middle );
+		$this->assertStringContainsString( 'paged=3', $middle );
+		$this->assertStringContainsString( '>Next page</a>', $middle );
+		$this->assertSame( 2, substr_count( $middle, 's=cache' ) );
+
+		$this->assertSame( '', $this->capture( static fn () => es_optimizer_autoload_render_page_links( 1, 1, '' ) ) );
+		$this->assertStringNotContainsString( 'Next page', $this->capture( static fn () => es_optimizer_autoload_render_page_links( 3, 3, '' ) ) );
+	}
+
+	/**
 	 * The settings page shows the Autoloaded Options tab instead of the settings form, and still refuses other users.
 	 *
 	 * @return void

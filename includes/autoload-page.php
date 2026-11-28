@@ -501,10 +501,26 @@ function es_optimizer_autoload_read_view(): array {
 		'view'   => isset( $_GET['view'] ) && is_string( $_GET['view'] ) && 'changed' === sanitize_key( wp_unslash( $_GET['view'] ) ) ? 'changed' : 'loaded',
 		'paged'  => isset( $_GET['paged'] ) && is_string( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1,
 		'search' => isset( $_GET['s'] ) && is_string( $_GET['s'] ) ? trim( sanitize_text_field( wp_unslash( $_GET['s'] ) ) ) : '',
-		// The code search reads many files, so it runs only from its own button, which carries a nonce.
-		'find'   => isset( $_GET['es_find'] ) && is_string( $_GET['es_find'] ) && false !== wp_verify_nonce( sanitize_key( wp_unslash( $_GET['es_find'] ) ), 'es_optimizer_autoload_find' ),
+		'find'   => es_optimizer_autoload_read_find(),
 	];
 	// phpcs:enable
+}
+
+/**
+ * Check whether the code search was asked for.
+ *
+ * The code search reads many files, so it runs only from its own button, which carries a nonce.
+ *
+ * @since 2.5.0
+ * @SuppressWarnings("PHPMD.Superglobals") Reads the code search button's nonce.
+ * @return bool Whether the request carries a valid code search nonce.
+ */
+function es_optimizer_autoload_read_find(): bool {
+	if ( ! isset( $_GET['es_find'] ) || ! is_string( $_GET['es_find'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- The value is the nonce, checked below.
+		return false;
+	}
+
+	return false !== wp_verify_nonce( sanitize_key( wp_unslash( $_GET['es_find'] ) ), 'es_optimizer_autoload_find' );
 }
 
 /**
@@ -632,7 +648,7 @@ function es_optimizer_autoload_render_summary(): void {
  */
 function es_optimizer_autoload_open_form( string $action, string $form_url, array $columns ): void {
 	?>
-	<form method="post" action="<?php echo esc_url( $form_url ); ?>">
+	<form method="post" action="<?php echo esc_url( $form_url ); /* nosemgrep: php.lang.security.injection.echoed-request.echoed-request */ ?>">
 		<?php wp_nonce_field( 'es_optimizer_autoload' ); ?>
 		<input type="hidden" name="es_optimizer_autoload_action" value="<?php echo esc_attr( $action ); ?>" />
 		<table class="wp-list-table widefat fixed striped">
@@ -666,7 +682,7 @@ function es_optimizer_autoload_render_checkbox_cell( string $name, int $index ):
 		<label for="<?php echo esc_attr( $field_id ); ?>"><span class="screen-reader-text">
 			<?php
 			/* translators: %s: Option name. */
-			echo esc_html( sprintf( __( 'Select %s', 'enginescript-site-optimizer' ), $name ) );
+			echo esc_html( sprintf( __( 'Select %s', 'enginescript-site-optimizer' ), $name ) ); /* nosemgrep: php.lang.security.injection.tainted-sql-string.tainted-sql-string */
 			?>
 		</span></label>
 	</th>

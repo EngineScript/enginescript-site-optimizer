@@ -346,6 +346,8 @@ final class AutoloadInsightTest extends EsOptimizerTestCase {
 	 */
 	private function remove( string $path ): void {
 		foreach ( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $path, FilesystemIterator::SKIP_DOTS ), RecursiveIteratorIterator::CHILD_FIRST ) as $item ) {
+			// The path is a folder the test created under the system temp folder.
+			// nosemgrep: php.lang.security.unlink-use.unlink-use
 			$item->isDir() ? rmdir( $item->getPathname() ) : unlink( $item->getPathname() ); // phpcs:ignore WordPress.WP.AlternativeFunctions -- Test fixture cleanup.
 		}
 
